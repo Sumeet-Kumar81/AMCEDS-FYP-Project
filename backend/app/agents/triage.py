@@ -1,0 +1,1 @@
+"""Triage Agent (UC-02, Day 5). JSON: language, incident_type, severity, victims, location_words, quality_flag, confidence. null if unknown; never guess location; invalid JSON -> retry once -> review queue."""
