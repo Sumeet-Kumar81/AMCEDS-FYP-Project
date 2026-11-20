@@ -3,14 +3,14 @@
 How the next session, development agent or team member continues the work.
 
 ## 1. Where things stand (2026-11-20)
-- SRS and SDS were revised to **v1.1** (DOC-01). The implementation **blueprint** (`docs/blueprint/`, start with `00_START_HERE.md`) is written (BP-01). Plan v0.2 plus `IMPLEMENTATION_PLAN_UPDATE_v0.3.md` is **waiting for approval**. No implementation has started.
-- The repository is a scaffold at commit `a0cba20`. Nothing in the application is verified: the two existing tests could not run in the audit environment (see STATUS.md §2).
+- SRS and SDS were revised to **v1.1** (DOC-01). The implementation **blueprint** (`docs/blueprint/`, start with `00_START_HERE.md`) is written (BP-01). Plan v0.2 plus `IMPLEMENTATION_PLAN_UPDATE_v0.3.md` is **waiting for approval**. Only **B1-A1-02** (the backend test harness) has been implemented, on the local branch `feat/test-harness` (not pushed, no open PR); no application feature exists yet.
+- The repository is a scaffold plus the test harness. The 2 original tests and 4 new database tests pass in Docker on Python 3.11 (6 passed, STATUS.md §2); CI has not been run yet. No application feature is implemented or verified (`POST /reports` is still a stub).
 - Open decisions are in DECISIONS_LOG.md §2. Approved on 2026-11-20: D-002, D-004, D-005, D-006, D-010, D-011, D-012, D-020, D-030. Newly proposed by the blueprint: **D-031…D-035** (and the D-019 extensions).
 - The code in `docs/blueprint/code_sketches/` is **design sketch code with 46 tests**, not product code. Reuse the logic when writing the real agents, but follow the task files and ownership rules, not the sketch layout.
 
 ## 2. Read before doing anything
 1. PROJECT_CONTEXT.md → AGENT_RULES.md → IMPLEMENTATION_PLAN.md + IMPLEMENTATION_PLAN_UPDATE_v0.3.md → STATUS.md → last entries of CHANGES.md → DECISIONS_LOG.md.
-2. SRS v1.1 and SDS v1.1 (clean .docx; Claude Project docs; to be committed to `docs/srs-sds/`, D-001b). Read the sections named in your task.
+2. SRS v1.1 and SDS v1.1 (clean .docx, committed in `docs/srs-sds/`; D-001b path decision). Read the sections named in your task.
 3. The blueprint file for your area: database `04`, backend `05`, AI `06`, web `07`, mobile `08`, integration `09`, testing `10`, schedule `11`.
 4. `git status`, `git log -5`; confirm STATUS.md matches the code.
 
@@ -43,4 +43,4 @@ Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github
 - LangGraph wiring in `06_AI_AGENTS.md` is **not verified**; build a one-node graph first.
 
 ## 6. Next recommended action
-The team reads `docs/blueprint/00_START_HERE.md`, decides the week-1 items (D-001, D-001b, D-027b/D-034, D-031, D-032), approves or edits the plan, then authorises **B1-A1-02**. Stop and wait for that approval; do not start development on your own.
+**B1-A1-02** (backend test harness) is committed on the local branch `feat/test-harness`. The branch is not on `origin`, has no open PR and is not merged into `main`; it is ready to open a PR after the branch is pushed. Once the team has reviewed and merged it, the team decides the remaining week-1 items (D-001, D-001b record, D-027b/D-034, D-031, D-032), and then authorises the next task (**B1-A1-03**, contract C-1). Stop and wait for that approval; do not start development on your own.

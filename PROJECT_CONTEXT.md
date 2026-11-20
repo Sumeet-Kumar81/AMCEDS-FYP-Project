@@ -1,7 +1,7 @@
 # PROJECT_CONTEXT.md
 
 > Read this first. It explains the project without relying on any earlier conversation.
-> Primary sources of truth: **SRS v1.1** and **SDS v1.1** (revised 2026-11-20 from the Nov 5 SRS and Nov 14 SDS; decision A-008). They are held in the team's Claude Project and are **not yet committed** to `docs/srs-sds/` (DECISIONS_LOG D-001b). When this file and the SRS/SDS disagree, the SRS/SDS win. The explanatory layer is `docs/blueprint/` (start with `00_START_HERE.md`).
+> Primary sources of truth: **SRS v1.1** and **SDS v1.1** (revised 2026-11-20 from the Nov 5 SRS and Nov 14 SDS; decision A-008). The clean `.docx` files are committed in `docs/srs-sds/` (path chosen with the B1-A1-02 branch, DECISIONS_LOG D-001b). When this file and the SRS/SDS disagree, the SRS/SDS win. The explanatory layer is `docs/blueprint/` (start with `00_START_HERE.md`).
 
 ## 1. Project
 
@@ -98,7 +98,7 @@ No stack change, new framework, paid service or major dependency without a DECIS
 ```
 backend/   FastAPI app (api, agents, core, llm, models, schemas, services, workers, ws), tests, migrations
 db/        seed/, simulators/, sql/, eval_data/ (empty placeholders)
-docs/      srs-sds/, diagrams/, test-reports/, user-guides/, viva/ (empty); Requriments/ (October drafts, superseded); blueprint/ (added by BP-01, if copied into the repository)
+docs/      srs-sds/ (SRS + SDS v1.1 `.docx`), blueprint/ (BP-01), AI_HANDOFF.md; diagrams/, test-reports/, user-guides/, viva/ are empty placeholders (not tracked); the October drafts in the former `Requriments/` folder are no longer on `main`
 frontend/  dashboard/, pwa/ (README only)
 infra/     osrm/, gazetteer/, nginx/ (README only)
 scripts/   dev.sh

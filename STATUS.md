@@ -1,15 +1,15 @@
 # STATUS.md
 
-**Last updated:** 2026-11-20 · **Baseline commit:** `d529d36` (branch `main`); work on branch `feat/test-harness` (not committed)
+**Last updated:** 2026-11-20 · **Baseline commit:** `d529d36` (branch `main`); work on branch `feat/test-harness` (committed locally; not on `origin`; no open PR; not merged into `main`)
 **Overall state:** Repository scaffold plus a **working backend test harness (B1-A1-02, awaiting review)**. Planning is complete and pending team approval. No application feature is implemented.
 
 ## 1. Current position
 
 | Item | Value |
 |---|---|
-| Latest completed work | **B1-A1-02** — backend test harness (code, uncommitted, awaiting review), 2026-11-20. Before it: **BP-01** — implementation blueprint (`docs/blueprint/`, 14 documents, design sketches with 46 passing sketch tests) — documentation only, 2026-11-20 |
+| Latest completed work | **B1-A1-02** — backend test harness (committed on the local branch `feat/test-harness`; not on `origin`, no open PR, not merged into `main`), 2026-11-20. Before it: **BP-01** — implementation blueprint (`docs/blueprint/`, 14 documents, design sketches with 46 passing sketch tests) — documentation only, 2026-11-20 |
 | Before that | DOC-01 SRS/SDS v1.1 (2026-11-20); PLAN-02 team roles (2026-11-19); PLAN-01 audit and plan (2026-11-19) |
-| Current task | B1-A1-02 finished, waiting for review and commit. No other task started |
+| Current task | B1-A1-02 finished and committed on the local branch `feat/test-harness`; ready to open a PR after the branch is pushed (not pushed, no open PR, not merged). No other task started |
 | Recommended next task | Week-1 decisions (D-001, D-001b, D-027b/D-034, D-031, D-032) → **B1-A1-03** (contract C-1: enums and Incident Record schemas) |
 | Blockers | Team approval; open decisions in DECISIONS_LOG §2 (D-007…D-009, D-013…D-019, D-021…D-029, D-031…D-035) |
 
@@ -56,10 +56,10 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 ## 4. Known problems
 
 1. `fyp-dispatch/` duplicates the whole repository (D-001).
-2. SRS/SDS v1.1 not committed to `docs/srs-sds/`; the repository still holds October drafts in `docs/Requriments/` (D-001b).
+2. SRS/SDS v1.1 are committed in `docs/srs-sds/` (on the local branch `feat/test-harness` only — not on `origin`, no open PR, not merged into `main`; the October drafts are no longer on `main`). D-001b state is resolved on that branch in DECISIONS_LOG and would reach `main` only after the branch is pushed, a PR is opened and merged; formal team approval, if required, is still pending.
 3. Code comments cite names not in the SDS (D-003).
 4. README and `frontend/README.md` plan a driver PWA; D-002 chose React Native (README not yet updated).
-5. `POST /reports` returns a fake reference without saving (fixed by B1-A1-16).
+5. `POST /reports` is still a stub: it returns a hard-coded fake reference without saving. The real implementation, B1-A1-16, is **not yet implemented**.
 6. `README.md` ownership table is outdated (A-007, D-027b/D-034).
 7. SDS v1.1 figures 2.2, 3.1, 4.1, 5.1, 6.3 are images and still show the old design (see CHANGES DOC-01).
 8. **Duplicate formula (U-1):** the D-007 linear formula cannot reach the 85 % auto-link threshold at TC-13; D-033 proposes quadratic decay.
@@ -72,7 +72,7 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 | Batch | Tasks | Status |
 |---|---|---|
 | Planning and blueprint | PLAN-01, PLAN-02, DOC-01, BP-01 | Done (documentation only); **pending team approval** |
-| Batch 1 — Agent 1 | B1-A1-01 … 34 | **B1-A1-02 done in code, awaiting review/commit.** B1-A1-01 and 03…34 not started |
+| Batch 1 — Agent 1 | B1-A1-01 … 34 | **B1-A1-02 done and committed on the local branch `feat/test-harness` (not pushed, no open PR, not merged).** B1-A1-01 and 03…34 not started |
 | Batch 1 — Agent 2 | B1-A2-01 … 17 | Pending approval (none started) |
 | Batch 1 — Agent 3 | B1-A3-01 … 19 | Pending approval (none started) |
 | Batches 2–9 | B2-01 … B9-09 | Pending approval (none started) |
