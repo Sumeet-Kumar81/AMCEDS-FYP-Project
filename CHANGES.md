@@ -72,3 +72,24 @@ Entry format: date · task ID · purpose · files · what changed · why · DB/A
   - `python3 docs/blueprint/tools/schedule_check.py` → 0 dependency violations, all 70 Batch-1 tasks scheduled (Arjun 23, Khalid 19, Sumeet 28).
   - **Not executed / not verified:** LangGraph wiring (no install possible), library versions and availability, hardware memory estimates, and the two existing backend tests (still blocked: no FastAPI in the environment).
 - **Known limitations:** The blueprint is a proposal pending team approval. D-031…D-035 and earlier open decisions are not approved. Effort estimates in the roadmap are judgement. SDS figures still show the old design (see DOC-01). `IMPLEMENTATION_PLAN.md` itself still reads v0.2 and cites v1.0 sources; the v0.3 update file lists what changes until it is merged into the plan.
+
+---
+
+## 2026-11-20 · B1-A1-02 · Backend test harness and local development environment
+
+- **Purpose:** Make `pytest` run reliably in Docker (Python 3.11) and locally against a real PostGIS test database.
+- **Branch:** `feat/test-harness` (from `main` `d529d36`). Commits `6ee85f4` and `2a9356c` exist on the local branch `feat/test-harness`. Not merged into `main`; the branch is not on `origin`; no pull request has been opened.
+- **Also on this branch (not part of B1-A1-02 itself):** the SRS/SDS v1.1 `.docx` files were renamed `docs/SRS-SDS/` → `docs/srs-sds/` (commit `2a9356c`, content unchanged) — the D-001b path decision. `PROJECT_CONTEXT.md`, `STATUS.md` and `docs/AI_HANDOFF.md` were updated to the new path; `DECISIONS_LOG.md` D-001b updated (state resolved on this branch; formal team approval, if required, still pending); `AGENT_RULES.md` header changed from SRS/SDS v1.0 to v1.1; `IMPLEMENTATION_PLAN.md` B1-A1-02 given an implementation-status line (task text unchanged).
+- **Files created:** `backend/tests/conftest.py` (creates `dispatch_test` with PostGIS if missing, refuses to use the application database, per-test rollback connection and session, in-process `httpx.AsyncClient` fixture, skips with a reason when no server is reachable); `backend/tests/integration/__init__.py`; `backend/tests/integration/test_db_connectivity.py` (4 tests marked `db`).
+- **Files modified:** `backend/requirements.txt` (direct dependencies pinned to versions that installed on Python 3.11.18 in Docker; `psycopg2-binary` and `python-jose` deliberately left unpinned/unchanged by approval); `backend/pytest.ini` (`asyncio_default_fixture_loop_scope`, `asyncio_default_test_loop_scope`, `db` marker); `.github/workflows/ci.yml` (PostGIS 15-3.4 service, CI-only throwaway credentials, `pytest -q -rs`); `scripts/dev.sh` (`test` runs `docker compose run --rm api pytest -q`); `backend/tests/api/test_health.py` (uses the shared async `client` fixture; same two behaviours, plus `database` is `ok` or `down`). `STATUS.md` updated. No file under `fyp-dispatch/` was changed. Besides the files listed above, the accompanying documentation files named in the "Also on this branch" bullet were modified, and the two SRS/SDS `.docx` files were renamed (commit `2a9356c`); no other application code, dependency or configuration file changed.
+- **Deferred:** factories for users/vehicles/incidents. The tables do not exist yet; they will be added with the model tasks (B1-A1-07…11).
+- **DB / API impact:** none to the application database or the API. Created a separate `dispatch_test` database on the local compose PostgreSQL server (it persists in the `pgdata` volume).
+- **Pinned direct packages:** fastapi 0.165.0, uvicorn[standard] 0.54.0, pydantic 2.14.4, pydantic-settings 2.16.3, sqlalchemy[asyncio] 2.1.9, asyncpg 0.32.0, geoalchemy2 0.21.0, alembic 1.20.1, bcrypt 5.0.0, python-multipart 0.0.34, httpx 0.28.1, pytest 9.2.0, pytest-asyncio 1.5.0.
+- **Tests executed and results:**
+  - `docker compose build api` (twice: unpinned, then pinned) → succeeded, exit 0.
+  - `docker compose run --rm api pytest -q -rs` (Python 3.11.18, PostGIS container) → **6 passed**.
+  - Local venv (Python 3.14), `DATABASE_URL` pointed at the compose PostgreSQL on localhost → **6 passed**.
+  - Local venv with an unreachable database → **2 passed, 4 skipped**, skip reasons displayed.
+  - **Not verified:** the GitHub Actions workflow (not run), `scripts/dev.sh test` itself (its command was run directly instead), a clean-machine build.
+- **Known limitations:** The harness tests only itself and `/health`; no product feature is tested yet. The first build is slow (several minutes). The local run on Python 3.14 is not evidence for Python 3.11. Existing code still has the unprefixed `/reports` stub that returns a fake ID (fixed later by B1-A1-16).
+

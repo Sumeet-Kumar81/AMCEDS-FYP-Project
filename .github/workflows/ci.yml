@@ -7,9 +7,25 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: backend } }
+    services:
+      postgres:
+        image: postgis/postgis:15-3.4
+        env:
+          POSTGRES_USER: dispatch
+          POSTGRES_PASSWORD: ci_only_password
+          POSTGRES_DB: dispatch
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U dispatch -d dispatch"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # CI-only throwaway credentials for the service container above (not a real secret).
+      DATABASE_URL: postgresql+asyncpg://dispatch:ci_only_password@localhost:5432/dispatch
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
       - run: pip install -r requirements.txt
-      - run: pytest -q
+      - run: pytest -q -rs

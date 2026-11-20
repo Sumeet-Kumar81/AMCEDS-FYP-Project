@@ -1,7 +1,7 @@
 # AGENT_RULES.md
 
 Rules for every development agent (AI or human) working on this repository. They apply in every
-batch. If a rule here conflicts with SRS/SDS v1.0, the SRS/SDS win and the conflict is logged in
+batch. If a rule here conflicts with SRS/SDS v1.1, the SRS/SDS win and the conflict is logged in
 DECISIONS_LOG.md.
 
 ## 1. Start of every session

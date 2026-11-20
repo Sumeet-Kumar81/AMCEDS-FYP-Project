@@ -41,9 +41,10 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Status:** OPEN – needs approval (deletion requires explicit approval).
 
 ### D-001b — SRS/SDS not in the repository
-- **Problem:** README says "Source of truth: `docs/srs-sds/`" but that folder holds only `.gitkeep`. The documents exist in the Claude Project only.
-- **Recommendation:** commit the **v1.1** SRS and SDS (A-008) to `docs/srs-sds/`, replacing the Oct drafts in `docs/Requriments/`.
-- **Status:** OPEN – team action.
+- **Problem:** README says "Source of truth: `docs/srs-sds/`" but that folder held only `.gitkeep`; the documents existed only in the Claude Project (and, earlier, as the superseded October drafts in `docs/Requriments/`).
+- **Recommendation:** commit the **v1.1** SRS and SDS (A-008) to `docs/srs-sds/`.
+- **Current state (2026-11-20):** `SRS_v1.1_clean.docx` and `SDS_v1.1_clean.docx` are committed in `docs/srs-sds/` on branch `feat/test-harness` (commit `2a9356c`, a rename from `docs/SRS-SDS/`, content unchanged). The October drafts and `docs/Requriments/` are no longer on `main`. The tracked-changes copies are not in the repository.
+- **Status:** Documentation/state resolved on `feat/test-harness` only (the files and the `docs/srs-sds/` path are in that branch's commits); exists on the local branch only (not on `origin`, no open PR) and reaches `main` only after the branch is pushed, a PR is opened and merged. **Formal team approval of this path decision, if required, is still pending** — this entry does not record any team approval.
 
 ### D-002 — Mobile application framework (citizen + driver)
 - **Problem:** SRS SW-9 leaves it open ("React Native or Flutter; final choice in design"). SDS Table 4.1 still says "React Native or Flutter (Android)". Project instructions say React Native. The repo README/frontend README plan a **PWA** (`frontend/pwa`) for citizen and driver.
