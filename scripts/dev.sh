@@ -4,6 +4,6 @@ case "$1" in
   up)   docker compose up -d postgres && docker compose up --build api ;;
   down) docker compose down ;;
   logs) docker compose logs -f api ;;
-  test) (cd backend && pytest -q) ;;
+  test) docker compose run --rm api pytest -q ;;
   *)    echo "usage: $0 up|down|logs|test" ;;
 esac
