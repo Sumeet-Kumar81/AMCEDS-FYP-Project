@@ -18,19 +18,14 @@ Status values: `OPEN – needs approval` · `APPROVED` · `REJECTED` · `SUPERSE
 | A-004 | One standard Incident Record shared by every channel and agent | SRS §3.3 Table 3.4, SDS §4.4 | APPROVED (by SDS) |
 | A-005 | Three AI agents only: Triage, Coordination, Resource Allocation. Trust scoring is part of Triage (SDS Table 6.3), not a fourth agent | SRS §4.1, SDS Table 6.3 | APPROVED (by SDS) |
 | A-006 | Batch 1 is split into exactly three development agents (Backend & DB, AI, Frontend/Mobile/UX) | User planning instruction 2026-11-19 | APPROVED (by instruction) |
-<<<<<<< HEAD
-=======
 | A-007 | Team roles (team slide "Team Roles & Responsibilities", slide 4, provided by the team 2026-11-19): **Arjun Kumar** = AI & Backend development (backend architecture and API, AI agents and emergency triage, resource allocation and intelligent routing); **Khalid Hussain** = Frontend & UI/UX development (UI/UX and dashboard design, frontend and incident visualisation, emergency alerts and dispatcher interfaces); **Sumeet Kumar** = Database & technical support (database design and implementation, dataset preparation and preprocessing, testing, documentation and deployment support). Supersedes the ownership table in `README.md` (which lists Sumeet = frontend, Khalid = DB). | Team slide 2026-11-19 | APPROVED (by team) — the task-level split is D-027b |
 | A-008 | Authoritative documents are the Nov 5 SRS (rev 82) and Nov 14 SDS (rev 72) (files `23F-88_SRS.docx`, `23F-88_SDS.docx`), now revised to **SRS v1.1 and SDS v1.1** (2026-11-20). The Oct drafts in the repository (`docs/Requriments/`) are superseded. | D-030, team 2026-11-20 | APPROVED (by team) |
 | A-009 | Decisions D-002, D-004, D-005, D-006, D-010, D-011, D-012 and D-020 approved as recommended and written into SRS/SDS v1.1 (details in each entry below) | Team 2026-11-20 | APPROVED (by team) |
->>>>>>> project_plan0.3
 
 ---
 
 ## 2. Open decisions (need approval before the tasks that depend on them)
 
-<<<<<<< HEAD
-=======
 Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here for their reasoning.
 
 ### D-030 — Which SRS/SDS revision is authoritative
@@ -38,7 +33,6 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Decision:** The Nov revisions, revised to v1.1 on 2026-11-20, are authoritative. PR #3 must carry these files, not the Oct drafts. Code comments citing the Oct draft are fixed as each file is implemented (see D-003).
 - **Status:** APPROVED 2026-11-20 (A-008).
 
->>>>>>> project_plan0.3
 ### D-001 — Duplicate `fyp-dispatch/` directory
 - **Problem:** `fyp-dispatch/` is a byte-identical copy of the whole repository (checked with `diff -rq`, no differences). Two copies will drift and confuse agents.
 - **Options:** (a) delete `fyp-dispatch/` and keep the root as canonical; (b) keep both; (c) move everything into `fyp-dispatch/`.
@@ -48,11 +42,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 
 ### D-001b — SRS/SDS not in the repository
 - **Problem:** README says "Source of truth: `docs/srs-sds/`" but that folder holds only `.gitkeep`. The documents exist in the Claude Project only.
-<<<<<<< HEAD
-- **Recommendation:** commit `SRS_AI_Emergency_Dispatch_System.docx` and `SDS_AI_Emergency_Dispatch_System.docx` (v1.0) to `docs/srs-sds/`.
-=======
 - **Recommendation:** commit the **v1.1** SRS and SDS (A-008) to `docs/srs-sds/`, replacing the Oct drafts in `docs/Requriments/`.
->>>>>>> project_plan0.3
 - **Status:** OPEN – team action.
 
 ### D-002 — Mobile application framework (citizen + driver)
@@ -61,21 +51,13 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Trade-offs:** UC-08/09 need reliable GPS every 5 s on duty, sound alerts, FCM push, offline queue (CI-7) and geofencing. Background GPS and FCM are reliable in React Native and weak in a PWA on Android. A PWA is faster to build and shares React code.
 - **Recommendation:** (a) React Native, in a new top-level `mobile/` folder; keep `frontend/pwa` only for the **public web report page** (renamed `frontend/public-report` if approved). Sub-decision: Expo with development build (simpler tooling, supports background location and FCM) vs bare React Native.
 - **Impact:** decides the B1-A3-12…17 file paths; adds a Node/Android toolchain.
-<<<<<<< HEAD
-- **Status:** OPEN – needs approval.
-=======
 - **Status:** APPROVED 2026-11-20 — option (a). Written into SRS v1.1 SW-9 and SDS v1.1 Table 4.1 / Table 4.2. Still open: Expo vs bare React Native; renaming `frontend/pwa`.
->>>>>>> project_plan0.3
 
 ### D-003 — Code comments reference a design that is not SDS v1.0
 - **Problem:** Scaffold comments cite "SDS Table 3.4", "SDS Table 3.2", "SDS Table 3.10 (WS events)", "SDS 3.2 LLM Gateway", tables `incident_record`, `ai_result`, `system_setting`, column `pipeline_state`. SDS v1.0 has no such tables/sections: its tables are `callers, incidents, incident_groups, users, vehicles, vehicle_locations, recommendations, assignments, hospitals, audit_logs, settings` (SDS §5.2), and business rules are in SRS Appendix C (Tables 7.3.1–7.3.4).
 - **Question to team:** is there a newer SDS revision? If not, SDS v1.0 governs.
 - **Recommendation:** treat SDS v1.0 as authoritative; fix the comments as each file is implemented (no separate cleanup task).
-<<<<<<< HEAD
-- **Status:** OPEN – needs confirmation.
-=======
 - **Status:** Answered by D-030: the comments follow the superseded Oct draft. SDS v1.1 governs; comments are fixed as each file is implemented.
->>>>>>> project_plan0.3
 
 ### D-004 — Schema additions needed beyond SDS §5.2
 - **Problem:** SDS §5.2 cannot satisfy several SRS requirements on its own:
@@ -105,11 +87,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Options:** (a) add the columns/tables above (recommended); (b) put everything into JSON fields of SDS tables; (c) add separate tables for every concept (ai_results, trust_assessments, review_items…).
 - **Recommendation:** (a). It keeps SDS tables and names, adds two small tables, and keeps the review queue as a *query* (`status = 'needs_check'` or open review reasons) rather than a separate table.
 - **Impact:** B1-A1-04…08 models and first migration. The SDS should get a v1.1 note.
-<<<<<<< HEAD
-- **Status:** OPEN – needs approval. **Blocks B1-A1-05 onward.**
-=======
 - **Status:** APPROVED 2026-11-20 — option (a), the full list. Written into SDS v1.1 §5 (extra columns in Tables 5.1, 5.2, 5.4, 5.7, 5.8, 5.10; new Tables 5.12 `duplicate_candidates`, 5.13 `confirmation_requests`, 5.14 `user_sessions`, 5.15 `worker_heartbeats`; partial unique index note under Table 5.8). Implementation is still staged: the Milestone 1 columns first, the rest in their own Alembic migration with the task that needs them. SDS Figures 2.2 and 5.1 still need redrawing to show the additions.
->>>>>>> project_plan0.3
 
 ### D-005 — Status vocabularies
 - **Problem:** SRS/SDS use phrases ("needs check", "needs more information", "on scene"). Code needs fixed enum values.
@@ -119,29 +97,18 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
   - `assignments.status`: `approved, accepted, declined, timed_out, completed` (SDS) + `cancelled` (vehicle freed by dispatcher).
   - `channel`: `voice, sms, web, app` (SDS §5.2; the existing schema uses `mobile` — rename to `app`).
   - `incident_type`: `accident, fire, medical, other`; `severity`: `low, medium, high, critical`; `vehicle_type`: `ambulance, fire_truck, backup`; `trust_tier`: `high, medium, low`; `location_source`: `gps, text, unknown`.
-<<<<<<< HEAD
-- **Status:** OPEN – needs approval (contract C-1).
-=======
 - **Status:** APPROVED 2026-11-20 — values as listed, stored as text with CHECK constraints (not native PostgreSQL enums). Written into SDS v1.1 §5 and Tables 5.2, 5.5, 5.8, and SRS v1.1 Table 3.4 / §7.2 / UC-02 2a. `pipeline_state` values: `pending, processing, done, failed, reallocate`.
->>>>>>> project_plan0.3
 
 ### D-006 — API endpoint design (SDS has none)
 - **Problem:** Project instructions say "follow the SDS endpoint design", but SDS v1.0 contains no endpoint list.
 - **Recommendation:** Agent 1 publishes `docs/API_CONTRACT.md` (endpoint list in IMPLEMENTATION_PLAN §4.3) in Phase 1A, the team approves it, and FastAPI's `/openapi.json` becomes the machine-readable contract. Prefix all routes with `/api/v1` (the existing `/reports` and `/health` move under it; the two existing tests are updated in the same task).
-<<<<<<< HEAD
-- **Status:** OPEN – needs approval (contract C-4).
-=======
 - **Status:** APPROVED 2026-11-20 — endpoint list and WebSocket events written into SDS v1.1 §4.6 (Tables 4.3 and 4.4), all under `/api/v1` except an unprefixed `GET /health` for the Docker healthcheck; unbuilt endpoints return 501, never fake data. `docs/API_CONTRACT.md` (request/response bodies) is still to be written in B1-A1-04.
->>>>>>> project_plan0.3
 
 ### D-007 — Duplicate match-confidence formula and text similarity
 - **Problem:** SRS gives thresholds (≥ 85 / 60–84 / < 60) and gates (same type, 300 m, 15 min) but no formula. The scaffold comment proposes `100 × (0.40·S_dist + 0.20·S_time + 0.40·S_meaning)` and sentence-transformers. SDS says "Rules + text similarity".
 - **Options for S_meaning:** (a) multilingual sentence-transformer (new dependency, model download, better on Urdu/Roman-Urdu); (b) TF-IDF/character n-gram cosine (light, weaker); (c) LLM similarity call (slow, costs a model call per pair).
 - **Recommendation:** weights as proposed, all configurable in `settings`; S_dist = 1 − d/300 m, S_time = 1 − Δt/15 min; S_meaning by (a) if the dependency is approved, otherwise (b). Tune with `db/eval_data/duplicate_groups.jsonl` against NFR-P9 (≥ 80 % found, ≤ 5 % wrong merges).
-<<<<<<< HEAD
-=======
 - **Amendment (2026-11-20, see D-033):** the linear S_dist/S_time above cannot reach 85 at TC-13 (a perfect text match 100 m and 5 min away scores 80). Quadratic decay is proposed in D-033.
->>>>>>> project_plan0.3
 - **Status:** OPEN – needs approval (dependency).
 
 ### D-008 — Language model provider
@@ -158,29 +125,17 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Problem:** The worker is a separate process; the WebSocket hub lives in the API process.
 - **Options:** (a) DB polling with `SELECT … FOR UPDATE SKIP LOCKED` on `incidents.pipeline_state`; events via Postgres `LISTEN/NOTIFY` consumed by the API; (b) Redis queue/pub-sub (new service, not in SDS); (c) worker calls an internal API endpoint.
 - **Recommendation:** (a). No new infrastructure, survives worker crashes (state stays in DB), and NOTIFY payloads stay small (event name + incident id; the API re-reads the row). Add NOTIFY on insert so pick-up is immediate (needed for NFR-P1 10 s).
-<<<<<<< HEAD
-- **Status:** OPEN – needs approval (contract C-5).
-=======
 - **Status:** APPROVED 2026-11-20 — option (a). Written into SDS v1.1 §3.1, §4.3, §4.6 and Table 4.2. Build order: polling first (about 1 s), LISTEN/NOTIFY added for speed and events.
->>>>>>> project_plan0.3
 
 ### D-011 — Where intake/speech-to-text runs (SDS §4.5 vs §3.1)
 - **Problem:** SDS §4.5 puts the "Intake and Fusion service" inside the `ai-engine` container, while §3.1 and NFR-P12 require the Incident Record to be saved before any AI step and the caller to get a reference number immediately.
 - **Recommendation:** API `IntakeService` saves the raw record (text or audio file reference, GPS or address text, channel, caller) and returns the reference at once. The worker then does speech-to-text and geocoding as the first graph nodes. The SDS layering is kept and the safety rule is met.
-<<<<<<< HEAD
-- **Status:** OPEN – needs approval.
-=======
 - **Status:** APPROVED 2026-11-20 — as recommended. Written into SRS v1.1 UC-01 step 5 and SDS v1.1 §3.1, §4.1, §4.3, §4.5 (container renamed `ai-worker`), Tables 4.1, 4.2 and 6.3. SDS Figures 3.1, 4.1 and 6.3 still show the old placement and need redrawing.
->>>>>>> project_plan0.3
 
 ### D-012 — Trust scoring placement and inputs
 - **Problem:** SDS Table 6.3 gives trust to TriageAgent. The scaffold has a separate `agents/trust.py` "plain Python, not LLM".
 - **Recommendation:** `TrustScorer` is a deterministic module inside the Triage step (not an agent and not an LLM decision). The "real details" and "vague/joking" signals come from triage output flags. "Independent nearby reports" means distinct callers/devices of the same type within the duplicate distance and window. Low LLM confidence alone never lowers trust or marks a report fake.
-<<<<<<< HEAD
-- **Status:** OPEN – needs approval.
-=======
 - **Status:** APPROVED 2026-11-20 — as recommended. Written into SRS v1.1 UC-03 actors and Glossary, and SDS v1.1 §1.2, §3.1, §3.3, §4.3, Tables 4.1, 4.2 and 6.3 (new `TrustScorer` class row). SDS Figure 6.3 still needs the class added.
->>>>>>> project_plan0.3
 
 ### D-013 — Driver notifications (FCM)
 - **Problem:** SRS depends on FCM, which needs a Firebase project and `google-services.json`. NFR-P5 requires 5 s.
@@ -190,11 +145,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-014 — SMS and voice channel simulation
 - **Problem:** Real 1122 line and SMS gateway are out of scope (SRS §1.5).
 - **Recommendation:** `POST /api/v1/intake/sms` and `POST /api/v1/intake/voice` simulator webhooks protected by a shared secret, driven by `db/simulators/sms_simulator.py` and a small "Channel Simulator" developer page in the dashboard, labelled SIMULATED everywhere.
-<<<<<<< HEAD
-- **Status:** OPEN – needs approval.
-=======
 - **Status:** OPEN – needs approval. (The two endpoints are listed in SDS v1.1 Table 4.3.)
->>>>>>> project_plan0.3
 
 ### D-015 — Web frontend structure and test runner
 - **Problem:** Repo plans two Vite apps with React + TypeScript + Tailwind + Leaflet. SDS specifies React and Leaflet/MapLibre; TypeScript and Tailwind are not mentioned. SDS §8.1 names Jest; Vite projects usually use Vitest.
@@ -218,20 +169,13 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-019 — Vehicle rules not fully specified
 - **Problem:** Meaning of "backup vehicle"; accident without injuries; "Other: 1 vehicle chosen by the dispatcher".
 - **Recommendation:** `backup` is the SDS vehicle type `backup`; accident with 0 victims → 1 ambulance with "dispatcher check" flag; `other` → no automatic type, show all available vehicles nearest-first and require dispatcher choice.
-<<<<<<< HEAD
-=======
 - **Extensions (2026-11-20, from the blueprint, U-3/U-4):** (1) unknown victim count = 1 vehicle **per required type** plus a dispatcher-check flag (a fire needs a truck and an ambulance even when the count is unknown); (2) "+ 2 spare" means 2 spare vehicles in total, the best remaining vehicles of the needed types, not 2 per type.
->>>>>>> project_plan0.3
 - **Status:** OPEN – needs approval.
 
 ### D-020 — UC-04 alternate 5a wording conflict
 - **Problem:** UC-04 5a text is garbled (mentions sending an extra vehicle). TC-15 and NFR-S4 say an unanswered medium-confidence match keeps reports **apart**.
 - **Recommendation:** follow TC-15/NFR-S4: keep separate; each report is dispatchable on its own.
-<<<<<<< HEAD
-- **Status:** OPEN – needs confirmation.
-=======
 - **Status:** APPROVED 2026-11-20 — SRS v1.1 UC-04 5a now says the reports stay separate and each can be dispatched on its own.
->>>>>>> project_plan0.3
 
 ### D-021 — Allocation for low-trust, low/medium-severity reports
 - **Problem:** UC-07 step 3 says "Real → goes on to UC-05", implying no recommendation before review. Running allocation anyway costs nothing and never locks vehicles.
@@ -246,11 +190,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-023 — Session design (idle timeout, logout, driver exemption)
 - **Problem:** NFR-C4 30 min idle logout; UC-11 1b drivers with an active assignment stay signed in; logout must end the session. Stateless JWT alone cannot do idle timeout or revocation.
 - **Recommendation:** short-lived JWT access token (15 min) carrying a session id `jti`; `user_sessions` row updated on each request (`last_activity_at`); refresh endpoint rejects sessions idle > 30 min unless the user is a driver with an open assignment; logout sets `revoked_at`.
-<<<<<<< HEAD
-- **Status:** OPEN – needs approval.
-=======
 - **Status:** OPEN – needs approval. (The `user_sessions` table itself is in SDS v1.1 Table 5.14 under D-004.)
->>>>>>> project_plan0.3
 
 ### D-024 — HTTPS in the local prototype
 - **Problem:** NFR-C3/TC-49 require TLS. Android apps reject self-signed certificates by default.
@@ -268,11 +208,6 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Status:** OPEN – needs approval.
 
 ### D-027 — Mapping of development agents to team members
-<<<<<<< HEAD
-- **Problem:** README ownership: backend/app (incl. agents) = Arjun, frontend = Sumeet, db/migrations/infra = Khalid.
-- **Suggestion:** Agent 1 ↔ Khalid (DB) + Arjun (API services); Agent 2 ↔ Arjun; Agent 3 ↔ Sumeet. Team to confirm; README ownership table to be updated after approval.
-- **Status:** OPEN – team.
-=======
 - **Resolved by A-007** (team slide). Original problem: README ownership (backend/app = Arjun, frontend = Sumeet, db/migrations/infra = Khalid) contradicted the roles the team now states.
 - **Status:** RESOLVED (roles). The task-level split and README update are tracked in D-027b.
 
@@ -292,7 +227,6 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Workload risk:** Arjun would carry about 36 of 70 Batch 1 tasks (all AI plus the API). Khalid carries 19 (including mobile), Sumeet about 14 plus data, testing, docs and deployment. Options: (a) accept; (b) move more DB-adjacent API work (for example B1-A1-20, 22, 23) to Sumeet; (c) move simple driver-facing endpoints to Khalid after contracts are frozen. Recommendation: (a) for now, review after Phase 1B.
 - **README:** `README.md` "Ownership" table still shows the old assignment (Sumeet = frontend, Khalid = DB). It must be changed in a PR after approval; it was not edited in this planning session.
 - **Status:** OPEN – team to confirm.
->>>>>>> project_plan0.3
 
 ### D-028 — Public OSM tile usage
 - **Problem:** The public OSM tile server has a usage policy and needs internet; UC-08 3a needs a stored map area.
@@ -304,8 +238,6 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Recommendation:** single asyncio background loop started in the API lifespan (`services/scheduler.py`), every 5 s, using DB timestamps (restart-safe). Assumes one API instance (true for the prototype).
 - **Status:** OPEN – needs approval.
 
-<<<<<<< HEAD
-=======
 ### D-031 — Mapping of the master-prompt table list to the approved SDS schema
 - **Problem:** The blueprint prompt names tables (roles and permissions, drivers, trust scores, AI processing results, dispatcher decisions, incident status history) that the approved SDS v1.1 stores differently. Building both would duplicate data.
 - **Options:** (a) keep the SDS schema and map each name to where the data lives; (b) add the extra tables.
@@ -335,7 +267,6 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Recommendation:** run the Trust Scorer on its non-LLM signals (caller history, GPS distance, nearby independent reports, flood flag), show the tier with an "AI unavailable" note, and never mark the report fake because of the failure.
 - **Status:** OPEN – needs approval (week 4).
 
->>>>>>> project_plan0.3
 ---
 
 ## 3. Shared contracts (owner, consumers, version)
@@ -344,19 +275,11 @@ Agreement order (Phase 1A of Batch 1): C-1 → C-2 → C-3 → C-4 → C-5 → C
 
 | ID | Contract | Owner | Consumers | Location (planned) | Version / status |
 |---|---|---|---|---|---|
-<<<<<<< HEAD
-| C-1 | Enums + Incident Record read schema (`IncidentOut`, `IncidentDetailOut`) | Agent 1 | A2, A3 | `backend/app/schemas/enums.py`, `schemas/incident.py` | v0 draft — depends on D-004, D-005 |
-| C-2 | AI result schemas: `TriageResult`, `TrustAssessment`, `DuplicateCandidateResult`, `AllocationResult`, `VehicleRecommendation` | Agent 2 | A1 (stores), A3 (displays) | `backend/app/schemas/ai.py` | v0 draft |
-| C-3 | Auth: login request/response, token claims, `/me` user shape, role names | Agent 1 | A3 | `schemas/auth.py` | v0 draft — depends on D-023 |
-| C-4 | REST endpoint list and request/response bodies | Agent 1 | A3, A2 (reallocation/routing proxy) | `docs/API_CONTRACT.md` + `/openapi.json` | v0 draft — depends on D-006 |
-| C-5 | WebSocket event envelope and event names; NOTIFY payloads from worker | Agent 1 (A2 emits via NOTIFY) | A3, A2 | `schemas/events.py`, `docs/API_CONTRACT.md §WS` | v0 draft — depends on D-010 |
-=======
 | C-1 | Enums + Incident Record read schema (`IncidentOut`, `IncidentDetailOut`) | Agent 1 | A2, A3 | `backend/app/schemas/enums.py`, `schemas/incident.py` | v0 draft — D-004, D-005 approved (SDS v1.1); ready to write |
 | C-2 | AI result schemas: `TriageResult`, `TrustAssessment`, `DuplicateCandidateResult`, `AllocationResult`, `VehicleRecommendation` | Agent 2 | A1 (stores), A3 (displays) | `backend/app/schemas/ai.py` | v0 draft |
 | C-3 | Auth: login request/response, token claims, `/me` user shape, role names | Agent 1 | A3 | `schemas/auth.py` | v0 draft — depends on D-023 |
 | C-4 | REST endpoint list and request/response bodies | Agent 1 | A3, A2 (reallocation/routing proxy) | `docs/API_CONTRACT.md` + `/openapi.json` | endpoint list approved (SDS v1.1 Table 4.3); bodies still to write |
 | C-5 | WebSocket event envelope and event names; NOTIFY payloads from worker | Agent 1 (A2 emits via NOTIFY) | A3, A2 | `schemas/events.py`, `docs/API_CONTRACT.md §WS` | event names approved (SDS v1.1 Table 4.4) |
->>>>>>> project_plan0.3
 | C-6 | Pipeline persistence interface (claim job, save stage results, mark failed, candidate queries) | Agent 1 | A2 | `backend/app/services/pipeline_store.py` | v0 draft |
 | C-7 | Driver assignment payload + trip status transitions | Agent 1 | A3 | `schemas/assignment.py` | v0 draft |
 
@@ -375,9 +298,6 @@ _None yet._
 | Date | Entry | Change |
 |---|---|---|
 | 2026-11-19 | A-001…A-006, D-001…D-029, C-1…C-7 | Created during planning (documentation only; nothing approved by this session) |
-<<<<<<< HEAD
-=======
 | 2026-11-19 | A-007, D-027 (resolved), D-027b (new) | Team roles from the team slide recorded; task-level split proposed |
 | 2026-11-20 | A-008, A-009, D-030 (new, approved); D-002, D-004, D-005, D-006, D-010, D-011, D-012, D-020 approved; D-003 answered | Team chose the Nov SRS/SDS and approved the recommendations; all written into SRS/SDS v1.1 |
 | 2026-11-20 | D-031…D-035 (new, open); D-019 extended; D-007 amended note | Added by the implementation blueprint (`docs/blueprint/`); nothing approved by this session |
->>>>>>> project_plan0.3

@@ -24,8 +24,6 @@ Entry format: date · task ID · purpose · files · what changed · why · DB/A
 - **Tests executed:** `cd backend && python3 -m pytest -q` → **blocked**: `ModuleNotFoundError: No module named 'fastapi'` (audit environment had no project dependencies and package installation was disabled). 0 tests executed.
 - **Other checks:** `diff -rq --exclude=fyp-dispatch --exclude=.git . fyp-dispatch` → no differences (duplicate tree confirmed).
 - **Known limitations:** The plan is a draft pending team/supervisor approval. Endpoint list, schema additions and several rules are proposals recorded as open decisions, not approved requirements. CI run history was not inspected.
-<<<<<<< HEAD
-=======
 
 ---
 
@@ -74,4 +72,3 @@ Entry format: date · task ID · purpose · files · what changed · why · DB/A
   - `python3 docs/blueprint/tools/schedule_check.py` → 0 dependency violations, all 70 Batch-1 tasks scheduled (Arjun 23, Khalid 19, Sumeet 28).
   - **Not executed / not verified:** LangGraph wiring (no install possible), library versions and availability, hardware memory estimates, and the two existing backend tests (still blocked: no FastAPI in the environment).
 - **Known limitations:** The blueprint is a proposal pending team approval. D-031…D-035 and earlier open decisions are not approved. Effort estimates in the roadmap are judgement. SDS figures still show the old design (see DOC-01). `IMPLEMENTATION_PLAN.md` itself still reads v0.2 and cites v1.0 sources; the v0.3 update file lists what changes until it is merged into the plan.
->>>>>>> project_plan0.3
