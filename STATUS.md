@@ -64,7 +64,8 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 3. Code comments reference tables/sections that are not in SDS v1.0 (`incident_record`, `ai_result`, `system_setting`, `pipeline_state`, "SDS Table 3.4/3.2/3.10") (D-003).
 4. README and `frontend/README.md` plan a driver **PWA**; project instructions say React Native; SDS says React Native or Flutter (D-002).
 5. `POST /reports` stub returns a fake reference number without saving. This is unsafe if demonstrated (NFR-P12) and is fixed by B1-A1-16.
-6. SDS v1.0 has no API endpoint list (D-006) and its schema lacks fields several SRS requirements need (D-004).
+6. `README.md` "Ownership" table is outdated: it lists Sumeet = frontend and Khalid = database, but the team slide says Arjun = AI & backend, Khalid = frontend & UI/UX, Sumeet = database & technical support (A-007). README not edited yet (D-027b).
+7. SDS v1.0 has no API endpoint list (D-006) and its schema lacks fields several SRS requirements need (D-004).
 
 ## 5. Task status (IMPLEMENTATION_PLAN.md)
 

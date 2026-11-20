@@ -25,6 +25,20 @@ DECISIONS_LOG.md.
 | **Agent 3 — Frontend, Mobile & UX** | `frontend/**`, `mobile/**` (proposed, D-002), `docs/user-guides/` |
 | **Shared (change by request only)** | `backend/requirements.txt`, `docker-compose.yml`, `.env.example`, `.github/`, `README.md`, root planning docs |
 
+### 3.1 Who does the work (team slide, DECISIONS_LOG A-007; task split D-027b pending confirmation)
+
+| Person | Role | Workstreams |
+|---|---|---|
+| **Arjun Kumar** | AI & Backend development | Agent 2 (all) + Agent 1 API/services/contracts |
+| **Khalid Hussain** | Frontend & UI/UX development | Agent 3 (web, dashboard, alerts, dispatcher interfaces; Android app pending confirmation) |
+| **Sumeet Kumar** | Database & technical support | Agent 1 database (models, migrations, seed, SQL), datasets, testing, documentation, deployment support |
+
+Two people may work inside the *Agent 1* area (Arjun on API/services, Sumeet on database). They do not
+edit the same files at the same time: Sumeet owns `backend/app/models/`, `backend/migrations/`,
+`db/`, `backend/tests/conftest.py`, `.github/`; Arjun owns `backend/app/{api,services,ws,core,schemas}`
+and `main.py`, except that Sumeet writes the services named in D-027b (settings, audit, pipeline
+persistence, admin, analytics).
+
 Changing a file you do not own: write a **Coordination Request** (CR-xxx) in DECISIONS_LOG.md §4,
 get the owner's agreement, then the owner (or you, with agreement) makes the change.
 
