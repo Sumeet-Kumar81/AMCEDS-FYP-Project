@@ -1,0 +1,46 @@
+# AI_HANDOFF.md
+
+How the next session, development agent or team member continues the work.
+
+## 1. Where things stand (2026-11-20)
+- SRS and SDS were revised to **v1.1** (DOC-01). The implementation **blueprint** (`docs/blueprint/`, start with `00_START_HERE.md`) is written (BP-01). Plan v0.2 plus `IMPLEMENTATION_PLAN_UPDATE_v0.3.md` is **waiting for approval**. No implementation has started.
+- The repository is a scaffold at commit `a0cba20`. Nothing in the application is verified: the two existing tests could not run in the audit environment (see STATUS.md §2).
+- Open decisions are in DECISIONS_LOG.md §2. Approved on 2026-11-20: D-002, D-004, D-005, D-006, D-010, D-011, D-012, D-020, D-030. Newly proposed by the blueprint: **D-031…D-035** (and the D-019 extensions).
+- The code in `docs/blueprint/code_sketches/` is **design sketch code with 46 tests**, not product code. Reuse the logic when writing the real agents, but follow the task files and ownership rules, not the sketch layout.
+
+## 2. Read before doing anything
+1. PROJECT_CONTEXT.md → AGENT_RULES.md → IMPLEMENTATION_PLAN.md + IMPLEMENTATION_PLAN_UPDATE_v0.3.md → STATUS.md → last entries of CHANGES.md → DECISIONS_LOG.md.
+2. SRS v1.1 and SDS v1.1 (clean .docx; Claude Project docs; to be committed to `docs/srs-sds/`, D-001b). Read the sections named in your task.
+3. The blueprint file for your area: database `04`, backend `05`, AI `06`, web `07`, mobile `08`, integration `09`, testing `10`, schedule `11`.
+4. `git status`, `git log -5`; confirm STATUS.md matches the code.
+
+## 3. Who is who
+Team roles (team slide, A-007): **Arjun Kumar** = AI & backend; **Khalid Hussain** = frontend & UI/UX; **Sumeet Kumar** = database & technical support. Task-level split: D-027b (original) and D-034 (proposed rebalance, 23 / 19 / 28 of 70 Batch-1 tasks; weekly table in `11_ROADMAP_9_MONTHS.md`). Both are pending confirmation. The README ownership table is outdated.
+
+## 3a. If you are one of the three Batch 1 agents
+
+| You are | Start with | Your files | You must not touch |
+|---|---|---|---|
+| **Agent 1 Backend & DB** | B1-A1-02 (test harness), then Phase 1A: B1-A1-03 → (A2's B1-A2-01) → B1-A1-04 → B1-A1-05 | api, core, models, schemas (not `ai.py`), services, ws, main.py, migrations, db/seed, db/sql, backend API/integration tests | agents, llm, workers, integrations, frontend, mobile |
+| **Agent 2 AI** | B1-A2-01 (after B1-A1-03), then B1-A2-02, 05, 06, 07, 10 | agents, llm, workers, integrations, `schemas/ai.py`, agent tests, ai_eval, db/eval_data, infra/osrm, infra/gazetteer | models, migrations, routes, services, frontend |
+| **Agent 3 Frontend/Mobile** | Review contracts; B1-A3-01, 02, 05; B1-A3-13 after the Android spike | frontend/**, mobile/**, docs/user-guides | anything under backend/ |
+
+Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github/`, `README.md`) change only through a Coordination Request in DECISIONS_LOG.md §4.
+
+## 4. Required checks for every task
+- Run the task's tests; record command and actual result in CHANGES.md (passed / failed / blocked / skipped / not executed).
+- Safety rules (PROJECT_CONTEXT §6) hold: save before processing, human approval, urgent never waits, careful merging, fake never dispatched, one open assignment per vehicle, lock only at approval, manual mode, audit everything.
+- No secrets in code, docs or logs. No new dependency without a D-entry.
+- Do not commit or push; present changed files, test results and a summary to the team.
+
+## 5. Known pitfalls
+- `fyp-dispatch/` duplicates the whole tree. Edit the **root** copies only.
+- Code comments in the repository cite names that are not in the SDS (D-003). Follow SDS v1.1 table names.
+- The existing `POST /reports` returns a fake reference without saving. Do not demo it before B1-A1-16.
+- `backend/pytest.ini` uses `asyncio_mode = auto`, which needs `pytest-asyncio`.
+- The audit and blueprint environments could not install packages; use Docker (`docker compose run --rm api pytest -q`) or CI for real results.
+- Do not use the linear duplicate formula from the first D-007 text; it cannot pass TC-13 (D-033).
+- LangGraph wiring in `06_AI_AGENTS.md` is **not verified**; build a one-node graph first.
+
+## 6. Next recommended action
+The team reads `docs/blueprint/00_START_HERE.md`, decides the week-1 items (D-001, D-001b, D-027b/D-034, D-031, D-032), approves or edits the plan, then authorises **B1-A1-02**. Stop and wait for that approval; do not start development on your own.
