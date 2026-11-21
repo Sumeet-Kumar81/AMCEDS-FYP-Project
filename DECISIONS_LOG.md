@@ -191,7 +191,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-023 — Session design (idle timeout, logout, driver exemption)
 - **Problem:** NFR-C4 30 min idle logout; UC-11 1b drivers with an active assignment stay signed in; logout must end the session. Stateless JWT alone cannot do idle timeout or revocation.
 - **Recommendation:** short-lived JWT access token (15 min) carrying a session id `jti`; `user_sessions` row updated on each request (`last_activity_at`); refresh endpoint rejects sessions idle > 30 min unless the user is a driver with an open assignment; logout sets `revoked_at`.
-- **Status:** OPEN – needs approval. (The `user_sessions` table itself is in SDS v1.1 Table 5.14 under D-004.)
+- **Status:** APPROVED 2026-11-21 by the project developer — as recommended (15-minute access token with `jti`; refresh refused after 30 min idle unless a driver has an open assignment; logout sets `revoked_at`). Written into contract C-3 (`backend/app/schemas/auth.py`). Note: `core/config.py` still has `jwt_expire_minutes = 30`; B1-A1-14 sets it to 15. (The `user_sessions` table itself is in SDS v1.1 Table 5.14 under D-004.)
 
 ### D-024 — HTTPS in the local prototype
 - **Problem:** NFR-C3/TC-49 require TLS. Android apps reject self-signed certificates by default.
@@ -278,8 +278,8 @@ Agreement order (Phase 1A of Batch 1): C-1 → C-2 → C-3 → C-4 → C-5 → C
 |---|---|---|---|---|---|
 | C-1 | Enums + Incident Record read schema (`IncidentSummaryOut`, `IncidentDetailOut`) | Agent 1 | A2, A3 | `backend/app/schemas/enums.py`, `schemas/incident.py` | v1.1 — v1 approved 2026-11-20; v1.1 (2026-11-21) adds optional `detail` to `TrustSignalOut` to match C-2 (backward compatible). Notes below |
 | C-2 | AI result schemas: `TriageResult`, `TrustAssessment`, `DuplicateCandidateResult`, `AllocationResult`, `VehicleRecommendation` | Agent 2 | A1 (stores), A3 (displays) | `backend/app/schemas/ai.py` | v1 — approved by the project developer (sole developer, acting as A1, A2 and A3), 2026-11-21. Notes below |
-| C-3 | Auth: login request/response, token claims, `/me` user shape, role names | Agent 1 | A3 | `schemas/auth.py` | v0 draft — depends on D-023 |
-| C-4 | REST endpoint list and request/response bodies | Agent 1 | A3, A2 (reallocation/routing proxy) | `docs/API_CONTRACT.md` + `/openapi.json` | endpoint list approved (SDS v1.1 Table 4.3); bodies still to write |
+| C-3 | Auth: login request/response, token claims, `/me` user shape, role names | Agent 1 | A3 | `schemas/auth.py` | v1 — approved by the project developer (sole developer), 2026-11-21; session design D-023 |
+| C-4 | REST endpoint list and request/response bodies | Agent 1 | A3, A2 (reallocation/routing proxy) | `docs/API_CONTRACT.md` + `/openapi.json` | v1 — approved by the project developer (sole developer), 2026-11-21: `docs/API_CONTRACT.md` + `/openapi.json`; 48 endpoints, 501 until built |
 | C-5 | WebSocket event envelope and event names; NOTIFY payloads from worker | Agent 1 (A2 emits via NOTIFY) | A3, A2 | `schemas/events.py`, `docs/API_CONTRACT.md §WS` | event names approved (SDS v1.1 Table 4.4) |
 | C-6 | Pipeline persistence interface (claim job, save stage results, mark failed, candidate queries) | Agent 1 | A2 | `backend/app/services/pipeline_store.py` | v0 draft |
 | C-7 | Driver assignment payload + trip status transitions | Agent 1 | A3 | `schemas/assignment.py` | v0 draft |
