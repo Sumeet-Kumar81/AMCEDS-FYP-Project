@@ -629,6 +629,7 @@ Failure at any stage → retry (bounded) → mark_stage_failed → incident need
 - **Acceptance:** tests pass offline. **Priority:** P0. **Output:** geocoder + gazetteer data.
 
 #### B1-A2-06 — TrustScorer (deterministic rules)
+- **Implementation status:** implemented on branch `feat/rule-agents` (not yet committed); current state in `STATUS.md`; details in CHANGES.md. `TrustScorer.assess(inputs, severity, settings)` returns the C-2 `TrustAssessment` including the Table 7.3.2 action; D-035 handled with an `ai_unavailable` reason. Not included: a points value for the caller-confirmation result, which is not in SRS Table 7.3.1. The original task text below is unchanged.
 - **Purpose / behaviour:** Compute the trust score and tier exactly per SRS Table 7.3.1 with a reason for every point, so likely fake reports are caught without AI guessing.
 - **Approach:** `agents/trust.py` `TrustScorer.score(inputs, settings) -> TrustAssessment`. Inputs: caller history (`real_count`, `fake_count`), `distance_to_gps_m`, independent nearby count (C-6 `count_independent_nearby`: distinct callers/devices, same type, within duplicate distance/window), `has_real_details`, `vague_or_joking`, device flood flag, confirmation result. Start 50; +15 real history; −30 per fake (floor −60); +15 GPS ≤ 500 m; −20 GPS > 2 km; +15 / +25 nearby; +10 details; −15 vague; −20 flood; clamp 0–100; tiers from settings. No history → neutral (UC-03 1a). Weights from `settings_snapshot`. Low LLM confidence is **not** an input.
 - **Traceability:** SRS UC-03 1–5, 1a, 6b, F3, Appendix C Table 7.3.1; SDS Table 6.3 (TriageAgent calculates trust); D-012; TC-09, TC-11.
@@ -638,6 +639,7 @@ Failure at any stage → retry (bounded) → mark_stage_failed → incident need
 - **Acceptance:** 100 % branch coverage of `trust.py`. **Priority:** P0. **Output:** TrustScorer.
 
 #### B1-A2-07 — Trust × severity action policy (urgent never waits)
+- **Implementation status:** implemented on branch `feat/rule-agents` (not yet committed); current state in `STATUS.md`; details in CHANGES.md. Unknown severity is treated as urgent (never held back). `allocate_now(action)` implements D-021. The original task text below is unchanged.
 - **Purpose / behaviour:** Decide what happens next from tier and severity exactly per Table 7.3.2, guaranteeing high/critical reports are never held.
 - **Approach:** Pure function `agents/policy.py` `decide_action(tier, severity) -> action` + `review_reasons`. High tier → continue. Medium → continue (+ confirmation request; at once for high/critical). Low + low/medium → `review_queue`. Low + high/critical → `urgent_with_warning` (incident stays in main queue, allocation runs, dispatch allowed). Missing/low-confidence flags from triage add review reasons but never block high/critical.
 - **Traceability:** SRS Table 7.3.2, UC-03 6/6a, NFR-S3; SDS §3.3; TC-10, TC-12.
@@ -671,6 +673,7 @@ Failure at any stage → retry (bounded) → mark_stage_failed → incident need
 - **Acceptance:** the README sample route returns from the local OSRM container (recorded). **Priority:** P0. **Output:** routing module + OSRM data recipe.
 
 #### B1-A2-11 — Resource Allocation Agent
+- **Implementation status:** implemented on branch `feat/rule-agents` (not yet committed); current state in `STATUS.md`; details in CHANGES.md. Depends on B1-A2-10 (OSRM), which is not built: the agent takes an `EtaProvider`; until OSRM exists `StraightLineEta` (straight line at `fallback_speed_kmh`, approximate) is used. No hospital suggestion (B1-A2-12, D-018 open). The original task text below is unchanged.
 - **Purpose / behaviour:** Decide vehicle types and counts, rank free vehicles by ETA, keep needed + 2 spare, warn about shortage, flag uncertain victim counts. Never locks a vehicle.
 - **Approach:** `agents/resource.py` `ResourceAllocationAgent.run(incident, vehicles, settings) -> AllocationResult`. Rules (Table 7.3.3, D-019): accident with injuries → ambulances = max(1, ceil(victims / patients_per_ambulance)) (+1 backup if critical); fire → ≥ 1 fire truck + ambulances by the same rule + backup; medical → ambulances (≥ 1); other → no type, nearest available of all types, dispatcher chooses; victims unknown → 1 vehicle + `victims_unknown_check`. Vehicles from C-6 `list_available_vehicles` (excludes locked/open assignments). Rank per type by OSRM `table` ETA; list = needed + `spare_vehicles`; `is_spare` marked; shortage when available < needed. Fixed deterministic tie-break (distance, then vehicle_id).
 - **Traceability:** SRS UC-05 1–6, 3a, 4a, 5a, post-conditions ("no vehicle locked"), F5, Table 7.3.3, NFR-P3; SDS Table 4.1, Table 6.3; TC-16, TC-17, TC-18, TC-19, TC-20.

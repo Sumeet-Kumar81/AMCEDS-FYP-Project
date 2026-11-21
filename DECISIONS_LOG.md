@@ -171,7 +171,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Problem:** Meaning of "backup vehicle"; accident without injuries; "Other: 1 vehicle chosen by the dispatcher".
 - **Recommendation:** `backup` is the SDS vehicle type `backup`; accident with 0 victims → 1 ambulance with "dispatcher check" flag; `other` → no automatic type, show all available vehicles nearest-first and require dispatcher choice.
 - **Extensions (2026-11-20, from the blueprint, U-3/U-4):** (1) unknown victim count = 1 vehicle **per required type** plus a dispatcher-check flag (a fire needs a truck and an ambulance even when the count is unknown); (2) "+ 2 spare" means 2 spare vehicles in total, the best remaining vehicles of the needed types, not 2 per type.
-- **Status:** OPEN – needs approval.
+- **Status:** APPROVED 2026-11-21 by the project developer — recommendation and both extensions: accident with 0 victims → 1 ambulance + "please check"; `other` (or type unknown) → every available vehicle nearest-first, dispatcher chooses; victims unknown → 1 vehicle of each needed type + "please check"; "+ 2 spare" = 2 in total. Implemented in `agents/resource.py` (B1-A2-11).
 
 ### D-020 — UC-04 alternate 5a wording conflict
 - **Problem:** UC-04 5a text is garbled (mentions sending an extra vehicle). TC-15 and NFR-S4 say an unanswered medium-confidence match keeps reports **apart**.
@@ -181,7 +181,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-021 — Allocation for low-trust, low/medium-severity reports
 - **Problem:** UC-07 step 3 says "Real → goes on to UC-05", implying no recommendation before review. Running allocation anyway costs nothing and never locks vehicles.
 - **Recommendation:** follow the SRS literally: skip allocation for low tier + low/medium severity until marked Real (then run it in ≤ 5 s, NFR-P3). High/critical are always allocated immediately.
-- **Status:** OPEN – needs approval.
+- **Status:** APPROVED 2026-11-21 by the project developer — no recommendation for a low-tier, low/medium-severity report until it is marked Real; high/critical (and unknown severity) always get vehicles at once. Implemented as `agents/policy.py` `allocate_now`.
 
 ### D-022 — Report flood thresholds
 - **Problem:** UC-01 5b / NFR-C8 / TC-05 ("10 reports in one minute → pause a few minutes") give no exact numbers.
@@ -266,7 +266,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-035 — Trust tier when Triage fails
 - **Problem:** NFR-S2 wants a trust tier on every report, but if Triage fails the inputs "real details" and "vague or joking" do not exist.
 - **Recommendation:** run the Trust Scorer on its non-LLM signals (caller history, GPS distance, nearby independent reports, flood flag), show the tier with an "AI unavailable" note, and never mark the report fake because of the failure.
-- **Status:** OPEN – needs approval (week 4).
+- **Status:** APPROVED 2026-11-21 by the project developer — as recommended; the tier comes from the non-LLM signals and an `ai_unavailable` (0 points) reason is shown. Implemented in `agents/trust.py`.
 
 ---
 
