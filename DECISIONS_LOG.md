@@ -43,8 +43,8 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-001b — SRS/SDS not in the repository
 - **Problem:** README says "Source of truth: `docs/srs-sds/`" but that folder held only `.gitkeep`; the documents existed only in the Claude Project (and, earlier, as the superseded October drafts in `docs/Requriments/`).
 - **Recommendation:** commit the **v1.1** SRS and SDS (A-008) to `docs/srs-sds/`.
-- **Current state (2026-11-20):** `SRS_v1.1_clean.docx` and `SDS_v1.1_clean.docx` are committed in `docs/srs-sds/` on branch `feat/test-harness` (commit `2a9356c`, a rename from `docs/SRS-SDS/`, content unchanged). The October drafts and `docs/Requriments/` are no longer on `main`. The tracked-changes copies are not in the repository.
-- **Status:** Documentation/state resolved on `feat/test-harness` only (the files and the `docs/srs-sds/` path are in that branch's commits); exists on the local branch only (not on `origin`, no open PR) and reaches `main` only after the branch is pushed, a PR is opened and merged. **Formal team approval of this path decision, if required, is still pending** — this entry does not record any team approval.
+- **Current state (2026-11-20):** `SRS_v1.1_clean.docx` and `SDS_v1.1_clean.docx` are committed in `docs/srs-sds/` on `main` (merged via PR #5; commit `2a9356c` renamed them from `docs/SRS-SDS/`, content unchanged). The October drafts and `docs/Requriments/` are no longer on `main`. The tracked-changes copies are not in the repository.
+- **Status:** Documentation/state resolved on `main` (the files and the `docs/srs-sds/` path are merged). **Formal team approval of this path decision, if required, is still pending** — this entry does not record any team approval.
 
 ### D-002 — Mobile application framework (citizen + driver)
 - **Problem:** SRS SW-9 leaves it open ("React Native or Flutter; final choice in design"). SDS Table 4.1 still says "React Native or Flutter (Android)". Project instructions say React Native. The repo README/frontend README plan a **PWA** (`frontend/pwa`) for citizen and driver.
@@ -276,7 +276,7 @@ Agreement order (Phase 1A of Batch 1): C-1 → C-2 → C-3 → C-4 → C-5 → C
 
 | ID | Contract | Owner | Consumers | Location (planned) | Version / status |
 |---|---|---|---|---|---|
-| C-1 | Enums + Incident Record read schema (`IncidentOut`, `IncidentDetailOut`) | Agent 1 | A2, A3 | `backend/app/schemas/enums.py`, `schemas/incident.py` | v0 draft — D-004, D-005 approved (SDS v1.1); ready to write |
+| C-1 | Enums + Incident Record read schema (`IncidentSummaryOut`, `IncidentDetailOut`) | Agent 1 | A2, A3 | `backend/app/schemas/enums.py`, `schemas/incident.py` | v1 — approved by the project developer (sole developer, acting as A1, A2 and A3; database input on `batch_no`), 2026-11-20. Notes below |
 | C-2 | AI result schemas: `TriageResult`, `TrustAssessment`, `DuplicateCandidateResult`, `AllocationResult`, `VehicleRecommendation` | Agent 2 | A1 (stores), A3 (displays) | `backend/app/schemas/ai.py` | v0 draft |
 | C-3 | Auth: login request/response, token claims, `/me` user shape, role names | Agent 1 | A3 | `schemas/auth.py` | v0 draft — depends on D-023 |
 | C-4 | REST endpoint list and request/response bodies | Agent 1 | A3, A2 (reallocation/routing proxy) | `docs/API_CONTRACT.md` + `/openapi.json` | endpoint list approved (SDS v1.1 Table 4.3); bodies still to write |
@@ -284,6 +284,13 @@ Agreement order (Phase 1A of Batch 1): C-1 → C-2 → C-3 → C-4 → C-5 → C
 | C-6 | Pipeline persistence interface (claim job, save stage results, mark failed, candidate queries) | Agent 1 | A2 | `backend/app/services/pipeline_store.py` | v0 draft |
 | C-7 | Driver assignment payload + trip status transitions | Agent 1 | A3 | `schemas/assignment.py` | v0 draft |
 
+
+**C-1 notes (v1, 2026-11-20).** Decided by the project developer, who is the only developer on the project (there are no separate A2/A3 reviewers):
+1. The SRS Table 3.4 / §7.2 field `vehicles` ("recommended and assigned") is carried by `IncidentDetailOut.recommendations` (current round) and `IncidentDetailOut.assignments`. There is no separate `vehicles` field.
+2. `caller_gps`, `caller_id`, `client_request_id`, `settings_snapshot` and the `pipeline_*` columns are not part of the C-1 read schemas. A screen that needs one later adds it through a coordination request (§4).
+3. Recommendation rounds start at 1, so `RecommendationOut.batch_no` keeps `ge=1`.
+4. The real `POST /reports` (B1-A1-16) returns `reference_no` (string, e.g. `INC-000123`); `incident_id` stays an integer.
+Also fixed in v1: `eta_seconds` and `distance_meters` are required (an approximate ETA still has a value); `location` is required and "no location" is `source = "unknown"`; `gps` needs lat/lon, `text` needs the address words (coordinates are added when the worker geocodes, D-011).
 ---
 
 ## 4. Coordination requests (CR)

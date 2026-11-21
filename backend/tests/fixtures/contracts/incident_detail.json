@@ -1,0 +1,89 @@
+{
+  "incident_id": 123,
+  "reference_no": "INC-000123",
+  "channel": "web",
+  "received_at": "2026-01-01T09:15:30Z",
+  "language": "English",
+  "location": { "lat": 27.7052, "lon": 68.8574, "text": "near the market", "source": "gps" },
+  "incident_type": "accident",
+  "severity": "high",
+  "victims_estimate": 6,
+  "confidence": 0.88,
+  "trust_score": 78,
+  "trust_tier": "high",
+  "group_id": null,
+  "status": "dispatched",
+  "review_reasons": [],
+  "original_text": "SIMULATED report: Bus accident near the market, many people hurt",
+  "audio_ref": null,
+  "reporter_name": null,
+  "ai_details": { "note": "inner shape is defined by contract C-2 (B1-A2-01)" },
+  "trust_signals": [
+    { "code": "SIMULATED_example_signal_a", "points": 10 },
+    { "code": "SIMULATED_example_signal_b", "points": -5 }
+  ],
+  "allocation_summary": { "note": "inner shape is defined by contract C-2 (B1-A2-01)" },
+  "duplicate_candidates": [
+    {
+      "duplicate_id": 1,
+      "candidate_incident_id": 120,
+      "match_confidence": 72,
+      "distance_m": 140,
+      "time_diff_s": 300,
+      "similarity": 0.81,
+      "decision": "possible",
+      "decided_by": null,
+      "decided_at": null
+    }
+  ],
+  "recommendations": [
+    {
+      "rec_id": 11,
+      "vehicle_id": 5,
+      "rank": 1,
+      "eta_seconds": 420,
+      "distance_meters": 3100,
+      "created_at": "2026-01-01T09:15:40Z",
+      "vehicle_type": "ambulance",
+      "eta_is_approximate": false,
+      "is_spare": false,
+      "route_geometry": null,
+      "batch_no": 1,
+      "is_current": true
+    },
+    {
+      "rec_id": 12,
+      "vehicle_id": 8,
+      "rank": 2,
+      "eta_seconds": 560,
+      "distance_meters": 4200,
+      "created_at": "2026-01-01T09:15:40Z",
+      "vehicle_type": "ambulance",
+      "eta_is_approximate": true,
+      "is_spare": true,
+      "route_geometry": null,
+      "batch_no": 1,
+      "is_current": true
+    }
+  ],
+  "assignments": [
+    {
+      "assignment_id": 7,
+      "vehicle_id": 5,
+      "approved_by": 2,
+      "hospital_id": null,
+      "status": "approved",
+      "approved_at": "2026-01-01T09:17:00Z",
+      "accepted_at": null,
+      "on_scene_at": null,
+      "picked_up_at": null,
+      "at_hospital_at": null,
+      "completed_at": null,
+      "notified_at": "2026-01-01T09:17:01Z",
+      "decline_reason": null,
+      "declined_at": null,
+      "timed_out_at": null
+    }
+  ],
+  "dispatcher_decision": { "approved_by": 2, "approved_at": "2026-01-01T09:17:00Z" }
+}

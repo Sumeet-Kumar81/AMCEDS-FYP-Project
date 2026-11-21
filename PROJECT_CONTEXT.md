@@ -1,7 +1,7 @@
 # PROJECT_CONTEXT.md
 
 > Read this first. It explains the project without relying on any earlier conversation.
-> Primary sources of truth: **SRS v1.1** and **SDS v1.1** (revised 2026-11-20 from the Nov 5 SRS and Nov 14 SDS; decision A-008). The clean `.docx` files are committed in `docs/srs-sds/` (path chosen with the B1-A1-02 branch, DECISIONS_LOG D-001b). When this file and the SRS/SDS disagree, the SRS/SDS win. The explanatory layer is `docs/blueprint/` (start with `00_START_HERE.md`).
+> Primary sources of truth: **SRS v1.1** and **SDS v1.1** (revised 2026-11-20 from the Nov 5 SRS and Nov 14 SDS; decision A-008). The clean `.docx` files are committed in `docs/srs-sds/` (DECISIONS_LOG D-001b). When this file and the SRS/SDS disagree, the SRS/SDS win. The explanatory layer is `docs/blueprint/` (start with `00_START_HERE.md`).
 
 ## 1. Project
 
@@ -102,7 +102,7 @@ docs/      srs-sds/ (SRS + SDS v1.1 `.docx`), blueprint/ (BP-01), AI_HANDOFF.md;
 frontend/  dashboard/, pwa/ (README only)
 infra/     osrm/, gazetteer/, nginx/ (README only)
 scripts/   dev.sh
-fyp-dispatch/  byte-identical duplicate of the tree (D-001)
+fyp-dispatch/  outdated duplicate of the tree (D-001); it was identical when audited, but `backend/` differs now (test harness, pinned requirements) and it lacks the new docs
 ```
 
 Current implementation state: **STATUS.md**. Roadmap: **IMPLEMENTATION_PLAN.md** + `IMPLEMENTATION_PLAN_UPDATE_v0.3.md` + `docs/blueprint/11_ROADMAP_9_MONTHS.md`.
