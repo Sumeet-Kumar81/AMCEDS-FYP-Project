@@ -106,12 +106,48 @@ this file and OpenAPI together.
 (\*) The plan does not name a task for `GET /fleet/live` or `GET /hospitals`; they are assigned to the
 closest task (B1-A1-27 tracking, B1-A1-26 assignments and hospital changes).
 
-**Not in this table:** `GET /api/v1/ws` (WebSocket, SDS Table 4.3/4.4). WebSocket routes do not
-appear in OpenAPI; the connection, the event envelope `{event, v, occurred_at, data}` and the event
-list are contract C-5 (task B1-A1-05).
+**Not in this table:** `GET /api/v1/ws` (WebSocket). WebSocket routes do not appear in OpenAPI; see §4.
 
-## 4. Change log
+## 4. WebSocket events (contract C-5)
+
+`GET /api/v1/ws` (roles D, R; built in B1-A1-29) opens one connection per user. Dispatchers receive the
+`dispatchers` channel; each driver receives `driver:<user_id>`. Every message is:
+
+```json
+{ "event": "incident.created", "v": 1, "occurred_at": "2026-01-01T09:15:30Z", "data": { } }
+```
+
+The models are in `backend/app/schemas/events.py` (`EVENTS` maps each event to its data model and
+channel). This table is checked against `EVENTS` by `backend/tests/unit/schemas/test_events.py`.
+
+| Event | Channel | Sent by | `data` |
+|---|---|---|---|
+| `incident.created` | dispatchers | API (intake) | `IncidentSummaryOut` (C-1) |
+| `incident.updated` | dispatchers | API or AI worker | `{incident_id, changed_fields[], pipeline_state}` |
+| `incident.ai_failed` | dispatchers | AI worker | `{incident_id, failed_step}` — manual mode |
+| `review.item_added` | dispatchers | AI worker or API | `{incident_id, reasons[]}` |
+| `review.item_resolved` | dispatchers | AI worker or API | `{incident_id, reasons[]}` |
+| `duplicate.candidate` | dispatchers | AI worker | `{incident_id, candidate_incident_id, match_confidence}` |
+| `recommendation.ready` | dispatchers | AI worker | `{incident_id, shortage}` (`null` = enough vehicles) |
+| `dispatch.approved` | dispatchers | API | `{incident_id, assignments: AssignmentOut[]}` |
+| `assignment.new` | driver:&lt;id&gt; | API | `DriverAssignmentOut` (C-7) |
+| `assignment.updated` | driver:&lt;id&gt; | API | `DriverAssignmentOut` (C-7) |
+| `assignment.accepted` | dispatchers | API | `AssignmentOut` (id, status and times) |
+| `assignment.declined` | dispatchers | API | `AssignmentOut` |
+| `assignment.timed_out` | dispatchers | API | `AssignmentOut` |
+| `assignment.status_changed` | dispatchers | API | `AssignmentOut` |
+| `vehicle.position` | dispatchers | API | `{vehicle_id, lat, lon, speed_kmh, recorded_at}` |
+| `vehicle.signal_lost` | dispatchers | API | `{vehicle_id, last_position}` |
+| `vehicle.signal_restored` | dispatchers | API | `{vehicle_id, last_position}` |
+| `system.service_status` | dispatchers | API | `{services: {api, database, ai_worker, osrm, llm, geocoder: up \| down}}` |
+
+**Worker → API (D-010):** the AI worker never talks to clients. It sends `NOTIFY incident_events` with
+`{event, incident_id}` (only the six events marked "AI worker" above); the API re-reads the row and
+sends the full event. The API wakes the worker with `NOTIFY report_pending`.
+
+## 5. Change log
 
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-11-21 | First version: all 48 endpoints of SDS Table 4.3 (plus `/health`) as 501 stubs; error body; C-3 auth shapes |
+| v1.1 | 2026-11-21 | §4 WebSocket events (C-5, B1-A1-05) |
