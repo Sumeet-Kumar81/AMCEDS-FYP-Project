@@ -115,7 +115,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-008 — Language model provider
 - **Problem:** SRS SW-3: "open-weight such as Llama or Mistral, or a hosted model; chosen after tests". `.env.example` defaults to Groq (hosted).
 - **Recommendation:** the Gateway supports one local provider (Ollama) and one hosted provider (Groq) plus a deterministic `FakeLLMClient` for tests. Pick the default after the B1-A2-17 evaluation. Hosted use is acceptable only because all data is simulated (NFR-C7).
-- **Status:** OPEN – choose after evaluation; adding a provider SDK needs approval.
+- **Status:** PROVISIONALLY APPROVED 2026-11-21 by the project developer — Groq (hosted Llama, `LLM_MODEL=llama-3.3-70b-versatile`) through its OpenAI-compatible HTTP API with `httpx` (no SDK added), Ollama as the local alternative, `FakeLLMClient` in all tests. The final default is still chosen after the B1-A2-17 evaluation. Implemented in `backend/app/llm/` (B1-A2-02).
 
 ### D-009 — Geocoding source
 - **Problem:** SDS says Nominatim. The repo plans a local pilot gazetteer "instead of local Nominatim". Public Nominatim allows at most about 1 request/s and needs internet.
@@ -318,6 +318,7 @@ Template: `CR-xxx | date | from agent | to owner | file/contract | change wanted
 |---|---|---|---|---|---|---|---|
 | CR-001 | 2026-11-21 | A1 (B1-A1-34) | project developer | `.env.example` | add empty `SEED_ADMIN_PASSWORD`, `SEED_DISPATCHER_PASSWORD`, `SEED_DRIVER_PASSWORD`; reword the business-rules comment | seed accounts get passwords only from the environment, never from code | APPROVED and done 2026-11-21 |
 | CR-002 | 2026-11-21 | A1 (B1-A1-14) | project developer | `.env.example` | add `ENV=dev`; `JWT_EXPIRE_MINUTES` 30 → 15 (D-023) | startup refuses weak JWT secrets outside dev; access tokens last 15 min | APPROVED and done 2026-11-21 |
+| CR-003 | 2026-11-21 | A2 (B1-A2-13) | project developer | `backend/requirements.txt` | add `langgraph==1.2.24` (pinned; installs cleanly on python:3.11-slim, `pip check` clean) | the SDS (§4.2) names LangGraph for the agent orchestrator; Groq is called over `httpx`, so no LLM SDK is added (D-008) | APPROVED and done 2026-11-21 |
 
 ---
 
@@ -329,3 +330,4 @@ Template: `CR-xxx | date | from agent | to owner | file/contract | change wanted
 | 2026-11-19 | A-007, D-027 (resolved), D-027b (new) | Team roles from the team slide recorded; task-level split proposed |
 | 2026-11-20 | A-008, A-009, D-030 (new, approved); D-002, D-004, D-005, D-006, D-010, D-011, D-012, D-020 approved; D-003 answered | Team chose the Nov SRS/SDS and approved the recommendations; all written into SRS/SDS v1.1 |
 | 2026-11-20 | D-031…D-035 (new, open); D-019 extended; D-007 amended note | Added by the implementation blueprint (`docs/blueprint/`); nothing approved by this session |
+| 2026-11-21 | D-008 (provisional), CR-003 | Groq over httpx + Ollama + fake model for tests (B1-A2-02); `langgraph==1.2.24` added for the orchestrator (B1-A2-13) |

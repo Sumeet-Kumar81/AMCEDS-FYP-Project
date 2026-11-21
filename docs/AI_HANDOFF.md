@@ -22,7 +22,7 @@ Team roles (team slide, A-007): **Arjun Kumar** = AI & backend; **Khalid Hussain
 | You are | Start with | Your files | You must not touch |
 |---|---|---|---|
 | **Agent 1 Backend & DB** | B1-A1-02 is complete; start with Phase 1A: B1-A1-03 → (A2's B1-A2-01) → B1-A1-04 → B1-A1-05 | api, core, models, schemas (not `ai.py`), services, ws, main.py, migrations, db/seed, db/sql, backend API/integration tests | agents, llm, workers, integrations, frontend, mobile |
-| **Agent 2 AI** | B1-A2-01 (after B1-A1-03), then B1-A2-02, 05, 06, 07, 10 | agents, llm, workers, integrations, `schemas/ai.py`, agent tests, ai_eval, db/eval_data, infra/osrm, infra/gazetteer | models, migrations, routes, services, frontend |
+| **Agent 2 AI** | Done or awaiting commit: B1-A2-01, 02, 03, 06, 07, 11, 13, 14. Next: B1-A2-05 (needs D-009), 10, 08/09 (D-007/D-033), 04 | agents, llm, workers, integrations, `schemas/ai.py`, agent tests, ai_eval, db/eval_data, infra/osrm, infra/gazetteer | models, migrations, routes, services, frontend |
 | **Agent 3 Frontend/Mobile** | Review contracts; B1-A3-01, 02, 05; B1-A3-13 after the Android spike | frontend/**, mobile/**, docs/user-guides | anything under backend/ |
 
 Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github/`, `README.md`) change only through a Coordination Request in DECISIONS_LOG.md §4.
