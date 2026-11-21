@@ -1,9 +1,9 @@
 # IMPLEMENTATION_PLAN.md
 
 **Project:** AI-Assisted Multi-Channel Emergency Dispatch System with Three Specialized Agents
-**Plan version:** 0.2 (draft for approval; 0.2 adds team roles) · **Prepared:** 2026-11-19 · **Baseline commit:** `a0cba20` (`main`)
-**Sources:** SRS v1.0, SDS v1.0, repository audit (STATUS.md), DECISIONS_LOG.md
-**Approval status:** ⏳ **PENDING APPROVAL.** No task in this plan has been started.
+**Plan version:** 0.2 (draft for approval; 0.2 adds team roles) · **Prepared:** 2026-11-19 · **Baseline commit (when written):** `a0cba20` (`main`)
+**Sources (when written):** SRS v1.0, SDS v1.0, repository audit, DECISIONS_LOG.md. **Superseded: SRS/SDS v1.1 are authoritative** (see `IMPLEMENTATION_PLAN_UPDATE_v0.3.md`).
+**Approval status:** ⏳ **Plan still pending team approval.** Only B1-A1-02 is complete (current state: `STATUS.md`); no other task has been started.
 
 ---
 
@@ -221,6 +221,7 @@ tracking, WebSocket, notifications, admin, analytics, audit, seed data, and the 
 used by the AI worker. Follows SDS §4–§6 and does not redesign the architecture.
 
 #### B1-A1-01 — Repository hygiene
+- **Implementation status (2026-11-21):** partly done — `fyp-dispatch/` deleted (D-001) and the SRS/SDS v1.1 are in `docs/srs-sds/` (D-001b). Still open: the `README.md` update (source of truth, ownership table, PWA wording). The original task text below is unchanged.
 - **Purpose / behaviour:** Leave one canonical source tree and commit the approved SRS/SDS so every agent reads the same documents.
 - **Approach:** After D-001 approval, remove `fyp-dispatch/` (identical copy) in a dedicated PR. After D-001b, add the two `.docx` files to `docs/srs-sds/`. Update README "Source of truth" and ownership (D-027).
 - **Traceability:** NFR-P18 (maintainability); SDS §4.4 (layered design for parallel teams).
@@ -231,7 +232,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** one tree; SRS/SDS present; README accurate. **Priority:** P1. **Output:** cleanup PR.
 
 #### B1-A1-02 — Backend test harness and local development environment
-- **Implementation status (2026-11-20):** **Implemented** on the local branch `feat/test-harness` (not on `origin`, no open PR, not merged into `main`; ready to open a PR after the branch is pushed). `docker compose run --rm api pytest -q -rs` → **6 passed** on **Python 3.11.18** with PostGIS (2 API tests + 4 database tests). **Not yet verified:** the GitHub Actions run. **Deferred:** factories for users/vehicles/incidents (to the model tasks B1-A1-07…11). Details: CHANGES.md entry B1-A1-02. The original task text below is kept unchanged.
+- **Implementation status:** **Complete** — current state in `STATUS.md`. **Deferred:** factories for users/vehicles/incidents (to the model tasks B1-A1-07…11). Details: `CHANGES.md` entry B1-A1-02. Only the first sentence of "Purpose / behaviour" below is annotated as superseded; the rest of the task text is unchanged.
 - **Purpose / behaviour:** *(Original wording: "The two existing tests have never been shown to pass." — superseded; see the implementation status above: they now pass in Docker on Python 3.11.)* Make `pytest` run reliably locally, in Docker and in CI, with a real PostGIS test database for integration tests.
 - **Approach:** Pin versions in `requirements.txt` (CR to self as owner of shared file, logged). Add `backend/tests/conftest.py` with: an async engine to `dispatch_test`, per-test transaction rollback, a `client` fixture (`httpx.AsyncClient` + ASGI transport), factories for users/vehicles/incidents. Integration tests marked `@pytest.mark.db` and skipped with a clear reason when no DB. Add `docker compose run --rm api pytest -q` to `scripts/dev.sh test`. CI: add a `postgis/postgis:15-3.4` service so DB tests run in CI.
 - **Traceability:** SDS §8.1 (pytest for backend and agents); NFR-P18.
@@ -242,6 +243,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** `pytest -q` passes in Docker and CI with PostGIS; skipped tests show a reason. **Priority:** P0. **Output:** working test pipeline; first verified results in STATUS.md.
 
 #### B1-A1-03 — Contract C-1: enums and Incident Record schemas (Phase 1A)
+- **Implementation status:** C-1 v1 implemented on branch `feat/contract-c1-schemas` (not yet committed); current state and test result in `STATUS.md`. The acceptance line below says "signed off by A2 and A3": the project has one developer, who approved C-1 v1 acting in all roles (DECISIONS_LOG §3, C-1 notes). The original task text below is unchanged.
 - **Purpose / behaviour:** Fix the shared vocabulary and the Incident Record shape (SRS Table 3.4) that all apps and agents use.
 - **Approach:** `schemas/enums.py` with `str` Enums from D-005. `schemas/incident.py`: `IncidentSummaryOut` (queue cards), `IncidentDetailOut` (record + `ai_details`, `trust_signals`, `allocation_summary`, duplicate candidates, current recommendations, assignments), `LocationOut {lat, lon, text, source}`, `reference_no`. Matches SRS §7.2 field names; confidence 0–1 in the API, shown as % in the UI. Replace `ReportIn.channel` `mobile` with `app`.
 - **Traceability:** SRS §3.3 Table 3.4, §7.2, NFR-S10 (NG911-style structure: time, type, source); SDS §2, §5.2 Table 5.2, §6.1; A-004.
@@ -363,6 +365,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** matrix test covers 100 % of private routes in OpenAPI (test fails if a new route is unlisted). **Priority:** P0. **Output:** dependency module + matrix test.
 
 #### B1-A1-16 — Intake service and `POST /reports` (save before processing)
+- **C-1 v1 note (added 2026-11-20):** the response returns `reference_no` (string, e.g. `INC-000123`); `incident_id` stays an integer and is never the reference string. The current stub's `ReportOut.incident_id: str` is replaced in this task. The original task text below is unchanged.
 - **Purpose / behaviour:** Turn a web/app text report into one Incident Record, commit it **before** any AI work, and return the reference number. Replaces the current stub.
 - **Approach:** `services/intake.py` `create_report(ReportIn, channel, client_ip)` in one transaction: upsert `Caller` by phone/device; insert `Incident` with status `new`, `pipeline_state='pending'`, `location_source` = `gps` if lat/lon given, else `text` if address/landmark text given, else `unknown` with review reason `location_unknown`; store `caller_gps` separately; `settings_snapshot`; set `reference_no`; audit `report.received`; NOTIFY `report_pending`; commit; then emit `incident.created`. Idempotency: same `client_request_id` returns the existing reference (TC-04). Validation: description 1–2000 chars after trimming; phone pattern; name ≤ 100; free text stored as-is (Urdu/Sindhi accepted). Response: `{reference_no, status: "new", received_at}`. If the commit fails → 503, never a reference number. No geocoding or AI in the request path (D-011).
 - **Traceability:** SRS UC-01 (1–5, 3a, 5a), F1, NFR-P12, NFR-C6, NFR-C9, §3.3; SDS §3.1 steps 1–6, Table 6.3 IntakeService; TC-01, TC-03, TC-04, TC-50.
@@ -1121,6 +1124,6 @@ Every result is recorded with command, date, environment and pass/fail/blocked/s
 
 ## 8. Recommended first implementation tasks (after approval)
 1. Approve D-004, D-005, D-006 (blocking contracts), D-002 (blocking mobile path), D-010, D-011.
-2. **B1-A1-02** (make the test harness actually run): every later task needs it, and none of the existing code is verified yet.
+2. ~~**B1-A1-02** (make the test harness actually run)~~ — **complete** (see `STATUS.md`). Application code other than the harness is still unverified.
 3. Then Phase 1A: B1-A1-03 → B1-A2-01 → B1-A1-04 → B1-A1-05.
 

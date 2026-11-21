@@ -93,3 +93,40 @@ Entry format: date · task ID · purpose · files · what changed · why · DB/A
   - **Not verified:** the GitHub Actions workflow (not run), `scripts/dev.sh test` itself (its command was run directly instead), a clean-machine build.
 - **Known limitations:** The harness tests only itself and `/health`; no product feature is tested yet. The first build is slow (several minutes). The local run on Python 3.14 is not evidence for Python 3.11. Existing code still has the unprefixed `/reports` stub that returns a fake ID (fixed later by B1-A1-16).
 
+---
+
+## 2026-11-20 · DOC-02 · Status sync after B1-A1-02 was merged (documentation only)
+
+- **Purpose:** Replace wording that described B1-A1-02 as unpushed / not merged / CI not run with the verified state. The B1-A1-02 entry above is left as written; this entry supersedes its stale statements.
+- **Verified state:** PR #5 (`feat/test-harness` → `main`) is closed and merged; `main` is `13cf6e6`. GitHub Actions: `ci` succeeded on the pull request (run 44739714339, commit `cb2dbba`) and on `main` (run 44740163138, commit `13cf6e6`). Source: GitHub public API (status and conclusion only; run logs were not read). B1-A1-02 is complete.
+- **Corrections to the B1-A1-02 entry above:** (1) "no pull request has been opened / not on origin" is no longer true; (2) "the GitHub Actions workflow (not run)" is now verified green; (3) "`IMPLEMENTATION_PLAN.md` … (task text unchanged)" was inaccurate: the first sentence of the B1-A1-02 "Purpose / behaviour" line was annotated as superseded, the rest is unchanged.
+- **Files modified (documentation only):** `STATUS.md` (the single place that states the B1-A1-02 state; other files point to it), `IMPLEMENTATION_PLAN.md` (B1-A1-02 status line and the wording about unchanged task text), `docs/AI_HANDOFF.md`, `DECISIONS_LOG.md` (D-001b), `PROJECT_CONTEXT.md`, `CHANGES.md` (this entry). No code, configuration or `fyp-dispatch/` file changed.
+- **Further stale statements fixed in the same branch (found in review):** `IMPLEMENTATION_PLAN.md` header ("No task in this plan has been started", v1.0 sources, baseline labels) and §8 item 2; `docs/AI_HANDOFF.md` Agent 1 row ("start with B1-A1-02"); `PROJECT_CONTEXT.md` §8 (`fyp-dispatch/` "byte-identical" — `diff -rq` of `backend/` now shows `pytest.ini`, `requirements.txt`, `tests/api/test_health.py` differ and `tests/conftest.py`, `tests/integration/` exist only at the root).
+- **D-001b:** state resolved on `main`; formal team approval of the path decision, if required, is still pending. No team approval is recorded.
+- **Tests:** none executed (documentation change). **Limitations:** the CI test count is not recorded because the run logs were not read.
+
+---
+
+## 2026-11-20 · B1-A1-03 · Contract C-1 v1: enums and Incident Record schemas
+
+- **Purpose:** Fix the shared vocabulary (D-005) and the Incident Record read shape (SRS Table 3.4 / §7.2, SDS v1.1 Tables 5.2, 5.7, 5.8, 5.12) that the API, AI agents, web and mobile apps will use.
+- **Branch:** `feat/contract-c1-schemas` from `main` `13cf6e6`. Not committed, not pushed. The branch also carries the DOC-02 documentation sync (restored from a stash before this task).
+- **Files created:** `backend/app/schemas/enums.py` (11 `StrEnum`s: D-005 vocabularies plus `DuplicateDecision` from SDS Table 5.12); `backend/app/schemas/incident.py` (`LocationOut`, `IncidentSummaryOut`, `IncidentDetailOut`, `RecommendationOut`, `AssignmentOut`, `DuplicateCandidateOut`, `TrustSignalOut`, `DispatcherDecisionOut`); `backend/tests/fixtures/contracts/incident_detail.json` (SIMULATED); `backend/tests/unit/schemas/__init__.py`, `test_enums.py` (14 tests), `test_incident_schemas.py` (56 tests).
+- **Files modified:** `backend/app/schemas/report.py` (`ReportIn.channel` is the `Channel` enum; `mobile` renamed `app`); `DECISIONS_LOG.md` (C-1 row set to v1, contract name `IncidentOut` corrected to `IncidentSummaryOut`, "C-1 notes" added); `IMPLEMENTATION_PLAN.md` (status line under B1-A1-03, C-1 note under B1-A1-16; original task text unchanged); `STATUS.md`; `CHANGES.md` (this entry).
+- **What / why:** confidence 0–1 and trust score 0–100 enforced; timezone-aware timestamps; `reference_no` must be `INC-` + 6 or more digits; output models reject unknown fields so drift fails tests; `location` always present ("no location" = `source: "unknown"`; `gps` needs lat/lon; `text` needs address words, coordinates follow after geocoding per D-011); `eta_seconds` and `distance_meters` required (an approximate ETA still has a value, SRS UC-05 5a); `batch_no` starts at 1. The SRS `vehicles` field is carried by `recommendations` + `assignments`.
+- **Approval:** C-1 v1 approved on 2026-11-20 by the project developer, who is the only developer and acts as A1, A2 and A3 (DECISIONS_LOG §3, C-1 notes). No separate reviewers.
+- **DB impact:** none (no models, migrations or SQL). **API impact:** response shapes defined but not yet used by any endpoint; `POST /reports` now rejects `channel: "mobile"` with 422 and accepts `app` (OpenAPI shows the `Channel` enum). No other route changed.
+- **Tests:** `docker compose run --rm api pytest -q -rs` (Python 3.11.18, PostGIS) → **76 passed, 0 failed, 0 skipped**. A mutation check in a scratch copy outside the repository (C-1 rules deliberately broken) made the expected tests fail, confirming they enforce the contract. **Not verified:** GitHub Actions on this branch (not pushed); no linter or type checker is configured.
+- **Known limitations:** In the fixture, `ai_details` and `allocation_summary` are placeholder objects until contract C-2 (B1-A2-01) defines their shape; `TrustSignalOut` (`code`, `points`) may be refined by C-2. The C-1 schemas are not yet used by any endpoint (B1-A1-16 and B1-A1-20 do that). `POST /reports` is still the stub that saves nothing.
+
+---
+
+## 2026-11-21 · DOC-03 · Week-1 decisions recorded; duplicate tree removed (B1-A1-01, part)
+
+- **Purpose:** Record the decisions taken by the project developer, who is the only developer, and remove references to the deleted duplicate tree.
+- **Decisions:** D-001 approved and done (the developer deleted `fyp-dispatch/`, 62 tracked files); D-031 approved (option a, no extra tables beyond D-004); D-027b and D-034 superseded (one developer does every task). **D-032 (pilot area and dates) is still open** and needs the developer's input. No other decision changed.
+- **Deletion check:** before recording D-001, `fyp-dispatch/` was compared with the root at `HEAD`: four files were older versions of root files; the only copy-only files were an outdated `docs/README.md` one-liner and five empty `.gitkeep` placeholders. Nothing else was lost; all of it is in git history.
+- **Files modified:** `DECISIONS_LOG.md` (D-001, D-027b, D-031, D-034 status lines), `STATUS.md` (next task, known problems 1 and 10), `PROJECT_CONTEXT.md` (team row; `fyp-dispatch/` line removed from the layout), `CLAUDE.md` (removed "edit only the root copies"), `docs/AI_HANDOFF.md` (team line, pitfall removed, next action), `IMPLEMENTATION_PLAN.md` (status line under B1-A1-01; task text unchanged), `CHANGES.md` (this entry). Deleted: `fyp-dispatch/**` (by the developer).
+- **DB / API impact:** none. **Tests:** see below.
+- **Known limitations:** B1-A1-01 still needs the `README.md` update. `docs/blueprint/12_GITHUB_WORKFLOW.md` still mentions removing `fyp-dispatch/` as a future step (the blueprint is a dated design document and was left unchanged). Older CHANGES entries mention `fyp-dispatch/` as history.
+

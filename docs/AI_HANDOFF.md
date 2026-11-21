@@ -3,8 +3,8 @@
 How the next session, development agent or team member continues the work.
 
 ## 1. Where things stand (2026-11-20)
-- SRS and SDS were revised to **v1.1** (DOC-01). The implementation **blueprint** (`docs/blueprint/`, start with `00_START_HERE.md`) is written (BP-01). Plan v0.2 plus `IMPLEMENTATION_PLAN_UPDATE_v0.3.md` is **waiting for approval**. Only **B1-A1-02** (the backend test harness) has been implemented, on the local branch `feat/test-harness` (not pushed, no open PR); no application feature exists yet.
-- The repository is a scaffold plus the test harness. The 2 original tests and 4 new database tests pass in Docker on Python 3.11 (6 passed, STATUS.md §2); CI has not been run yet. No application feature is implemented or verified (`POST /reports` is still a stub).
+- SRS and SDS were revised to **v1.1** (DOC-01). The implementation **blueprint** (`docs/blueprint/`, start with `00_START_HERE.md`) is written (BP-01). Plan v0.2 plus `IMPLEMENTATION_PLAN_UPDATE_v0.3.md` is **waiting for approval**. Only **B1-A1-02** (the backend test harness) has been implemented; no application feature exists yet. Current state: `STATUS.md`.
+- The repository is a scaffold plus the test harness; verified results are in `STATUS.md` §2. No application feature is implemented or verified (`POST /reports` is still a stub).
 - Open decisions are in DECISIONS_LOG.md §2. Approved on 2026-11-20: D-002, D-004, D-005, D-006, D-010, D-011, D-012, D-020, D-030. Newly proposed by the blueprint: **D-031…D-035** (and the D-019 extensions).
 - The code in `docs/blueprint/code_sketches/` is **design sketch code with 46 tests**, not product code. Reuse the logic when writing the real agents, but follow the task files and ownership rules, not the sketch layout.
 
@@ -15,13 +15,13 @@ How the next session, development agent or team member continues the work.
 4. `git status`, `git log -5`; confirm STATUS.md matches the code.
 
 ## 3. Who is who
-Team roles (team slide, A-007): **Arjun Kumar** = AI & backend; **Khalid Hussain** = frontend & UI/UX; **Sumeet Kumar** = database & technical support. Task-level split: D-027b (original) and D-034 (proposed rebalance, 23 / 19 / 28 of 70 Batch-1 tasks; weekly table in `11_ROADMAP_9_MONTHS.md`). Both are pending confirmation. The README ownership table is outdated.
+Team roles (team slide, A-007): **Arjun Kumar** = AI & backend; **Khalid Hussain** = frontend & UI/UX; **Sumeet Kumar** = database & technical support. All work is done by one developer; there are no separate reviewers (D-027b, D-034 superseded).
 
 ## 3a. If you are one of the three Batch 1 agents
 
 | You are | Start with | Your files | You must not touch |
 |---|---|---|---|
-| **Agent 1 Backend & DB** | B1-A1-02 (test harness), then Phase 1A: B1-A1-03 → (A2's B1-A2-01) → B1-A1-04 → B1-A1-05 | api, core, models, schemas (not `ai.py`), services, ws, main.py, migrations, db/seed, db/sql, backend API/integration tests | agents, llm, workers, integrations, frontend, mobile |
+| **Agent 1 Backend & DB** | B1-A1-02 is complete; start with Phase 1A: B1-A1-03 → (A2's B1-A2-01) → B1-A1-04 → B1-A1-05 | api, core, models, schemas (not `ai.py`), services, ws, main.py, migrations, db/seed, db/sql, backend API/integration tests | agents, llm, workers, integrations, frontend, mobile |
 | **Agent 2 AI** | B1-A2-01 (after B1-A1-03), then B1-A2-02, 05, 06, 07, 10 | agents, llm, workers, integrations, `schemas/ai.py`, agent tests, ai_eval, db/eval_data, infra/osrm, infra/gazetteer | models, migrations, routes, services, frontend |
 | **Agent 3 Frontend/Mobile** | Review contracts; B1-A3-01, 02, 05; B1-A3-13 after the Android spike | frontend/**, mobile/**, docs/user-guides | anything under backend/ |
 
@@ -34,7 +34,6 @@ Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github
 - Do not commit or push; present changed files, test results and a summary to the team.
 
 ## 5. Known pitfalls
-- `fyp-dispatch/` duplicates the whole tree. Edit the **root** copies only.
 - Code comments in the repository cite names that are not in the SDS (D-003). Follow SDS v1.1 table names.
 - The existing `POST /reports` returns a fake reference without saving. Do not demo it before B1-A1-16.
 - `backend/pytest.ini` uses `asyncio_mode = auto`, which needs `pytest-asyncio`.
@@ -43,4 +42,4 @@ Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github
 - LangGraph wiring in `06_AI_AGENTS.md` is **not verified**; build a one-node graph first.
 
 ## 6. Next recommended action
-**B1-A1-02** (backend test harness) is committed on the local branch `feat/test-harness`. The branch is not on `origin`, has no open PR and is not merged into `main`; it is ready to open a PR after the branch is pushed. Once the team has reviewed and merged it, the team decides the remaining week-1 items (D-001, D-001b record, D-027b/D-034, D-031, D-032), and then authorises the next task (**B1-A1-03**, contract C-1). Stop and wait for that approval; do not start development on your own.
+The developer decides D-032 (pilot area and dates) and then authorises the next task (**B1-A2-01**, contract C-2). Current state: `STATUS.md`. Stop and wait for that approval; do not start development on your own.
