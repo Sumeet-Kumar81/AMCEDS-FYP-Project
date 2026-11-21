@@ -17,7 +17,8 @@ class Settings(BaseSettings):
     osrm_url: str = "http://osrm:5000"
     nominatim_url: str = "https://nominatim.openstreetmap.org"
 
-    # business rules (SRS Appendix C); later read from system_setting table
+    # business rules (SRS Appendix C): startup defaults only. The authoritative, admin-changeable
+    # values live in the `settings` table, read through app/services/settings.py (B1-A1-12).
     patients_per_ambulance: int = 2
     dup_distance_m: int = 300
     dup_window_min: int = 15

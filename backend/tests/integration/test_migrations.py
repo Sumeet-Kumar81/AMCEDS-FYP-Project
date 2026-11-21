@@ -39,9 +39,10 @@ def public_tables(url: str) -> set[str]:
     return {r[0] for r in query(url, "SELECT tablename FROM pg_tables WHERE schemaname = 'public'")}
 
 
-def test_migration_chain_is_linear_0001_then_0002() -> None:
+def test_migration_chain_is_linear_0001_0002_0003() -> None:
     scripts = ScriptDirectory.from_config(Config(str(ALEMBIC_INI)))
-    assert scripts.get_heads() == ["0002"] == [HEAD]
+    assert scripts.get_heads() == ["0003"] == [HEAD]
+    assert scripts.get_revision("0003").down_revision == "0002"
     assert scripts.get_revision("0002").down_revision == "0001"
     assert scripts.get_revision("0001").down_revision is None
 

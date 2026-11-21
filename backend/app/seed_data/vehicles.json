@@ -1,0 +1,166 @@
+{
+  "note": "SIMULATED data for the prototype (Sukkur district pilot area, D-032). Positions are approximate points in Sukkur/Rohri, not checked against real roads. Not real vehicles.",
+  "small_count": 6,
+  "vehicles": [
+    {
+      "plate_number": "SIM-AMB-01",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station Central",
+      "patient_capacity": 2,
+      "lat": 27.7052,
+      "lon": 68.8574
+    },
+    {
+      "plate_number": "SIM-FIRE-01",
+      "vehicle_type": "fire_truck",
+      "station_name": "SIMULATED Station Military Road",
+      "patient_capacity": 0,
+      "lat": 27.718,
+      "lon": 68.846
+    },
+    {
+      "plate_number": "SIM-AMB-02",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station New Pind",
+      "patient_capacity": 2,
+      "lat": 27.695,
+      "lon": 68.87
+    },
+    {
+      "plate_number": "SIM-BKP-01",
+      "vehicle_type": "backup",
+      "station_name": "SIMULATED Station Rohri",
+      "patient_capacity": 0,
+      "lat": 27.692,
+      "lon": 68.896
+    },
+    {
+      "plate_number": "SIM-AMB-03",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station Central",
+      "patient_capacity": 2,
+      "lat": 27.7059,
+      "lon": 68.8567
+    },
+    {
+      "plate_number": "SIM-FIRE-02",
+      "vehicle_type": "fire_truck",
+      "station_name": "SIMULATED Station Military Road",
+      "patient_capacity": 0,
+      "lat": 27.7187,
+      "lon": 68.8453
+    },
+    {
+      "plate_number": "SIM-AMB-04",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station New Pind",
+      "patient_capacity": 2,
+      "lat": 27.6957,
+      "lon": 68.8693
+    },
+    {
+      "plate_number": "SIM-AMB-05",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station Rohri",
+      "patient_capacity": 2,
+      "lat": 27.6927,
+      "lon": 68.8953
+    },
+    {
+      "plate_number": "SIM-AMB-06",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station Central",
+      "patient_capacity": 2,
+      "lat": 27.7066,
+      "lon": 68.856
+    },
+    {
+      "plate_number": "SIM-AMB-07",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station Military Road",
+      "patient_capacity": 2,
+      "lat": 27.7194,
+      "lon": 68.8446
+    },
+    {
+      "plate_number": "SIM-AMB-08",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station New Pind",
+      "patient_capacity": 2,
+      "lat": 27.6964,
+      "lon": 68.8686
+    },
+    {
+      "plate_number": "SIM-AMB-09",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station Rohri",
+      "patient_capacity": 2,
+      "lat": 27.6934,
+      "lon": 68.8946
+    },
+    {
+      "plate_number": "SIM-AMB-10",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station Central",
+      "patient_capacity": 2,
+      "lat": 27.7073,
+      "lon": 68.8553
+    },
+    {
+      "plate_number": "SIM-AMB-11",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station Military Road",
+      "patient_capacity": 2,
+      "lat": 27.7201,
+      "lon": 68.8439
+    },
+    {
+      "plate_number": "SIM-AMB-12",
+      "vehicle_type": "ambulance",
+      "station_name": "SIMULATED Station New Pind",
+      "patient_capacity": 2,
+      "lat": 27.6971,
+      "lon": 68.8679
+    },
+    {
+      "plate_number": "SIM-FIRE-03",
+      "vehicle_type": "fire_truck",
+      "station_name": "SIMULATED Station Rohri",
+      "patient_capacity": 0,
+      "lat": 27.6941,
+      "lon": 68.8939
+    },
+    {
+      "plate_number": "SIM-FIRE-04",
+      "vehicle_type": "fire_truck",
+      "station_name": "SIMULATED Station Central",
+      "patient_capacity": 0,
+      "lat": 27.708,
+      "lon": 68.8546
+    },
+    {
+      "plate_number": "SIM-FIRE-05",
+      "vehicle_type": "fire_truck",
+      "station_name": "SIMULATED Station Military Road",
+      "patient_capacity": 0,
+      "lat": 27.7208,
+      "lon": 68.8432
+    },
+    {
+      "plate_number": "SIM-BKP-02",
+      "vehicle_type": "backup",
+      "station_name": "SIMULATED Station New Pind",
+      "patient_capacity": 0,
+      "lat": 27.6978,
+      "lon": 68.8672
+    },
+    {
+      "plate_number": "SIM-BKP-03",
+      "vehicle_type": "backup",
+      "station_name": "SIMULATED Station Rohri",
+      "patient_capacity": 0,
+      "lat": 27.6948,
+      "lon": 68.8932
+    }
+  ]
+}

@@ -186,7 +186,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-022 — Report flood thresholds
 - **Problem:** UC-01 5b / NFR-C8 / TC-05 ("10 reports in one minute → pause a few minutes") give no exact numbers.
 - **Recommendation:** default max 5 reports per device or phone per 10 minutes, then block for 10 minutes (HTTP 429 with a message pointing to the 1122 call notice). Admin-configurable. The blocked attempt is still logged; the flood flag feeds the −20 trust signal.
-- **Status:** OPEN – needs approval.
+- **Status:** APPROVED 2026-11-21 by the project developer — as recommended: at most 5 reports per device or phone in 10 minutes, then blocked for 10 minutes. Stored as settings `rate_limit_reports`, `rate_limit_window_min`, `rate_limit_block_min` (admin-configurable, B1-A1-12); enforced in B1-A1-18.
 
 ### D-023 — Session design (idle timeout, logout, driver exemption)
 - **Problem:** NFR-C4 30 min idle logout; UC-11 1b drivers with an active assignment stay signed in; logout must end the session. Stateless JWT alone cannot do idle timeout or revocation.
@@ -256,7 +256,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Options:** (a) quadratic decay `s_dist = max(0, 1 − (d/300)²)`, `s_time = max(0, 1 − (Δt/15)²)`; (b) lower the auto-link threshold (contradicts the SRS); (c) change the weights.
 - **Recommendation:** (a), weights 0.4 / 0.2 / 0.4 and the decay exponent kept as settings; gives 93 at TC-13; tune on `duplicate_groups.jsonl` against NFR-P9.
 - **Impact:** only the scoring function; thresholds in the SRS unchanged.
-- **Status:** OPEN – needs approval (week 9).
+- **Status:** APPROVED 2026-11-21 by the project developer — quadratic decay, weights 0.4 / 0.2 / 0.4 stored as settings `dup_weight_distance`, `dup_weight_time`, `dup_weight_meaning` (they must add up to 1). Still open under D-007: how `s_meaning` (text similarity) is computed (new dependency or not).
 
 ### D-034 — Task-level rebalance of Batch 1 (extends D-027b)
 - **Problem:** D-027b gave Arjun about 36 of 70 Batch-1 tasks (all AI plus most of the API).
@@ -314,7 +314,9 @@ Admin-configurable thresholds (trust tiers, duplicate 85/60, vehicle rules) are 
 
 Template: `CR-xxx | date | from agent | to owner | file/contract | change wanted | reason | status`.
 
-_None yet._
+| CR | Date | From | To | File | Change | Reason | Status |
+|---|---|---|---|---|---|---|---|
+| CR-001 | 2026-11-21 | A1 (B1-A1-34) | project developer | `.env.example` | add empty `SEED_ADMIN_PASSWORD`, `SEED_DISPATCHER_PASSWORD`, `SEED_DRIVER_PASSWORD`; reword the business-rules comment | seed accounts get passwords only from the environment, never from code | APPROVED and done 2026-11-21 |
 
 ---
 

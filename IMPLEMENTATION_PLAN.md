@@ -336,6 +336,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** `alembic upgrade head` creates every SDS table + approved additions; ERD diagram regenerated into `docs/diagrams/`. **Priority:** P0. **Output:** schema v1.
 
 #### B1-A1-12 — Settings service with range validation and per-incident snapshot
+- **Implementation status:** implemented on branch `feat/settings-audit-seed` (not yet committed); current state in `STATUS.md`; details in CHANGES.md. Added: `update_many` (values that must change together, e.g. the duplicate weights) and settings for D-022, D-033, timers and a 40 km/h straight-line fallback speed (developer assumption). The original task text below is unchanged.
 - **Purpose / behaviour:** Business-rule values are admin-configurable, validated and applied only to new incidents.
 - **Approach:** `services/settings.py`: a typed registry of keys with default, type, min, max, description — `patients_per_ambulance` (1–6, 2), `dup_distance_m` (50–2000, 300), `dup_window_min` (1–120, 15), `dup_auto_link` (60–100, 85), `dup_possible` (30–95, 60), `triage_min_confidence` (0–100, 60), trust tier limits (high 70, medium 40), trust signal weights (Table 7.3.1), `rate_limit_*` (D-022), `assignment_timeout_s` 60, `signal_lost_s` 60, `geofence_m` 100, `fallback_speed_kmh`, `spare_vehicles` 2, duplicate weights (D-007). Cross-field rule: `dup_possible < dup_auto_link`. `get_snapshot()` returns all values for `incidents.settings_snapshot`. Seed migration inserts defaults. `core/config.py` defaults remain the bootstrap fallback only.
 - **Traceability:** SRS UC-12 5/5a, Appendix C, §1.3 ("default values are settings"); SDS Table 5.11, §7.5; TC-36.
@@ -345,6 +346,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** every SRS default present and validated. **Priority:** P0. **Output:** service.
 
 #### B1-A1-13 — Audit service
+- **Implementation status:** implemented on branch `feat/settings-audit-seed` (not yet committed); current state in `STATUS.md`; details in CHANGES.md. The original task text below is unchanged.
 - **Purpose / behaviour:** One function every service uses to record AI results, decisions and status changes with user and time.
 - **Approach:** `services/audit.py` `record(session, action, user_id|None, incident_id|None, details: dict)` inside the caller's transaction (no audit = no commit). Action catalogue constant (`report.received`, `ai.triage`, `ai.trust`, `ai.duplicates`, `ai.allocation`, `incident.edited`, `duplicate.confirmed`, `review.decision`, `dispatch.approved`, `assignment.*`, `vehicle.locked/unlocked`, `settings.changed`, `user.*`, `auth.login_failed`, `auth.locked`).
 - **Traceability:** SRS NFR-S9, UC-06 post-condition ("AI suggested, dispatcher chose, who and when"), UC-12 2/5; SDS Table 6.2 AuditLog.
@@ -541,6 +543,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** tests pass. **Priority:** P0. **Output:** health API.
 
 #### B1-A1-34 — Simulated seed data
+- **Implementation status:** implemented on branch `feat/settings-audit-seed` (not yet committed); current state in `STATUS.md`; details in CHANGES.md. Deviation: the seed lives in `backend/app/seed.py` and `backend/app/seed_data/*.json` (not `db/seed/`), so it runs and is tested inside the backend container; `db/README.md` points there. The original task text below is unchanged.
 - **Purpose / behaviour:** Realistic but fictional users, stations, vehicles (30 → 100), hospitals (8) in the pilot area so every feature can be demonstrated.
 - **Approach:** `db/seed/seed.py` (idempotent, `--size small|full`), data files in `db/seed/*.json`: admin/dispatcher/driver accounts (passwords from env, never committed), vehicles of each type with stations and positions on real pilot-area roads, hospitals with departments. Everything labelled SIMULATED.
 - **Traceability:** SRS §1.4, NFR-C7, NFR-P6 (100 vehicles); SDS §8.1.

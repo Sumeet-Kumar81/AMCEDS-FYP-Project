@@ -1,0 +1,56 @@
+{
+  "note": "SIMULATED accounts. Passwords are NOT stored here: they come from SEED_ADMIN_PASSWORD, SEED_DISPATCHER_PASSWORD and SEED_DRIVER_PASSWORD in the environment.",
+  "users": [
+    {
+      "username": "admin1",
+      "full_name": "SIMULATED Admin One",
+      "role": "admin"
+    },
+    {
+      "username": "dispatcher1",
+      "full_name": "SIMULATED Dispatcher One",
+      "role": "dispatcher"
+    },
+    {
+      "username": "dispatcher2",
+      "full_name": "SIMULATED Dispatcher Two",
+      "role": "dispatcher"
+    },
+    {
+      "username": "driver01",
+      "full_name": "SIMULATED Driver 01",
+      "role": "driver",
+      "vehicle_plate": "SIM-AMB-01"
+    },
+    {
+      "username": "driver02",
+      "full_name": "SIMULATED Driver 02",
+      "role": "driver",
+      "vehicle_plate": "SIM-FIRE-01"
+    },
+    {
+      "username": "driver03",
+      "full_name": "SIMULATED Driver 03",
+      "role": "driver",
+      "vehicle_plate": "SIM-AMB-02"
+    },
+    {
+      "username": "driver04",
+      "full_name": "SIMULATED Driver 04",
+      "role": "driver",
+      "vehicle_plate": "SIM-BKP-01"
+    },
+    {
+      "username": "driver05",
+      "full_name": "SIMULATED Driver 05",
+      "role": "driver",
+      "vehicle_plate": "SIM-AMB-03"
+    },
+    {
+      "username": "driver06",
+      "full_name": "SIMULATED Driver 06",
+      "role": "driver",
+      "vehicle_plate": "SIM-FIRE-02"
+    }
+  ]
+}
