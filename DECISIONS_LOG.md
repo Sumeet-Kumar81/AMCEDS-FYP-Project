@@ -280,9 +280,9 @@ Agreement order (Phase 1A of Batch 1): C-1 → C-2 → C-3 → C-4 → C-5 → C
 | C-2 | AI result schemas: `TriageResult`, `TrustAssessment`, `DuplicateCandidateResult`, `AllocationResult`, `VehicleRecommendation` | Agent 2 | A1 (stores), A3 (displays) | `backend/app/schemas/ai.py` | v1 — approved by the project developer (sole developer, acting as A1, A2 and A3), 2026-11-21. Notes below |
 | C-3 | Auth: login request/response, token claims, `/me` user shape, role names | Agent 1 | A3 | `schemas/auth.py` | v1 — approved by the project developer (sole developer), 2026-11-21; session design D-023 |
 | C-4 | REST endpoint list and request/response bodies | Agent 1 | A3, A2 (reallocation/routing proxy) | `docs/API_CONTRACT.md` + `/openapi.json` | v1 — approved by the project developer (sole developer), 2026-11-21: `docs/API_CONTRACT.md` + `/openapi.json`; 48 endpoints, 501 until built |
-| C-5 | WebSocket event envelope and event names; NOTIFY payloads from worker | Agent 1 (A2 emits via NOTIFY) | A3, A2 | `schemas/events.py`, `docs/API_CONTRACT.md §WS` | event names approved (SDS v1.1 Table 4.4) |
-| C-6 | Pipeline persistence interface (claim job, save stage results, mark failed, candidate queries) | Agent 1 | A2 | `backend/app/services/pipeline_store.py` | v0 draft |
-| C-7 | Driver assignment payload + trip status transitions | Agent 1 | A3 | `schemas/assignment.py` | v0 draft |
+| C-5 | WebSocket event envelope and event names; NOTIFY payloads from worker | Agent 1 (A2 emits via NOTIFY) | A3, A2 | `schemas/events.py`, `docs/API_CONTRACT.md §WS` | v1 — approved by the project developer (sole developer), 2026-11-21; 18 events of SDS Table 4.4; `docs/API_CONTRACT.md` §4. Notes below |
+| C-6 | Pipeline persistence interface (claim job, save stage results, mark failed, candidate queries) | Agent 1 | A2 | `backend/app/services/pipeline_store.py` | v1 — interface only, approved by the project developer, 2026-11-21; implementation in B1-A1-19. Notes below |
+| C-7 | Driver assignment payload + trip status transitions | Agent 1 | A3 | `schemas/assignment.py` | v1 — approved by the project developer, 2026-11-21. Notes below |
 
 
 **C-1 notes (v1, 2026-11-20).** Decided by the project developer, who is the only developer on the project (there are no separate A2/A3 reviewers):
@@ -300,6 +300,14 @@ Also fixed in v1: `eta_seconds` and `distance_meters` are required (an approxima
 5. No "AI unavailable" field yet: D-035 is still open.
 6. Which C-2 objects are stored in C-1 `ai_details` / `allocation_summary` is decided in B1-A1-19 (storage).
 Admin-configurable thresholds (trust tiers, duplicate 85/60, vehicle rules) are enforced by the agents and settings, not by the schemas.
+
+**C-5, C-6, C-7 notes (v1, 2026-11-21).** Decided by the project developer:
+1. C-7: a vehicle may go from `on_scene` straight to `available` (no patient carried, e.g. a fire truck). UC-09 describes only the trip through a hospital.
+2. C-7: the driver payload carries `respond_by` (alert time + the answer limit, default 60 s from SRS Appendix C) so the app can show a countdown.
+3. C-6: `save_trust` takes only the C-2 `TrustAssessment`, which already contains the action (the plan text listed the action separately).
+4. C-6: the worker claims only `pending` and `reallocate` jobs. "retrust" (mentioned in B1-A2-15) is not an approved `pipeline_state` (D-005) and is decided in B1-A2-15.
+5. C-5: the worker may raise only the six events whose "Sent by" in SDS Table 4.4 includes the AI worker, and only through `NOTIFY incident_events` with `{event, incident_id}` (D-010). A new vocabulary `PipelineStage` (speech_to_text, geocoding, triage, trust, coordination, allocation) names the failed step.
+6. C-7: vehicle status on accept is `en_route` (UC-08 step 3, navigation starts); decline, time-out, cancel and completion free the vehicle (`available`).
 ---
 
 ## 4. Coordination requests (CR)
