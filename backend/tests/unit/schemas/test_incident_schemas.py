@@ -258,8 +258,10 @@ def test_report_in_accepts_app_and_defaults_to_web() -> None:
 
 
 @pytest.mark.parametrize("channel", ["voice", "sms"])
-def test_report_in_still_accepts_voice_and_sms(channel: str) -> None:
-    assert ReportIn(description="x", channel=channel).channel == channel
+def test_public_report_form_refuses_voice_and_sms(channel: str) -> None:
+    """Since B1-A1-16 the public text form takes web and app only; SMS and voice have their own endpoints."""
+    with pytest.raises(ValidationError):
+        ReportIn(description="x", channel=channel)
 
 
 def test_report_in_rejects_the_old_mobile_channel() -> None:
