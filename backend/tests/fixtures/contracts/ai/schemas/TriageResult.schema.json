@@ -1,0 +1,196 @@
+{
+  "$defs": {
+    "IncidentType": {
+      "enum": [
+        "accident",
+        "fire",
+        "medical",
+        "other"
+      ],
+      "title": "IncidentType",
+      "type": "string"
+    },
+    "Severity": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Triage Agent output. Every key must be present; ``None`` means \"the report does not say\".",
+  "properties": {
+    "language": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Language"
+    },
+    "language_confidence": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Language Confidence"
+    },
+    "incident_type": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/IncidentType"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "type_confidence": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Type Confidence"
+    },
+    "severity": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Severity"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "severity_confidence": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Severity Confidence"
+    },
+    "victims_estimate": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Victims Estimate"
+    },
+    "victims_confidence": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Victims Confidence"
+    },
+    "location_words": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Location Words"
+    },
+    "has_real_details": {
+      "title": "Has Real Details",
+      "type": "boolean"
+    },
+    "vague_or_joking": {
+      "title": "Vague Or Joking",
+      "type": "boolean"
+    },
+    "missing_fields": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing Fields",
+      "type": "array"
+    },
+    "overall_confidence": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Overall Confidence",
+      "type": "number"
+    },
+    "transcript_unclear": {
+      "title": "Transcript Unclear",
+      "type": "boolean"
+    },
+    "model": {
+      "minLength": 1,
+      "title": "Model",
+      "type": "string"
+    },
+    "prompt_version": {
+      "minLength": 1,
+      "title": "Prompt Version",
+      "type": "string"
+    },
+    "latency_ms": {
+      "minimum": 0,
+      "title": "Latency Ms",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "language",
+    "language_confidence",
+    "incident_type",
+    "type_confidence",
+    "severity",
+    "severity_confidence",
+    "victims_estimate",
+    "victims_confidence",
+    "location_words",
+    "has_real_details",
+    "vague_or_joking",
+    "missing_fields",
+    "overall_confidence",
+    "transcript_unclear",
+    "model",
+    "prompt_version",
+    "latency_ms"
+  ],
+  "title": "TriageResult",
+  "type": "object"
+}

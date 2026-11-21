@@ -1,0 +1,22 @@
+{
+  "score": 78,
+  "tier": "high",
+  "signals": [
+    {
+      "code": "SIMULATED_start",
+      "points": 50,
+      "detail": "SIMULATED starting score"
+    },
+    {
+      "code": "SIMULATED_gps_matches_text",
+      "points": 15,
+      "detail": "SIMULATED caller GPS within 100 m of the named place"
+    },
+    {
+      "code": "SIMULATED_real_details",
+      "points": 13,
+      "detail": "SIMULATED report gives place, type and victims"
+    }
+  ],
+  "action": "continue"
+}

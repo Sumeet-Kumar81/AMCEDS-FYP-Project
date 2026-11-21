@@ -19,8 +19,8 @@
   "reporter_name": null,
   "ai_details": { "note": "inner shape is defined by contract C-2 (B1-A2-01)" },
   "trust_signals": [
-    { "code": "SIMULATED_example_signal_a", "points": 10 },
-    { "code": "SIMULATED_example_signal_b", "points": -5 }
+    { "code": "SIMULATED_example_signal_a", "points": 10, "detail": "SIMULATED reason for signal a" },
+    { "code": "SIMULATED_example_signal_b", "points": -5, "detail": null }
   ],
   "allocation_summary": { "note": "inner shape is defined by contract C-2 (B1-A2-01)" },
   "duplicate_candidates": [

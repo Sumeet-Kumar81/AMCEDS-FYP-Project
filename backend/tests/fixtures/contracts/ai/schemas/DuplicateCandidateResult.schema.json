@@ -1,0 +1,65 @@
+{
+  "additionalProperties": false,
+  "description": "One open incident that may be the same event. Scores are 0..1; match confidence is 0..100.",
+  "properties": {
+    "candidate_incident_id": {
+      "title": "Candidate Incident Id",
+      "type": "integer"
+    },
+    "distance_m": {
+      "minimum": 0,
+      "title": "Distance M",
+      "type": "integer"
+    },
+    "time_diff_s": {
+      "minimum": 0,
+      "title": "Time Diff S",
+      "type": "integer"
+    },
+    "s_dist": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "S Dist",
+      "type": "number"
+    },
+    "s_time": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "S Time",
+      "type": "number"
+    },
+    "s_meaning": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "S Meaning",
+      "type": "number"
+    },
+    "match_confidence": {
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Match Confidence",
+      "type": "integer"
+    },
+    "decision": {
+      "enum": [
+        "auto_linked",
+        "possible",
+        "separate"
+      ],
+      "title": "Decision",
+      "type": "string"
+    }
+  },
+  "required": [
+    "candidate_incident_id",
+    "distance_m",
+    "time_diff_s",
+    "s_dist",
+    "s_time",
+    "s_meaning",
+    "match_confidence",
+    "decision"
+  ],
+  "title": "DuplicateCandidateResult",
+  "type": "object"
+}

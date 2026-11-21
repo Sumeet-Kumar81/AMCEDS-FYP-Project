@@ -1,0 +1,81 @@
+{
+  "$defs": {
+    "TrustAction": {
+      "description": "What the pipeline does after trust scoring (SRS Table 7.3.2).",
+      "enum": [
+        "continue",
+        "continue_and_confirm",
+        "review_queue",
+        "urgent_with_warning"
+      ],
+      "title": "TrustAction",
+      "type": "string"
+    },
+    "TrustSignal": {
+      "additionalProperties": false,
+      "description": "One trust rule that fired, its points and the reason (SDS Table 6.3: \"keeps a reason for each point\").",
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "points": {
+          "title": "Points",
+          "type": "integer"
+        },
+        "detail": {
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "points",
+        "detail"
+      ],
+      "title": "TrustSignal",
+      "type": "object"
+    },
+    "TrustTier": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "TrustTier",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "score": {
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Score",
+      "type": "integer"
+    },
+    "tier": {
+      "$ref": "#/$defs/TrustTier"
+    },
+    "signals": {
+      "items": {
+        "$ref": "#/$defs/TrustSignal"
+      },
+      "title": "Signals",
+      "type": "array"
+    },
+    "action": {
+      "$ref": "#/$defs/TrustAction"
+    }
+  },
+  "required": [
+    "score",
+    "tier",
+    "signals",
+    "action"
+  ],
+  "title": "TrustAssessment",
+  "type": "object"
+}

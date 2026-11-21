@@ -1,16 +1,16 @@
 # STATUS.md
 
-**Last updated:** 2026-11-20 · **Baseline commit:** `13cf6e6` (branch `main`)
-**Overall state:** Repository scaffold plus a working backend test harness. **B1-A1-02 is complete: merged into `main` via PR #5 (`13cf6e6`); CI green on the PR (run 44739714339) and on `main` (run 44740163138).** **B1-A1-03 (contract C-1 v1) is implemented on branch `feat/contract-c1-schemas`, not yet committed: `docker compose run --rm api pytest -q -rs` → 76 passed, 0 failed, 0 skipped (Python 3.11.18, PostGIS).** Planning is pending approval. No application feature is implemented (schemas only).
+**Last updated:** 2026-11-21 · **Baseline commit:** `7b5b4e4` (branch `main`)
+**Overall state:** Repository scaffold plus a working backend test harness. **B1-A1-02 is complete: merged into `main` via PR #5 (`13cf6e6`); CI green on the PR (run 44739714339) and on `main` (run 44740163138).** **B1-A1-03 (contract C-1 v1) is complete: merged into `main` via PR #6 (`7b5b4e4`); CI green on the PR (run 44883894503) and on `main` (run 44883977423).** **B1-A2-01 (contract C-2 v1, with C-1 v1.1) is implemented on branch `feat/contract-c2-ai-schemas`, not yet committed: `docker compose run --rm api pytest -q -rs` → 167 passed, 0 failed, 0 skipped (Python 3.11.18, PostGIS).** Planning is pending approval. No application feature is implemented (schemas only).
 
 ## 1. Current position
 
 | Item | Value |
 |---|---|
-| Latest completed work | **B1-A1-03** — contract C-1 v1: enums and Incident Record schemas (see the state above), 2026-11-20. Before it: **B1-A1-02** — backend test harness (complete), 2026-11-20. Before that: **BP-01** — implementation blueprint (`docs/blueprint/`, 14 documents, design sketches with 46 passing sketch tests) — documentation only, 2026-11-20 |
+| Latest completed work | **B1-A2-01** — contract C-2 v1: AI input/output schemas (see the state above), 2026-11-21. Before it: **B1-A1-03** — contract C-1 v1 (complete), 2026-11-20. Before that: **B1-A1-02** — backend test harness (complete), 2026-11-20. Before that: **BP-01** — implementation blueprint (`docs/blueprint/`, 14 documents, design sketches with 46 passing sketch tests) — documentation only, 2026-11-20 |
 | Before that | DOC-01 SRS/SDS v1.1 (2026-11-20); PLAN-02 team roles (2026-11-19); PLAN-01 audit and plan (2026-11-19) |
-| Current task | B1-A1-03 awaiting commit (see above). No other task started |
-| Recommended next task | Decide D-032 (pilot area and dates) → **B1-A2-01** (contract C-2: AI result schemas) |
+| Current task | B1-A2-01 awaiting commit (see above). No other task started |
+| Recommended next task | **B1-A1-04** (contracts C-3 auth shapes and C-4 API contract; depends on D-006 approved and D-023 open) |
 | Blockers | Team approval; open decisions in DECISIONS_LOG §2 (D-007…D-009, D-013…D-019, D-021…D-029, D-031…D-035) |
 
 ## 2. Verified results
@@ -20,6 +20,7 @@
 | 2026-11-19 | `cd backend && python3 -m pytest -q` | Audit workspace, no project dependencies, installs disabled | **BLOCKED** — `ModuleNotFoundError: No module named 'fastapi'`; 0 tests executed (superseded by the rows below) |
 | 2026-11-20 | `docker compose run --rm api pytest -q -rs` | Docker, **Python 3.11.18**, pinned requirements, PostGIS 15-3.4 container | **6 passed**, 0 skipped (2 API tests + 4 database tests) |
 | 2026-11-20 | `docker compose run --rm api pytest -q -rs` (B1-A1-03 working tree) | Same | **76 passed**, 0 failed, 0 skipped (6 earlier + 70 C-1 schema tests) |
+| 2026-11-21 | `docker compose run --rm api pytest -q -rs` (B1-A2-01 working tree) | Same | **167 passed**, 0 failed, 0 skipped (76 earlier + 1 C-1 v1.1 test + 90 C-2 tests) |
 | 2026-11-20 | `DATABASE_URL=<localhost variant of .env> backend/.venv/bin/python -m pytest -q -rs` | Local venv, **Python 3.14** (not the project version), same PostGIS container | **6 passed** (secondary evidence only) |
 | 2026-11-20 | Same local command with an unreachable database (port 59999) | Local venv, Python 3.14 | **2 passed, 4 skipped**, each skip shows the reason "PostgreSQL not reachable" |
 | 2026-11-20 | `cd docs/blueprint/code_sketches && python3 -m pytest -q` | Writing environment, Python 3, no project dependencies needed | **46 passed** — tests of *design sketches*, not of the product |
@@ -40,7 +41,8 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 | Config (`core/config.py`) | 🟡 | Env settings with SRS Appendix C defaults; no DB-backed settings |
 | DB engine/session/Base (`core/db.py`) | 🟡 | Async engine created at import time |
 | Report schemas (`schemas/report.py`) | 🟡 | `channel` is the C-1 `Channel` enum (`voice, sms, web, app`); no audio field |
-| Contract C-1 (`schemas/enums.py`, `schemas/incident.py`) | ✅ (schemas) | D-005 enums; `IncidentSummaryOut`, `IncidentDetailOut` and nested schemas; tests in `tests/unit/schemas/`. Not yet used by any endpoint |
+| Contract C-1 (`schemas/enums.py`, `schemas/incident.py`) | ✅ (schemas) | D-005 enums; `IncidentSummaryOut`, `IncidentDetailOut` and nested schemas (v1.1: optional `detail` on trust signals); tests in `tests/unit/schemas/`. Not yet used by any endpoint |
+| Contract C-2 (`schemas/ai.py`) | ✅ (schemas) | Triage, geocode, trust, duplicate and allocation schemas; examples and exported JSON Schemas in `tests/fixtures/contracts/ai/`; tests in `tests/unit/agents/`. No agent uses them yet |
 | `POST /reports` | 🟠 | Validates `description` only; returns hard-coded `INC-000000`; **saves nothing** — must not be demonstrated (NFR-P12) |
 | LLM Gateway (`llm/gateway.py`) | 🟠 | Abstract interface only |
 | Triage / Trust / Coordination / Resource agents | ⬜ | One docstring each in the repository. Design sketches with tests exist **only** in `docs/blueprint/code_sketches/` (not product code) |
@@ -53,7 +55,7 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 | Mobile app (citizen/driver) | ❌ | No folder; D-002 approved (React Native), sub-choice open |
 | Docker Compose | 🟡 | `postgres` + `api` only |
 | CI | 🟡 | `pytest -q -rs` on Python 3.11 with a `postgis/postgis:15-3.4` service; succeeded on PR #5 and `main` (run IDs at the top; logs not read); no frontend job |
-| Tests | ✅ | 76 tests pass in Docker/Python 3.11 (70 C-1 schema tests, see §2). Harness: 2 API tests, 4 PostGIS tests (`tests/integration/`), async `client` and rollback `db_connection`/`db_session` fixtures in `tests/conftest.py`. Factories deferred to the model tasks. They test only the harness and `/health`, not product features |
+| Tests | ✅ | 167 tests pass in Docker/Python 3.11 (161 contract schema tests, see §2). Harness: 2 API tests, 4 PostGIS tests (`tests/integration/`), async `client` and rollback `db_connection`/`db_session` fixtures in `tests/conftest.py`. Factories deferred to the model tasks. They test only the harness and `/health`, not product features |
 
 ## 4. Known problems
 
@@ -74,7 +76,7 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 | Batch | Tasks | Status |
 |---|---|---|
 | Planning and blueprint | PLAN-01, PLAN-02, DOC-01, BP-01 | Done (documentation only); **pending team approval** |
-| Batch 1 — Agent 1 | B1-A1-01 … 34 | **B1-A1-02 complete; B1-A1-03 implemented, awaiting commit (see the state line at the top).** B1-A1-01 and 04…34 not started |
-| Batch 1 — Agent 2 | B1-A2-01 … 17 | Pending approval (none started) |
+| Batch 1 — Agent 1 | B1-A1-01 … 34 | **B1-A1-02 and B1-A1-03 complete.** B1-A1-01 partly done (README left). B1-A1-04…34 not started |
+| Batch 1 — Agent 2 | B1-A2-01 … 17 | **B1-A2-01 implemented, awaiting commit.** B1-A2-02…17 not started |
 | Batch 1 — Agent 3 | B1-A3-01 … 19 | Pending approval (none started) |
 | Batches 2–9 | B2-01 … B9-09 | Pending approval (none started) |

@@ -42,4 +42,4 @@ Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github
 - LangGraph wiring in `06_AI_AGENTS.md` is **not verified**; build a one-node graph first.
 
 ## 6. Next recommended action
-The developer decides D-032 (pilot area and dates) and then authorises the next task (**B1-A2-01**, contract C-2). Current state: `STATUS.md`. Stop and wait for that approval; do not start development on your own.
+The next task and the current state are in `STATUS.md` (one place, so this file does not go stale). The developer authorises each task before work starts. Stop and wait for that approval; do not start development on your own.

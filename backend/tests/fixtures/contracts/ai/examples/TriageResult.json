@@ -1,0 +1,19 @@
+{
+  "language": "English",
+  "language_confidence": 0.97,
+  "incident_type": "accident",
+  "type_confidence": 0.93,
+  "severity": "high",
+  "severity_confidence": 0.88,
+  "victims_estimate": 6,
+  "victims_confidence": 0.7,
+  "location_words": "near the market",
+  "has_real_details": true,
+  "vague_or_joking": false,
+  "missing_fields": [],
+  "overall_confidence": 0.88,
+  "transcript_unclear": false,
+  "model": "SIMULATED-model",
+  "prompt_version": "triage_v1",
+  "latency_ms": 1840
+}

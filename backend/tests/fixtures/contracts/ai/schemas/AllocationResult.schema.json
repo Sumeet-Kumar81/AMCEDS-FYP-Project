@@ -1,0 +1,148 @@
+{
+  "$defs": {
+    "RoutingMode": {
+      "description": "How ETAs were computed: OSRM routes, or straight-line distance when routing is down (UC-05 5a).",
+      "enum": [
+        "osrm",
+        "straight_line"
+      ],
+      "title": "RoutingMode",
+      "type": "string"
+    },
+    "VehicleRecommendation": {
+      "additionalProperties": false,
+      "properties": {
+        "vehicle_id": {
+          "title": "Vehicle Id",
+          "type": "integer"
+        },
+        "vehicle_type": {
+          "$ref": "#/$defs/VehicleType"
+        },
+        "rank": {
+          "minimum": 1,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "eta_seconds": {
+          "minimum": 0,
+          "title": "Eta Seconds",
+          "type": "integer"
+        },
+        "distance_meters": {
+          "minimum": 0,
+          "title": "Distance Meters",
+          "type": "integer"
+        },
+        "eta_is_approximate": {
+          "title": "Eta Is Approximate",
+          "type": "boolean"
+        },
+        "is_spare": {
+          "title": "Is Spare",
+          "type": "boolean"
+        },
+        "route_geometry": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Route Geometry"
+        }
+      },
+      "required": [
+        "vehicle_id",
+        "vehicle_type",
+        "rank",
+        "eta_seconds",
+        "distance_meters",
+        "eta_is_approximate",
+        "is_spare"
+      ],
+      "title": "VehicleRecommendation",
+      "type": "object"
+    },
+    "VehicleType": {
+      "enum": [
+        "ambulance",
+        "fire_truck",
+        "backup"
+      ],
+      "title": "VehicleType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Vehicles needed per type, any shortage, and the ranked recommendation list (needed + spares).",
+  "properties": {
+    "needed": {
+      "additionalProperties": {
+        "minimum": 0,
+        "type": "integer"
+      },
+      "propertyNames": {
+        "$ref": "#/$defs/VehicleType"
+      },
+      "title": "Needed",
+      "type": "object"
+    },
+    "victims_unknown_check": {
+      "title": "Victims Unknown Check",
+      "type": "boolean"
+    },
+    "shortage": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/VehicleType"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Shortage"
+    },
+    "recommendations": {
+      "items": {
+        "$ref": "#/$defs/VehicleRecommendation"
+      },
+      "title": "Recommendations",
+      "type": "array"
+    },
+    "hospital_id": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Hospital Id"
+    },
+    "routing_mode": {
+      "$ref": "#/$defs/RoutingMode"
+    }
+  },
+  "required": [
+    "needed",
+    "victims_unknown_check",
+    "shortage",
+    "recommendations",
+    "routing_mode"
+  ],
+  "title": "AllocationResult",
+  "type": "object"
+}

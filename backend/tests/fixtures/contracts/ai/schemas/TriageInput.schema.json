@@ -1,0 +1,96 @@
+{
+  "$defs": {
+    "Channel": {
+      "description": "How the report arrived (SRS Table 3.4). The Android app is ``app``, not ``mobile``.",
+      "enum": [
+        "voice",
+        "sms",
+        "web",
+        "app"
+      ],
+      "title": "Channel",
+      "type": "string"
+    },
+    "GeoPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "title": "GeoPoint",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "What the worker gives the Triage Agent: the report text (typed, SMS or transcript) only.\n\nThe model never sees caller history, trust data or vehicle availability.",
+  "properties": {
+    "incident_id": {
+      "title": "Incident Id",
+      "type": "integer"
+    },
+    "text": {
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    },
+    "channel": {
+      "$ref": "#/$defs/Channel"
+    },
+    "language_hint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Language Hint"
+    },
+    "caller_gps": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GeoPoint"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "location_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Location Text"
+    }
+  },
+  "required": [
+    "incident_id",
+    "text",
+    "channel"
+  ],
+  "title": "TriageInput",
+  "type": "object"
+}

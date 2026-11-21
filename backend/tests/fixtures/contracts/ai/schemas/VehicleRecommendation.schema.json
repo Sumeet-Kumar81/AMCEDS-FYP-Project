@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "VehicleType": {
+      "enum": [
+        "ambulance",
+        "fire_truck",
+        "backup"
+      ],
+      "title": "VehicleType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "vehicle_id": {
+      "title": "Vehicle Id",
+      "type": "integer"
+    },
+    "vehicle_type": {
+      "$ref": "#/$defs/VehicleType"
+    },
+    "rank": {
+      "minimum": 1,
+      "title": "Rank",
+      "type": "integer"
+    },
+    "eta_seconds": {
+      "minimum": 0,
+      "title": "Eta Seconds",
+      "type": "integer"
+    },
+    "distance_meters": {
+      "minimum": 0,
+      "title": "Distance Meters",
+      "type": "integer"
+    },
+    "eta_is_approximate": {
+      "title": "Eta Is Approximate",
+      "type": "boolean"
+    },
+    "is_spare": {
+      "title": "Is Spare",
+      "type": "boolean"
+    },
+    "route_geometry": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Route Geometry"
+    }
+  },
+  "required": [
+    "vehicle_id",
+    "vehicle_type",
+    "rank",
+    "eta_seconds",
+    "distance_meters",
+    "eta_is_approximate",
+    "is_spare"
+  ],
+  "title": "VehicleRecommendation",
+  "type": "object"
+}
