@@ -1,0 +1,80 @@
+{
+  "$defs": {
+    "GeocodeSource": {
+      "description": "Which step produced the coordinates (more detailed than C-1 ``LocationSource``).\n\nMapping to C-1: ``gps`` -> ``gps``; ``gazetteer`` and ``nominatim`` -> ``text``; ``unknown`` -> ``unknown``.",
+      "enum": [
+        "gazetteer",
+        "nominatim",
+        "gps",
+        "unknown"
+      ],
+      "title": "GeocodeSource",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Where the incident is, and which step found it. ``unknown`` means no coordinates.",
+  "properties": {
+    "lat": {
+      "anyOf": [
+        {
+          "maximum": 90,
+          "minimum": -90,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Lat"
+    },
+    "lon": {
+      "anyOf": [
+        {
+          "maximum": 180,
+          "minimum": -180,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Lon"
+    },
+    "source": {
+      "$ref": "#/$defs/GeocodeSource"
+    },
+    "matched_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Matched Name"
+    },
+    "distance_to_gps_m": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Distance To Gps M"
+    }
+  },
+  "required": [
+    "lat",
+    "lon",
+    "source",
+    "matched_name"
+  ],
+  "title": "GeocodeResult",
+  "type": "object"
+}

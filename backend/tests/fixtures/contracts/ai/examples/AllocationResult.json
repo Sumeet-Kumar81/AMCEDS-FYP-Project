@@ -1,0 +1,31 @@
+{
+  "needed": {
+    "ambulance": 3
+  },
+  "victims_unknown_check": false,
+  "shortage": null,
+  "recommendations": [
+    {
+      "vehicle_id": 5,
+      "vehicle_type": "ambulance",
+      "rank": 1,
+      "eta_seconds": 420,
+      "distance_meters": 3100,
+      "eta_is_approximate": false,
+      "is_spare": false,
+      "route_geometry": null
+    },
+    {
+      "vehicle_id": 8,
+      "vehicle_type": "ambulance",
+      "rank": 2,
+      "eta_seconds": 560,
+      "distance_meters": 4200,
+      "eta_is_approximate": false,
+      "is_spare": false,
+      "route_geometry": null
+    }
+  ],
+  "hospital_id": null,
+  "routing_mode": "osrm"
+}

@@ -560,6 +560,7 @@ Failure at any stage → retry (bounded) → mark_stage_failed → incident need
 ```
 
 #### B1-A2-01 — Contract C-2: AI input/output schemas (Phase 1A)
+- **Implementation status:** C-2 v1 implemented on branch `feat/contract-c2-ai-schemas` (not yet committed); current state and test result in `STATUS.md`. Differences from the text below (decided by the developer, DECISIONS_LOG §3 C-2 notes): `auto_linked` instead of `auto_link`; `route_geometry` instead of `route_polyline`; `hospital_suggestion` is `hospital_id`; tests are in `backend/tests/unit/agents/test_ai_schemas.py` as planned. "Signed off by A1 and A3" was met by the sole developer. The original task text below is unchanged.
 - **Purpose / behaviour:** Fix exactly what each agent receives and returns so A1 can store it and A3 can display it, and so invalid model output can never drive dispatch.
 - **Approach:** `schemas/ai.py` (Pydantic v2, `extra="forbid"`):
   - `TriageInput {incident_id, text, channel, language_hint?, caller_gps?, location_text?}`

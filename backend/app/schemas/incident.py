@@ -73,10 +73,14 @@ class DispatcherDecisionOut(_Contract):
 
 
 class TrustSignalOut(_Contract):
-    """One trust rule that was applied, with its points (SDS Table 5.2 ``trust_signals``). Detail refined by C-2."""
+    """One trust rule that was applied, with its points and reason (SDS Table 5.2 ``trust_signals``).
+
+    ``detail`` added in C-1 v1.1 to match C-2 ``TrustSignal``; optional so v1 data stays valid.
+    """
 
     code: str
     points: int
+    detail: str | None = None
 
 
 class DuplicateCandidateOut(_Contract):

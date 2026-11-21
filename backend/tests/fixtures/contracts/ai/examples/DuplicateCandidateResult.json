@@ -1,0 +1,10 @@
+{
+  "candidate_incident_id": 120,
+  "distance_m": 140,
+  "time_diff_s": 300,
+  "s_dist": 0.78,
+  "s_time": 0.89,
+  "s_meaning": 0.81,
+  "match_confidence": 72,
+  "decision": "possible"
+}

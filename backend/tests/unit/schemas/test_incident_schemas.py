@@ -204,6 +204,13 @@ def test_invalid_locations_are_rejected(kwargs: dict[str, Any]) -> None:
 
 
 # ---------------------------------------------------------------- nested lists
+def test_trust_signal_detail_is_optional_since_c1_v1_1() -> None:
+    from app.schemas.incident import TrustSignalOut
+
+    assert TrustSignalOut(code="x", points=5).detail is None  # v1 data stays valid
+    assert TrustSignalOut(code="x", points=5, detail="reason").detail == "reason"
+
+
 def test_duplicate_candidate_bounds() -> None:
     ok = {"duplicate_id": 1, "candidate_incident_id": 2, "match_confidence": 85, "decision": "auto_linked"}
     assert DuplicateCandidateOut.model_validate(ok).match_confidence == 85

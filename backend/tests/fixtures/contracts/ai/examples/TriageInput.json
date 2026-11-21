@@ -1,0 +1,11 @@
+{
+  "incident_id": 123,
+  "text": "SIMULATED report: Bus accident near the market, many people hurt",
+  "channel": "web",
+  "language_hint": null,
+  "caller_gps": {
+    "lat": 27.7052,
+    "lon": 68.8574
+  },
+  "location_text": "near the market"
+}

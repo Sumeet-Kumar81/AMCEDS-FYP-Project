@@ -1,0 +1,10 @@
+{
+  "vehicle_id": 5,
+  "vehicle_type": "ambulance",
+  "rank": 1,
+  "eta_seconds": 420,
+  "distance_meters": 3100,
+  "eta_is_approximate": false,
+  "is_spare": false,
+  "route_geometry": null
+}

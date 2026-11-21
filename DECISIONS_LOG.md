@@ -249,7 +249,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-032 — Calendar, pilot area and viva dates
 - **Problem:** The SRS and SDS give no start date, submission date, viva date or exact pilot area, so the nine-month plan cannot be tied to dates, and the OSRM extract, gazetteer and simulated vehicle positions need an area.
 - **Recommendation:** the team supplies the dates and the pilot area in week 1; until then the roadmap uses weeks 1–36.
-- **Status:** OPEN – needs team input (week 1).
+- **Status:** PARTLY DECIDED 2026-11-21 by the project developer. **Pilot area: Sukkur district** (OSRM extract, gazetteer and simulated vehicle positions use it). **Dates: not known yet** — the roadmap stays in weeks 1–36 until the start, submission and viva dates are known.
 
 ### D-033 — Duplicate formula decay (amends D-007)
 - **Problem:** With linear decay the best possible score at TC-13 (100 m, 5 min, identical meaning) is 80, below the 85 auto-link threshold, so TC-13 and NFR-P9 cannot pass. Shown by the test `test_finding_linear_decay_can_never_auto_link_tc13` in `docs/blueprint/code_sketches/`.
@@ -276,8 +276,8 @@ Agreement order (Phase 1A of Batch 1): C-1 → C-2 → C-3 → C-4 → C-5 → C
 
 | ID | Contract | Owner | Consumers | Location (planned) | Version / status |
 |---|---|---|---|---|---|
-| C-1 | Enums + Incident Record read schema (`IncidentSummaryOut`, `IncidentDetailOut`) | Agent 1 | A2, A3 | `backend/app/schemas/enums.py`, `schemas/incident.py` | v1 — approved by the project developer (sole developer, acting as A1, A2 and A3; database input on `batch_no`), 2026-11-20. Notes below |
-| C-2 | AI result schemas: `TriageResult`, `TrustAssessment`, `DuplicateCandidateResult`, `AllocationResult`, `VehicleRecommendation` | Agent 2 | A1 (stores), A3 (displays) | `backend/app/schemas/ai.py` | v0 draft |
+| C-1 | Enums + Incident Record read schema (`IncidentSummaryOut`, `IncidentDetailOut`) | Agent 1 | A2, A3 | `backend/app/schemas/enums.py`, `schemas/incident.py` | v1.1 — v1 approved 2026-11-20; v1.1 (2026-11-21) adds optional `detail` to `TrustSignalOut` to match C-2 (backward compatible). Notes below |
+| C-2 | AI result schemas: `TriageResult`, `TrustAssessment`, `DuplicateCandidateResult`, `AllocationResult`, `VehicleRecommendation` | Agent 2 | A1 (stores), A3 (displays) | `backend/app/schemas/ai.py` | v1 — approved by the project developer (sole developer, acting as A1, A2 and A3), 2026-11-21. Notes below |
 | C-3 | Auth: login request/response, token claims, `/me` user shape, role names | Agent 1 | A3 | `schemas/auth.py` | v0 draft — depends on D-023 |
 | C-4 | REST endpoint list and request/response bodies | Agent 1 | A3, A2 (reallocation/routing proxy) | `docs/API_CONTRACT.md` + `/openapi.json` | endpoint list approved (SDS v1.1 Table 4.3); bodies still to write |
 | C-5 | WebSocket event envelope and event names; NOTIFY payloads from worker | Agent 1 (A2 emits via NOTIFY) | A3, A2 | `schemas/events.py`, `docs/API_CONTRACT.md §WS` | event names approved (SDS v1.1 Table 4.4) |
@@ -291,6 +291,15 @@ Agreement order (Phase 1A of Batch 1): C-1 → C-2 → C-3 → C-4 → C-5 → C
 3. Recommendation rounds start at 1, so `RecommendationOut.batch_no` keeps `ge=1`.
 4. The real `POST /reports` (B1-A1-16) returns `reference_no` (string, e.g. `INC-000123`); `incident_id` stays an integer.
 Also fixed in v1: `eta_seconds` and `distance_meters` are required (an approximate ETA still has a value); `location` is required and "no location" is `source = "unknown"`; `gps` needs lat/lon, `text` needs the address words (coordinates are added when the worker geocodes, D-011).
+
+**C-2 notes (v1, 2026-11-21).** Decided by the project developer. Where the B1-A2-01 task text differed from C-1 v1, C-1 wins:
+1. Duplicate decisions use the C-1 values. The Coordination Agent may only propose `auto_linked`, `possible` or `separate` (the plan text said `auto_link`); `confirmed` and `rejected` are dispatcher decisions. The exported JSON Schema lists only the three agent values.
+2. The route field is `route_geometry` (C-1, SDS Table 5.7), not `route_polyline`.
+3. A trust signal is `{code, points, detail}`; `detail` (the reason) is required in C-2 and optional in C-1 v1.1.
+4. The allocation hospital suggestion is `hospital_id: int | None` only; the rule stays open (D-018).
+5. No "AI unavailable" field yet: D-035 is still open.
+6. Which C-2 objects are stored in C-1 `ai_details` / `allocation_summary` is decided in B1-A1-19 (storage).
+Admin-configurable thresholds (trust tiers, duplicate 85/60, vehicle rules) are enforced by the agents and settings, not by the schemas.
 ---
 
 ## 4. Coordination requests (CR)
