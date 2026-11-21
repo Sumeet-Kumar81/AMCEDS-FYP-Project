@@ -278,7 +278,7 @@ Agreement order (Phase 1A of Batch 1): C-1 → C-2 → C-3 → C-4 → C-5 → C
 |---|---|---|---|---|---|
 | C-1 | Enums + Incident Record read schema (`IncidentSummaryOut`, `IncidentDetailOut`) | Agent 1 | A2, A3 | `backend/app/schemas/enums.py`, `schemas/incident.py` | v1.1 — v1 approved 2026-11-20; v1.1 (2026-11-21) adds optional `detail` to `TrustSignalOut` to match C-2 (backward compatible). Notes below |
 | C-2 | AI result schemas: `TriageResult`, `TrustAssessment`, `DuplicateCandidateResult`, `AllocationResult`, `VehicleRecommendation` | Agent 2 | A1 (stores), A3 (displays) | `backend/app/schemas/ai.py` | v1 — approved by the project developer (sole developer, acting as A1, A2 and A3), 2026-11-21. Notes below |
-| C-3 | Auth: login request/response, token claims, `/me` user shape, role names | Agent 1 | A3 | `schemas/auth.py` | v1 — approved by the project developer (sole developer), 2026-11-21; session design D-023 |
+| C-3 | Auth: login request/response, token claims, `/me` user shape, role names | Agent 1 | A3 | `schemas/auth.py` | v1.1 — v1 approved 2026-11-21; v1.1 (B1-A1-14) adds `RefreshTokenClaims` (refresh token = JWT of type `refresh` with the session's `jti`, absolute lifetime 12 h, developer assumption). Endpoints built |
 | C-4 | REST endpoint list and request/response bodies | Agent 1 | A3, A2 (reallocation/routing proxy) | `docs/API_CONTRACT.md` + `/openapi.json` | v1 — approved by the project developer (sole developer), 2026-11-21: `docs/API_CONTRACT.md` + `/openapi.json`; 48 endpoints, 501 until built |
 | C-5 | WebSocket event envelope and event names; NOTIFY payloads from worker | Agent 1 (A2 emits via NOTIFY) | A3, A2 | `schemas/events.py`, `docs/API_CONTRACT.md §WS` | v1 — approved by the project developer (sole developer), 2026-11-21; 18 events of SDS Table 4.4; `docs/API_CONTRACT.md` §4. Notes below |
 | C-6 | Pipeline persistence interface (claim job, save stage results, mark failed, candidate queries) | Agent 1 | A2 | `backend/app/services/pipeline_store.py` | v1 — interface only, approved by the project developer, 2026-11-21; implementation in B1-A1-19. Notes below |
@@ -317,6 +317,7 @@ Template: `CR-xxx | date | from agent | to owner | file/contract | change wanted
 | CR | Date | From | To | File | Change | Reason | Status |
 |---|---|---|---|---|---|---|---|
 | CR-001 | 2026-11-21 | A1 (B1-A1-34) | project developer | `.env.example` | add empty `SEED_ADMIN_PASSWORD`, `SEED_DISPATCHER_PASSWORD`, `SEED_DRIVER_PASSWORD`; reword the business-rules comment | seed accounts get passwords only from the environment, never from code | APPROVED and done 2026-11-21 |
+| CR-002 | 2026-11-21 | A1 (B1-A1-14) | project developer | `.env.example` | add `ENV=dev`; `JWT_EXPIRE_MINUTES` 30 → 15 (D-023) | startup refuses weak JWT secrets outside dev; access tokens last 15 min | APPROVED and done 2026-11-21 |
 
 ---
 

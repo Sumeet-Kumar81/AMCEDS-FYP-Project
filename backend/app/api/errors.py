@@ -43,12 +43,16 @@ class ErrorBody(BaseModel):
 class ApiError(Exception):
     """Raise to return a contract error with an explicit code and details."""
 
-    def __init__(self, status_code: int, message: str, *, code: str | None = None, details: Any = None) -> None:
+    def __init__(
+        self, status_code: int, message: str, *, code: str | None = None, details: Any = None,
+        headers: dict[str, str] | None = None,
+    ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.code = code or ERROR_CODES.get(status_code, f"http_{status_code}")
         self.message = message
         self.details = details
+        self.headers = headers
 
 
 class NotImplementedYet(ApiError):
@@ -67,7 +71,10 @@ def _body(status_code: int, code: str, message: str, details: Any = None) -> JSO
 
 
 async def _api_error(_: Request, exc: ApiError) -> JSONResponse:
-    return _body(exc.status_code, exc.code, exc.message, exc.details)
+    response = _body(exc.status_code, exc.code, exc.message, exc.details)
+    if exc.headers:
+        response.headers.update(exc.headers)
+    return response
 
 
 async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:

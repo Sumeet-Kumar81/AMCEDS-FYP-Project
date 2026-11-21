@@ -2,11 +2,12 @@
 
 Users are disabled, never deleted. The audit log is read-only.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.deps import ADMIN
 from app.api.errors import ERROR_RESPONSES, NotImplementedYet
 
-router = APIRouter(prefix="/admin", tags=["admin"], responses=ERROR_RESPONSES)
+router = APIRouter(prefix="/admin", tags=["admin"], responses=ERROR_RESPONSES, dependencies=[Depends(ADMIN)])
 TASK = "B1-A1-31"
 
 

@@ -57,6 +57,17 @@ class MeOut(_Contract):
     on_duty: bool = Field(description="Drivers only: true while on duty (GPS shared only then)")
 
 
+class RefreshTokenClaims(_Contract):
+    """Claims inside the refresh JWT (C-3 v1.1). Same ``jti`` as the session's access tokens; it is
+    exchanged at ``POST /api/v1/auth/refresh`` and stops working when the session ends or idles out."""
+
+    sub: str = Field(description="user_id as a string")
+    jti: str = Field(min_length=1)
+    iat: int
+    exp: int
+    type: Literal["refresh"] = "refresh"
+
+
 class AccessTokenClaims(_Contract):
     """Claims inside the access JWT. ``jti`` is the ``user_sessions`` session id."""
 
