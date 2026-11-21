@@ -254,6 +254,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** C-1 at v1, signed off by A2 and A3. **Priority:** P0. **Output:** schema modules + fixture.
 
 #### B1-A1-04 — Contracts C-3 and C-4: auth shapes and API contract document (Phase 1A)
+- **Implementation status:** implemented on branch `feat/contracts-c3-c4-api` (not yet committed); current state in `STATUS.md`. Differences from the text below, decided by the developer: `GET /health` stays unprefixed (approved D-006 text), so only the report test moved; the existing `POST /reports` stub now validates and returns 501 instead of a fake reference; an error-format module `backend/app/api/errors.py` was added; report endpoints stay in `reports.py`. "Contract approved by team" was met by the sole developer. The original task text below is unchanged.
 - **Purpose / behaviour:** Publish every endpoint, its role and its request/response body before the frontend starts real integration.
 - **Approach:** Write `docs/API_CONTRACT.md` from §4.3 (path, role, request, response, error codes 400/401/403/404/409/422/429/503, error body `{code, message, details}`). `schemas/auth.py` (`LoginIn`, `TokenOut`, `MeOut`, role enum). Add `/api/v1` prefix in `main.py` (D-006) and update the two existing tests. Register stub routers that return **501 Not Implemented** (never fake data) so OpenAPI shows the full surface.
 - **Traceability:** SRS CI-1, UC-11, NFR-C2; SDS §4.1 API layer.
