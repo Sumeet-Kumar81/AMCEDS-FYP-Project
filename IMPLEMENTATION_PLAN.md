@@ -276,6 +276,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** C-5, C-6, C-7 signed off by A2 and A3. **Priority:** P0. **Output:** interface modules.
 
 #### B1-A1-06 — Alembic (async) and PostGIS extension migration
+- **Implementation status:** implemented on branch `feat/alembic-postgis` (not yet committed); current state in `STATUS.md`. Decided by the developer: `0001` downgrade drops PostGIS without CASCADE (refuses if anything depends on it); the local `dispatch` database was upgraded to `0001`. Found while doing it: the postgis/postgis image puts `tiger`/`topology` in the search path, so autogenerate saw the tiger tables; `env.py` now connects with `search_path = public` and a regression test covers it. Tests are in `backend/tests/integration/test_migrations.py` (throwaway database). The original task text below is unchanged.
 - **Purpose / behaviour:** All schema changes go through migrations (README rule).
 - **Approach:** `alembic init -t async` merged into existing `backend/migrations/`; `env.py` reads `DATABASE_URL`, imports `Base.metadata`, includes GeoAlchemy2 helpers so geometry types autogenerate correctly and the PostGIS internal tables are excluded. Revision `0001_enable_postgis`: `CREATE EXTENSION IF NOT EXISTS postgis`.
 - **Traceability:** SDS §5 (PostgreSQL + PostGIS); SRS SW-4.
