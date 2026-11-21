@@ -119,3 +119,14 @@ Entry format: date · task ID · purpose · files · what changed · why · DB/A
 - **Tests:** `docker compose run --rm api pytest -q -rs` (Python 3.11.18, PostGIS) → **76 passed, 0 failed, 0 skipped**. A mutation check in a scratch copy outside the repository (C-1 rules deliberately broken) made the expected tests fail, confirming they enforce the contract. **Not verified:** GitHub Actions on this branch (not pushed); no linter or type checker is configured.
 - **Known limitations:** In the fixture, `ai_details` and `allocation_summary` are placeholder objects until contract C-2 (B1-A2-01) defines their shape; `TrustSignalOut` (`code`, `points`) may be refined by C-2. The C-1 schemas are not yet used by any endpoint (B1-A1-16 and B1-A1-20 do that). `POST /reports` is still the stub that saves nothing.
 
+---
+
+## 2026-11-21 · DOC-03 · Week-1 decisions recorded; duplicate tree removed (B1-A1-01, part)
+
+- **Purpose:** Record the decisions taken by the project developer, who is the only developer, and remove references to the deleted duplicate tree.
+- **Decisions:** D-001 approved and done (the developer deleted `fyp-dispatch/`, 62 tracked files); D-031 approved (option a, no extra tables beyond D-004); D-027b and D-034 superseded (one developer does every task). **D-032 (pilot area and dates) is still open** and needs the developer's input. No other decision changed.
+- **Deletion check:** before recording D-001, `fyp-dispatch/` was compared with the root at `HEAD`: four files were older versions of root files; the only copy-only files were an outdated `docs/README.md` one-liner and five empty `.gitkeep` placeholders. Nothing else was lost; all of it is in git history.
+- **Files modified:** `DECISIONS_LOG.md` (D-001, D-027b, D-031, D-034 status lines), `STATUS.md` (next task, known problems 1 and 10), `PROJECT_CONTEXT.md` (team row; `fyp-dispatch/` line removed from the layout), `CLAUDE.md` (removed "edit only the root copies"), `docs/AI_HANDOFF.md` (team line, pitfall removed, next action), `IMPLEMENTATION_PLAN.md` (status line under B1-A1-01; task text unchanged), `CHANGES.md` (this entry). Deleted: `fyp-dispatch/**` (by the developer).
+- **DB / API impact:** none. **Tests:** see below.
+- **Known limitations:** B1-A1-01 still needs the `README.md` update. `docs/blueprint/12_GITHUB_WORKFLOW.md` still mentions removing `fyp-dispatch/` as a future step (the blueprint is a dated design document and was left unchanged). Older CHANGES entries mention `fyp-dispatch/` as history.
+

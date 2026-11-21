@@ -10,7 +10,7 @@
 | Title | AI-Assisted Multi-Channel Emergency Dispatch System with Three Specialized Agents |
 | Institution | Department of Computer Science, Sukkur IBA University |
 | Supervisor / Co-supervisor | Dr. Adil Khan / Dr. Zakria Jamali |
-| Team and roles | **Arjun Kumar** (group lead) — AI & backend; **Khalid Hussain** — frontend & UI/UX; **Sumeet Kumar** — database & technical support (datasets, testing, documentation, deployment). Source: team slide (A-007). Task-level split: D-027b / D-034 (pending) |
+| Team and roles | **Arjun Kumar** (group lead) — AI & backend; **Khalid Hussain** — frontend & UI/UX; **Sumeet Kumar** — database & technical support (datasets, testing, documentation, deployment). Source: team slide (A-007). All work is done by one developer (D-027b, D-034 superseded). |
 | Repository | `Sumeet-Kumar81/AMCEDS-FYP-Project`, branch `main` |
 | Nature | Academic **prototype**, 9 months, one pilot area (to be fixed, D-032), simulated data only |
 
@@ -102,7 +102,6 @@ docs/      srs-sds/ (SRS + SDS v1.1 `.docx`), blueprint/ (BP-01), AI_HANDOFF.md;
 frontend/  dashboard/, pwa/ (README only)
 infra/     osrm/, gazetteer/, nginx/ (README only)
 scripts/   dev.sh
-fyp-dispatch/  outdated duplicate of the tree (D-001); it was identical when audited, but `backend/` differs now (test harness, pinned requirements) and it lacks the new docs
 ```
 
 Current implementation state: **STATUS.md**. Roadmap: **IMPLEMENTATION_PLAN.md** + `IMPLEMENTATION_PLAN_UPDATE_v0.3.md` + `docs/blueprint/11_ROADMAP_9_MONTHS.md`.

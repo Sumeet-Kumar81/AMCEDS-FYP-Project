@@ -15,7 +15,7 @@ How the next session, development agent or team member continues the work.
 4. `git status`, `git log -5`; confirm STATUS.md matches the code.
 
 ## 3. Who is who
-Team roles (team slide, A-007): **Arjun Kumar** = AI & backend; **Khalid Hussain** = frontend & UI/UX; **Sumeet Kumar** = database & technical support. Task-level split: D-027b (original) and D-034 (proposed rebalance, 23 / 19 / 28 of 70 Batch-1 tasks; weekly table in `11_ROADMAP_9_MONTHS.md`). Both are pending confirmation. The README ownership table is outdated.
+Team roles (team slide, A-007): **Arjun Kumar** = AI & backend; **Khalid Hussain** = frontend & UI/UX; **Sumeet Kumar** = database & technical support. All work is done by one developer; there are no separate reviewers (D-027b, D-034 superseded).
 
 ## 3a. If you are one of the three Batch 1 agents
 
@@ -34,7 +34,6 @@ Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github
 - Do not commit or push; present changed files, test results and a summary to the team.
 
 ## 5. Known pitfalls
-- `fyp-dispatch/` duplicates the whole tree. Edit the **root** copies only.
 - Code comments in the repository cite names that are not in the SDS (D-003). Follow SDS v1.1 table names.
 - The existing `POST /reports` returns a fake reference without saving. Do not demo it before B1-A1-16.
 - `backend/pytest.ini` uses `asyncio_mode = auto`, which needs `pytest-asyncio`.
@@ -43,4 +42,4 @@ Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github
 - LangGraph wiring in `06_AI_AGENTS.md` is **not verified**; build a one-node graph first.
 
 ## 6. Next recommended action
-The team decides the remaining week-1 items (D-001, D-001b record, D-027b/D-034, D-031, D-032) and then authorises the next task (**B1-A1-03**, contract C-1). B1-A1-02 is already complete (see `STATUS.md`). Stop and wait for that approval; do not start development on your own.
+The developer decides D-032 (pilot area and dates) and then authorises the next task (**B1-A2-01**, contract C-2). Current state: `STATUS.md`. Stop and wait for that approval; do not start development on your own.

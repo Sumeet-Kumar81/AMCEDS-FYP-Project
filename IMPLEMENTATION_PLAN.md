@@ -221,6 +221,7 @@ tracking, WebSocket, notifications, admin, analytics, audit, seed data, and the 
 used by the AI worker. Follows SDS §4–§6 and does not redesign the architecture.
 
 #### B1-A1-01 — Repository hygiene
+- **Implementation status (2026-11-21):** partly done — `fyp-dispatch/` deleted (D-001) and the SRS/SDS v1.1 are in `docs/srs-sds/` (D-001b). Still open: the `README.md` update (source of truth, ownership table, PWA wording). The original task text below is unchanged.
 - **Purpose / behaviour:** Leave one canonical source tree and commit the approved SRS/SDS so every agent reads the same documents.
 - **Approach:** After D-001 approval, remove `fyp-dispatch/` (identical copy) in a dedicated PR. After D-001b, add the two `.docx` files to `docs/srs-sds/`. Update README "Source of truth" and ownership (D-027).
 - **Traceability:** NFR-P18 (maintainability); SDS §4.4 (layered design for parallel teams).

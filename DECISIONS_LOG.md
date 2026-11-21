@@ -38,7 +38,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Options:** (a) delete `fyp-dispatch/` and keep the root as canonical; (b) keep both; (c) move everything into `fyp-dispatch/`.
 - **Recommendation:** (a). The root is what README, CI and docker-compose use.
 - **Impact:** deletion only; no code change. Blocks B1-A1-01.
-- **Status:** OPEN – needs approval (deletion requires explicit approval).
+- **Status:** APPROVED and DONE 2026-11-21 — option (a). The project developer deleted `fyp-dispatch/` (62 tracked files). Checked before recording: the copy held no unique work (four files were older versions of root files; the only copy-only files were an outdated `docs/README.md` one-liner and five empty `.gitkeep` placeholders). Recoverable from git history.
 
 ### D-001b — SRS/SDS not in the repository
 - **Problem:** README says "Source of truth: `docs/srs-sds/`" but that folder held only `.gitkeep`; the documents existed only in the Claude Project (and, earlier, as the superseded October drafts in `docs/Requriments/`).
@@ -227,7 +227,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Assumptions to confirm:** (1) The slide says "Frontend & UI/UX" for Khalid; the Android citizen/driver app is **not mentioned** for anyone. The plan assigns it to Khalid with the web UI. (2) The routing *code* (`integrations/routing.py`) is Arjun's ("intelligent routing"); the OSRM map data and container are Sumeet's ("deployment support"). (3) Sumeet writes user guides; Khalid supplies screenshots and UI text.
 - **Workload risk:** Arjun would carry about 36 of 70 Batch 1 tasks (all AI plus the API). Khalid carries 19 (including mobile), Sumeet about 14 plus data, testing, docs and deployment. Options: (a) accept; (b) move more DB-adjacent API work (for example B1-A1-20, 22, 23) to Sumeet; (c) move simple driver-facing endpoints to Khalid after contracts are frozen. Recommendation: (a) for now, review after Phase 1B.
 - **README:** `README.md` "Ownership" table still shows the old assignment (Sumeet = frontend, Khalid = DB). It must be changed in a PR after approval; it was not edited in this planning session.
-- **Status:** OPEN – team to confirm.
+- **Status:** SUPERSEDED 2026-11-21 — the project has one developer, who does every task (see D-034). The roles in A-007 stay as the documented team roles. The README ownership table is still outdated (B1-A1-01).
 
 ### D-028 — Public OSM tile usage
 - **Problem:** The public OSM tile server has a usage policy and needs internet; UC-08 3a needs a stored map area.
@@ -244,7 +244,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 - **Options:** (a) keep the SDS schema and map each name to where the data lives; (b) add the extra tables.
 - **Recommendation:** (a). Role is a column on `users`; a driver is a `users` row with `role='driver'` linked one-to-one to `vehicles`; trust and AI results are columns and JSONB on `incidents`; dispatcher decisions are `assignments` plus `audit_logs`; status history is audit rows. Add a table only if a measured need appears. Mapping table: `docs/blueprint/04_DATABASE.md` §4.2.
 - **Impact:** no schema change beyond D-004.
-- **Status:** OPEN – needs approval (week 1).
+- **Status:** APPROVED 2026-11-21 — option (a), by the project developer.
 
 ### D-032 — Calendar, pilot area and viva dates
 - **Problem:** The SRS and SDS give no start date, submission date, viva date or exact pilot area, so the nine-month plan cannot be tied to dates, and the OSRM extract, gazetteer and simulated vehicle positions need an area.
@@ -261,7 +261,7 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-034 — Task-level rebalance of Batch 1 (extends D-027b)
 - **Problem:** D-027b gave Arjun about 36 of 70 Batch-1 tasks (all AI plus most of the API).
 - **Recommendation:** Arjun 23 (AI, contracts, orchestration), Khalid 19 (web and Android), Sumeet 28 (database, services, admin, analytics, data, tests, deployment). Dependency-checked by `docs/blueprint/tools/schedule_check.py` (0 violations; all 70 tasks scheduled). The 36-week table is `11_ROADMAP_9_MONTHS.md`. Team may choose differently.
-- **Status:** OPEN – team to confirm (week 1).
+- **Status:** SUPERSEDED 2026-11-21 — not applicable: the project has one developer, who does all 70 Batch-1 tasks in the dependency order of `docs/blueprint/11_ROADMAP_9_MONTHS.md`. The per-person columns of that roadmap are no longer a split of work.
 
 ### D-035 — Trust tier when Triage fails
 - **Problem:** NFR-S2 wants a trust tier on every report, but if Triage fails the inputs "real details" and "vague or joking" do not exist.

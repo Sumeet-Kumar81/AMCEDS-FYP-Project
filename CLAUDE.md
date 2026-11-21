@@ -30,7 +30,7 @@ Modular monolith: FastAPI API + a separate AI worker process (same image), Postg
 - **One task at a time**, named by ID (e.g. `B1-A1-02`). Do not start the next task.
 - **Before editing:** state the files you will change, why, DB impact, API impact, dependencies and tests, then wait for my approval.
 - Smallest complete, testable unit. Type hints, validation, error handling, logging. No TODO stubs, hard-coded success, fake DB calls or mock data presented as real. Anything simulated is labelled SIMULATED.
-- Do not delete, rename or overwrite existing files without approval. Check whether a file or module already exists before creating one. Edit only the root copies (`fyp-dispatch/` is a duplicate).
+- Do not delete, rename or overwrite existing files without approval. Check whether a file or module already exists before creating one.
 - **Ask before:** installing packages, changing dependencies, changing the schema, resetting or deleting data, any destructive command, adding a library or service not in the SDS stack. Never expose secrets; never commit `.env`.
 - Respect file ownership in `AGENT_RULES.md`. Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github/`, `README.md`) change only through a coordination request in `DECISIONS_LOG.md` §4.
 - A decision that is still OPEN in `DECISIONS_LOG.md` is **not approved**. If your task depends on one, stop and ask.

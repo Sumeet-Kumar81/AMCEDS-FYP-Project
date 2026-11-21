@@ -10,7 +10,7 @@
 | Latest completed work | **B1-A1-03** — contract C-1 v1: enums and Incident Record schemas (see the state above), 2026-11-20. Before it: **B1-A1-02** — backend test harness (complete), 2026-11-20. Before that: **BP-01** — implementation blueprint (`docs/blueprint/`, 14 documents, design sketches with 46 passing sketch tests) — documentation only, 2026-11-20 |
 | Before that | DOC-01 SRS/SDS v1.1 (2026-11-20); PLAN-02 team roles (2026-11-19); PLAN-01 audit and plan (2026-11-19) |
 | Current task | B1-A1-03 awaiting commit (see above). No other task started |
-| Recommended next task | Week-1 decisions (D-001, D-001b, D-027b/D-034, D-031, D-032) → **B1-A2-01** (contract C-2: AI result schemas) |
+| Recommended next task | Decide D-032 (pilot area and dates) → **B1-A2-01** (contract C-2: AI result schemas) |
 | Blockers | Team approval; open decisions in DECISIONS_LOG §2 (D-007…D-009, D-013…D-019, D-021…D-029, D-031…D-035) |
 
 ## 2. Verified results
@@ -57,7 +57,7 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 
 ## 4. Known problems
 
-1. `fyp-dispatch/` duplicates the whole repository (D-001).
+1. ~~`fyp-dispatch/` duplicates the whole repository~~ — deleted 2026-11-21 (D-001 done). B1-A1-01 still needs the README update.
 2. SRS/SDS v1.1 are committed in `docs/srs-sds/` on `main` (via PR #5); the October drafts are no longer on `main`. D-001b: formal team approval of the path decision, if required, is still pending.
 3. Code comments cite names not in the SDS (D-003).
 4. README and `frontend/README.md` plan a driver PWA; D-002 chose React Native (README not yet updated).
@@ -66,7 +66,7 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 7. SDS v1.1 figures 2.2, 3.1, 4.1, 5.1, 6.3 are images and still show the old design (see CHANGES DOC-01).
 8. **Duplicate formula (U-1):** the D-007 linear formula cannot reach the 85 % auto-link threshold at TC-13; D-033 proposes quadratic decay.
 9. Twelve unclear or conflicting requirements U-1…U-12 (`docs/blueprint/01_SRS_ANALYSIS.md`).
-10. Workload imbalance if D-027b stands (Arjun about 36 of 70 tasks); D-034 proposes 23 / 19 / 28.
+10. ~~Workload split (D-027b/D-034)~~ — superseded: one developer does all tasks.
 11. `IMPLEMENTATION_PLAN.md` still reads v0.2 and cites v1.0 sources; `IMPLEMENTATION_PLAN_UPDATE_v0.3.md` lists the changes.
 
 ## 5. Task status
