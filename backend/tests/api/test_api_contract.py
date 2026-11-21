@@ -12,7 +12,7 @@ from app.main import app
 # SDS v1.1 Table 4.3 (+ IMPLEMENTATION_PLAN §4.3 for the admin methods). Same list as docs/API_CONTRACT.md §3.
 CONTRACT: dict[tuple[str, str], str] = {
     ("GET", "/health"): "exists",
-    ("POST", "/api/v1/reports"): "B1-A1-16",
+    ("POST", "/api/v1/reports"): "exists",  # built in B1-A1-16
     ("POST", "/api/v1/reports/voice"): "B1-A1-17",
     ("POST", "/api/v1/reports/{reference_no}/confirmation"): "B1-A1-24",
     ("POST", "/api/v1/intake/sms"): "B4-01",
@@ -68,7 +68,6 @@ OPEN_STUBS = {k: v for k, v in STUBS.items() if k[1].startswith(("/api/v1/report
 PATH_VALUES = {"incident_id": "1", "candidate_id": "1", "assignment_id": "1", "user_id": "1",
                "vehicle_id": "1", "hospital_id": "1", "reference_no": "INC-000001", "key": "dup_auto_link"}
 VALID_BODIES: dict[tuple[str, str], dict[str, Any]] = {
-    ("POST", "/api/v1/reports"): {"json": {"description": "SIMULATED test report", "channel": "web"}},
     ("POST", "/api/v1/reports/voice"): {"files": {"audio": ("clip.wav", b"RIFF0000WAVE", "audio/wav")}},
 }
 DOC = Path(os.environ.get("API_CONTRACT_DOC", Path(__file__).resolve().parents[3] / "docs" / "API_CONTRACT.md"))
@@ -111,12 +110,6 @@ async def test_open_stub_returns_501_with_contract_error_body(client: httpx.Asyn
         "message": f"This endpoint is in the API contract but is not implemented yet (task {STUBS[(method, path)]}).",
         "details": {"task": STUBS[(method, path)]},
     }
-
-
-async def test_report_submission_no_longer_returns_a_fake_reference(client: httpx.AsyncClient) -> None:
-    r = await client.post("/api/v1/reports", json={"description": "SIMULATED bus accident", "channel": "app"})
-    assert r.status_code == 501
-    assert "INC-" not in r.text
 
 
 # ---------------------------------------------------------------- error body

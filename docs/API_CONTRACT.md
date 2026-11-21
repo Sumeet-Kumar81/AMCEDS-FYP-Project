@@ -61,7 +61,7 @@ this file and OpenAPI together.
 | Method | Path | Role | Request | Response (success) | Built in |
 |---|---|---|---|---|---|
 | `GET` | `/health` | P | — | `{api, database}` (worker/OSRM/LLM/geocoder checks added in B1-A1-33) | exists |
-| `POST` | `/api/v1/reports` | P | `ReportIn` | `201 {reference_no, status: "new", received_at}` (C-1 note 4) | B1-A1-16 |
+| `POST` | `/api/v1/reports` | P | `ReportIn` (channel `web` or `app`; optional `client_request_id`) | `201 ReportAcceptedOut {reference_no, status: "new", received_at}` only after the record is committed; `200` same body for a resend (TC-04); `503` and no reference if it could not be saved | **built** (B1-A1-16) |
 | `POST` | `/api/v1/reports/voice` | P | multipart: `audio` (WAV, MP3 or M4A, ≤ 2 min); other fields defined in task | `201`, same as above | B1-A1-17 |
 | `POST` | `/api/v1/reports/{reference_no}/confirmation` | P (code) | defined in task | defined in task | B1-A1-24 |
 | `POST` | `/api/v1/intake/sms` | S | defined in task (D-014) | defined in task | B4-01 |
@@ -159,3 +159,4 @@ sends the full event. The API wakes the worker with `NOTIFY report_pending`.
 | v1 | 2026-11-21 | First version: all 48 endpoints of SDS Table 4.3 (plus `/health`) as 501 stubs; error body; C-3 auth shapes |
 | v1.1 | 2026-11-21 | §4 WebSocket events (C-5, B1-A1-05) |
 | v1.2 | 2026-11-21 | Auth endpoints built; role checks on every private route (B1-A1-14/15) |
+| v1.3 | 2026-11-21 | `POST /api/v1/reports` built (B1-A1-16) |
