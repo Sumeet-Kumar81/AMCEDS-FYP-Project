@@ -1,16 +1,16 @@
 # STATUS.md
 
-**Last updated:** 2026-11-21 · **Baseline commit:** `1e2023f` (branch `main`)
-**Overall state:** Repository scaffold plus a working backend test harness. **B1-A1-02 is complete: merged into `main` via PR #5 (`13cf6e6`); CI green on the PR (run 44739714339) and on `main` (run 44740163138).** **B1-A1-03 (contract C-1 v1) is complete: merged into `main` via PR #6 (`7b5b4e4`); CI green on the PR (run 44883894503) and on `main` (run 44883977423).** **B1-A2-01 (contract C-2 v1, C-1 v1.1) is complete: merged into `main` via PR #7 (`ec5fce3`); CI green on the PR (run 44885101793) and on `main` (run 44885326928).** **B1-A1-04 (contracts C-3 v1, C-4 v1) is complete: merged into `main` via PR #8 (`1c3d29c`); CI green on the PR (run 44886274543) and on `main` (run 44886626516).** **B1-A1-05 (contracts C-5, C-6, C-7 v1) is complete: merged into `main` via PR #9 (`d7325e9`); CI green on the PR (run 44887711883) and on `main` (run 44887847131).** **B1-A1-06 (Alembic, migration 0001) is complete: merged into `main` via PR #10 (`1e2023f`); CI green on the PR (run 44889357903) and on `main` (run 44889456098).** **B1-A1-07…11 (database schema v1: 15 tables, migration `0002_initial_schema`) are implemented on branch `feat/db-schema-v1`, not yet committed: `docker compose run --rm api pytest -q -rs` → 458 passed, 0 failed, 2 skipped (the two doc-vs-code checks); with the whole repo mounted → 460 passed, 0 failed, 0 skipped. The local `dispatch` database is at `0002 (head)` with all 15 tables; `alembic check` reports no differences.** With it, all Phase 1A contracts (C-1…C-7) exist. Planning is pending approval. No application feature is implemented (schemas only).
+**Last updated:** 2026-11-21 · **Baseline commit:** `9ad1922` (branch `main`)
+**Overall state:** Repository scaffold plus a working backend test harness. **B1-A1-02 is complete: merged into `main` via PR #5 (`13cf6e6`); CI green on the PR (run 44739714339) and on `main` (run 44740163138).** **B1-A1-03 (contract C-1 v1) is complete: merged into `main` via PR #6 (`7b5b4e4`); CI green on the PR (run 44883894503) and on `main` (run 44883977423).** **B1-A2-01 (contract C-2 v1, C-1 v1.1) is complete: merged into `main` via PR #7 (`ec5fce3`); CI green on the PR (run 44885101793) and on `main` (run 44885326928).** **B1-A1-04 (contracts C-3 v1, C-4 v1) is complete: merged into `main` via PR #8 (`1c3d29c`); CI green on the PR (run 44886274543) and on `main` (run 44886626516).** **B1-A1-05 (contracts C-5, C-6, C-7 v1) is complete: merged into `main` via PR #9 (`d7325e9`); CI green on the PR (run 44887711883) and on `main` (run 44887847131).** **B1-A1-06 (Alembic, migration 0001) is complete: merged into `main` via PR #10 (`1e2023f`); CI green on the PR (run 44889357903) and on `main` (run 44889456098).** **B1-A1-07…11 (schema v1, migration 0002) are complete: merged into `main` via PR #11 (`9ad1922`); CI green on the PR (run 44891439937) and on `main` (run 44891518416).** **B1-A1-12, 13, 34 (settings service, audit service, SIMULATED Sukkur seed data, migration `0003_seed_settings`) are implemented on branch `feat/settings-audit-seed`, not yet committed: `docker compose run --rm api pytest -q -rs` → 499 passed, 0 failed, 2 skipped (the two doc-vs-code checks); with the whole repo mounted → 501 passed, 0 failed, 0 skipped. The local `dispatch` database is still at `0002` (migration 0003 and seeding not run on it).** With it, all Phase 1A contracts (C-1…C-7) exist. Planning is pending approval. No application feature is implemented (schemas only).
 
 ## 1. Current position
 
 | Item | Value |
 |---|---|
-| Latest completed work | **B1-A1-07…11** — database schema v1 (see the state above), 2026-11-21. Before it: **B1-A1-06** — Alembic and `0001` (complete), 2026-11-21. Before that: **B1-A1-05** — contracts C-5, C-6, C-7 (complete), 2026-11-21. Before that: **B1-A1-04** — contracts C-3, C-4 (complete), 2026-11-21. Before that: **B1-A2-01** — contract C-2 v1 (complete), 2026-11-21. Before that: **B1-A1-03** — contract C-1 v1 (complete), 2026-11-20. Before that: **B1-A1-02** — backend test harness (complete), 2026-11-20. Before that: **BP-01** — implementation blueprint (`docs/blueprint/`, 14 documents, design sketches with 46 passing sketch tests) — documentation only, 2026-11-20 |
+| Latest completed work | **B1-A1-12, 13, 34** — settings, audit and seed data (see the state above), 2026-11-21. Before it: **B1-A1-07…11** — schema v1 (complete), 2026-11-21. Before that: **B1-A1-06** — Alembic and `0001` (complete), 2026-11-21. Before that: **B1-A1-05** — contracts C-5, C-6, C-7 (complete), 2026-11-21. Before that: **B1-A1-04** — contracts C-3, C-4 (complete), 2026-11-21. Before that: **B1-A2-01** — contract C-2 v1 (complete), 2026-11-21. Before that: **B1-A1-03** — contract C-1 v1 (complete), 2026-11-20. Before that: **B1-A1-02** — backend test harness (complete), 2026-11-20. Before that: **BP-01** — implementation blueprint (`docs/blueprint/`, 14 documents, design sketches with 46 passing sketch tests) — documentation only, 2026-11-20 |
 | Before that | DOC-01 SRS/SDS v1.1 (2026-11-20); PLAN-02 team roles (2026-11-19); PLAN-01 audit and plan (2026-11-19) |
-| Current task | B1-A1-07…11 awaiting commit (see above). No other task started |
-| Recommended next task | **B1-A1-12, 13, 34** (settings service, audit service, simulated seed data for Sukkur) |
+| Current task | B1-A1-12, 13, 34 awaiting commit (see above). No other task started |
+| Recommended next task | **B1-A1-14, 15** (login, logout, sessions per D-023; role-based access control) |
 | Blockers | Team approval; open decisions in DECISIONS_LOG §2 (D-007…D-009, D-013…D-019, D-021…D-029, D-031…D-035) |
 
 ## 2. Verified results
@@ -31,6 +31,8 @@
 | 2026-11-21 | `docker compose run --rm api pytest -q -rs` (B1-A1-07…11 working tree) | Docker, Python 3.11.18, PostGIS | **458 passed**, 0 failed, **2 skipped** (the two doc-vs-code tests) |
 | 2026-11-21 | `docker compose run --rm -v "$PWD":/repo -w /repo/backend api pytest -q -rs` (B1-A1-07…11, whole repo mounted) | Same | **460 passed**, 0 failed, 0 skipped (409 earlier + 51 schema tests) |
 | 2026-11-21 | `docker compose run --rm api alembic upgrade head` / `current` / `check` | Local `dispatch` database | `0001 -> 0002`; `0002 (head)`; 15 application tables; "No new upgrade operations detected" |
+| 2026-11-21 | `docker compose run --rm api pytest -q -rs` (B1-A1-12, 13, 34 working tree; `dispatch_test` now recreated and migrated each run) | Docker, Python 3.11.18, PostGIS | **499 passed**, 0 failed, **2 skipped** (the two doc-vs-code tests) |
+| 2026-11-21 | `docker compose run --rm -v "$PWD":/repo -w /repo/backend api pytest -q -rs` (same, whole repo mounted) | Same | **501 passed**, 0 failed, 0 skipped (460 earlier + 41 settings/audit/seed tests) |
 | 2026-11-20 | `DATABASE_URL=<localhost variant of .env> backend/.venv/bin/python -m pytest -q -rs` | Local venv, **Python 3.14** (not the project version), same PostGIS container | **6 passed** (secondary evidence only) |
 | 2026-11-20 | Same local command with an unreachable database (port 59999) | Local venv, Python 3.14 | **2 passed, 4 skipped**, each skip shows the reason "PostgreSQL not reachable" |
 | 2026-11-20 | `cd docs/blueprint/code_sketches && python3 -m pytest -q` | Writing environment, Python 3, no project dependencies needed | **46 passed** — tests of *design sketches*, not of the product |
@@ -59,7 +61,8 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 | LLM Gateway (`llm/gateway.py`) | 🟠 | Abstract interface only |
 | Triage / Trust / Coordination / Resource agents | ⬜ | One docstring each in the repository. Design sketches with tests exist **only** in `docs/blueprint/code_sketches/` (not product code) |
 | Database schema v1 (`backend/app/models/`, migration `0002`) | ✅ | All 15 SDS tables; CHECKs from the C-1 vocabularies; computed `reference_no`; double-dispatch partial unique index; `approved_by` NOT NULL; triggers: audit rows permanent, original report text/audio set once. No service uses the tables yet |
-| AI worker, WebSocket hub, services | ⬜ | Docstrings / READMEs only (contracts exist) |
+| Settings, audit, seed (`services/settings.py`, `services/audit.py`, `app/seed.py`) | ✅ | 35 SRS Appendix C settings with ranges and cross-rules (TC-36 at service level), seeded by migration 0003; audit rows in the caller's transaction; idempotent SIMULATED Sukkur seed (6/20 vehicles, 2/4 hospitals, 9 accounts with passwords from the environment). No endpoint uses them yet |
+| AI worker, WebSocket hub, other services | ⬜ | Docstrings / READMEs only (contracts exist) |
 | Alembic migrations (`backend/alembic.ini`, `backend/migrations/`) | ✅ | Async env, PostGIS-aware; `0001_enable_postgis` (downgrade without CASCADE); tests on a throwaway database. No application tables yet |
 | Auth/RBAC, audit, admin, analytics | ❌ | — |
 | Dispatch, assignments, tracking, notifications | ❌ | — |
@@ -69,7 +72,7 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 | Mobile app (citizen/driver) | ❌ | No folder; D-002 approved (React Native), sub-choice open |
 | Docker Compose | 🟡 | `postgres` + `api` only |
 | CI | 🟡 | `pytest -q -rs` on Python 3.11 with a `postgis/postgis:15-3.4` service; succeeded on PR #5 and `main` (run IDs at the top; logs not read); no frontend job |
-| Tests | ✅ | 460 tests pass in Docker/Python 3.11 with the repo mounted (2 doc checks skip without it; see §2). Harness: 2 API tests, 4 PostGIS tests (`tests/integration/`), async `client` and rollback `db_connection`/`db_session` fixtures in `tests/conftest.py`. Factories deferred to the model tasks. They test only the harness and `/health`, not product features |
+| Tests | ✅ | 501 tests pass in Docker/Python 3.11 with the repo mounted (2 doc checks skip without it; see §2). Harness: 2 API tests, 4 PostGIS tests (`tests/integration/`), async `client` and rollback `db_connection`/`db_session` fixtures in `tests/conftest.py`. Factories deferred to the model tasks. They test only the harness and `/health`, not product features |
 
 ## 4. Known problems
 
@@ -90,7 +93,7 @@ Legend: ✅ verified · 🟡 exists, not verified · 🟠 partial · ⬜ placeho
 | Batch | Tasks | Status |
 |---|---|---|
 | Planning and blueprint | PLAN-01, PLAN-02, DOC-01, BP-01 | Done (documentation only); **pending team approval** |
-| Batch 1 — Agent 1 | B1-A1-01 … 34 | **B1-A1-02…06 complete; B1-A1-07…11 implemented, awaiting commit.** B1-A1-01 partly done (README left). B1-A1-12…34 not started |
+| Batch 1 — Agent 1 | B1-A1-01 … 34 | **B1-A1-02…11 complete; B1-A1-12, 13, 34 implemented, awaiting commit.** B1-A1-01 partly done (README left). B1-A1-14…33 not started |
 | Batch 1 — Agent 2 | B1-A2-01 … 17 | **B1-A2-01 complete.** B1-A2-02…17 not started |
 | Batch 1 — Agent 3 | B1-A3-01 … 19 | Pending approval (none started) |
 | Batches 2–9 | B2-01 … B9-09 | Pending approval (none started) |

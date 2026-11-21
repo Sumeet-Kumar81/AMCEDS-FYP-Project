@@ -1,0 +1,30 @@
+{
+  "note": "SIMULATED hospitals (Sukkur district pilot area). Not real hospitals; approximate positions.",
+  "small_count": 2,
+  "hospitals": [
+    {
+      "name": "SIMULATED General Hospital A",
+      "lat": 27.709,
+      "lon": 68.852,
+      "departments": "emergency, surgery, burns"
+    },
+    {
+      "name": "SIMULATED General Hospital B",
+      "lat": 27.7,
+      "lon": 68.865,
+      "departments": "emergency, maternity, children"
+    },
+    {
+      "name": "SIMULATED Trauma Centre C",
+      "lat": 27.72,
+      "lon": 68.84,
+      "departments": "emergency, trauma"
+    },
+    {
+      "name": "SIMULATED Rohri Hospital D",
+      "lat": 27.69,
+      "lon": 68.893,
+      "departments": "emergency"
+    }
+  ]
+}

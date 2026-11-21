@@ -1,8 +1,9 @@
 """Shared pytest fixtures (B1-A1-02).
 
 Database tests use a separate ``dispatch_test`` database on the same PostgreSQL/PostGIS
-server as the application. The database name never matches the application database, so
-tests cannot touch real data. If no server is reachable, tests marked ``db`` are skipped
+server as the application. It is dropped, recreated and migrated to the latest Alembic revision
+once per test run, so every run starts from the real schema with no leftover rows. The database
+name never matches the application database, so tests cannot touch real data. If no server is reachable, tests marked ``db`` are skipped
 with the reason; they are never reported as passed.
 
 Connection settings come from the environment (never hard-coded):
@@ -17,10 +18,13 @@ from __future__ import annotations
 import logging
 import os
 from collections.abc import AsyncIterator, Iterator
+from pathlib import Path
 
 import httpx
 import psycopg2
 import pytest
+from alembic import command
+from alembic.config import Config
 from psycopg2 import sql
 from sqlalchemy import pool
 from sqlalchemy.engine import make_url
@@ -31,6 +35,7 @@ from app.main import app
 logger = logging.getLogger(__name__)
 
 TEST_DB_NAME = os.environ.get("TEST_DB_NAME", "dispatch_test")
+ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
 
 
 def _test_async_url() -> str | None:
@@ -45,7 +50,7 @@ def _test_async_url() -> str | None:
 
 @pytest.fixture(scope="session")
 def test_database_url() -> Iterator[str]:
-    """Create ``dispatch_test`` (with PostGIS) if needed and return its async URL.
+    """Recreate ``dispatch_test``, migrate it to head and return its async URL.
 
     Skips the requesting test, with a reason, when no server can be reached.
     """
@@ -66,21 +71,16 @@ def test_database_url() -> Iterator[str]:
     admin.autocommit = True
     try:
         with admin.cursor() as cur:
-            cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (url.database,))
-            if cur.fetchone() is None:
-                cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(url.database)))
-                logger.info("created test database %s", url.database)
+            cur.execute(sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(sql.Identifier(url.database)))
+            cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(url.database)))
+            logger.info("recreated test database %s", url.database)
     finally:
         admin.close()
 
-    test_dsn = url.set(drivername="postgresql").render_as_string(hide_password=False)
-    conn = psycopg2.connect(test_dsn, connect_timeout=3)
-    conn.autocommit = True
-    try:
-        with conn.cursor() as cur:
-            cur.execute("CREATE EXTENSION IF NOT EXISTS postgis")
-    finally:
-        conn.close()
+    cfg = Config(str(ALEMBIC_INI))
+    cfg.attributes["database_url"] = async_url
+    cfg.attributes["configure_logger"] = False
+    command.upgrade(cfg, "head")  # 0001 enables PostGIS, then the schema and seeded settings
     yield async_url
 
 
