@@ -286,6 +286,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** upgrade/downgrade clean in Docker and CI. **Priority:** P0. **Output:** migration chain.
 
 #### B1-A1-07 — Models: users, callers, user_sessions
+- **Implementation status:** implemented together with B1-A1-07…11 on branch `feat/db-schema-v1` (one migration, `0002_initial_schema`); current state in `STATUS.md`; details in CHANGES.md. The original task text below is unchanged.
 - **Purpose / behaviour:** Staff accounts (dispatcher, driver, admin), caller history for trust, and session rows for idle timeout and logout.
 - **Approach:** `models/user.py`: `User` (SDS Table 5.4 + `failed_login_count`, `locked_until`, `on_duty`, `last_login_at`), unique `username`, role CHECK constraint; `UserSession` (D-023). `models/caller.py`: `Caller` (SDS Table 5.1), unique partial indexes on `phone_number` and `device_id` (when not null). Single `User` table with `role` (the SDS class hierarchy Dispatcher/Driver/Admin is behaviour, implemented in services).
 - **Traceability:** SDS Tables 5.1, 5.4, §6.2; SRS UC-11, UC-03 1, NFR-C1, NFR-C4.
@@ -295,6 +296,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** models import; autogenerate includes them. **Priority:** P0. **Output:** models.
 
 #### B1-A1-08 — Models: incidents and incident_groups
+- **Implementation status:** implemented together with B1-A1-07…11 on branch `feat/db-schema-v1` (one migration, `0002_initial_schema`); current state in `STATUS.md`; details in CHANGES.md. The original task text below is unchanged.
 - **Purpose / behaviour:** The Incident Record table — the centre of the system.
 - **Approach:** `models/incident.py`: `Incident` with SDS Table 5.2 columns plus D-004 columns (`reference_no`, `client_request_id`, `reporter_name`, `caller_gps`, `pipeline_*`, `ai_details` JSONB, `review_reasons` text[], `trust_signals` JSONB, `allocation_summary` JSONB, `settings_snapshot` JSONB, `created_at`, `updated_at`, `closed_at`). CHECK constraints for enums, `confidence` 0–1, `trust_score` 0–100. Indexes: GiST on `location`; btree on `(status, severity)`, `(incident_type, received_at)`, `pipeline_state` partial where pending/reallocate. `IncidentGroup` (SDS Table 5.3). `original_text` and `audio_ref` are never updated after insert (enforced in service + DB trigger raising on change).
 - **Traceability:** SRS Table 3.4, UC-01 post-conditions, NFR-P12; SDS Tables 5.2, 5.3, §6.1.
@@ -304,6 +306,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** all columns present, constraints enforced. **Priority:** P0. **Output:** model.
 
 #### B1-A1-09 — Models: vehicles, vehicle_locations, hospitals
+- **Implementation status:** implemented together with B1-A1-07…11 on branch `feat/db-schema-v1` (one migration, `0002_initial_schema`); current state in `STATUS.md`; details in CHANGES.md. The original task text below is unchanged.
 - **Purpose / behaviour:** Fleet, GPS history and hospitals used for allocation, tracking and transport.
 - **Approach:** `models/fleet.py`: `Vehicle` (SDS Table 5.5; unique `plate_number`; unique `driver_id` when not null for the one-to-one link; GiST on `last_location`), `VehicleLocation` (Table 5.6; index `(vehicle_id, recorded_at desc)`), `Hospital` (Table 5.9; GiST on `location`).
 - **Traceability:** SDS Tables 5.5, 5.6, 5.9; SRS UC-10, UC-12 3–4, TC-34.
@@ -313,6 +316,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** spatial queries use indexes (EXPLAIN recorded). **Priority:** P0. **Output:** model.
 
 #### B1-A1-10 — Models: recommendations and assignments (double-dispatch guard)
+- **Implementation status:** implemented together with B1-A1-07…11 on branch `feat/db-schema-v1` (one migration, `0002_initial_schema`); current state in `STATUS.md`; details in CHANGES.md. The original task text below is unchanged.
 - **Purpose / behaviour:** Store ranked suggestions separately from approved assignments. Enforce "one open assignment per vehicle" in the database itself.
 - **Approach:** `models/dispatch.py`: `Recommendation` (Table 5.7 + D-004 columns), `Assignment` (Table 5.8 + `decline_reason`, `declined_at`, `timed_out_at`, `notified_at`, `cancelled` status). Partial unique index `uq_assignment_open_vehicle ON assignments(vehicle_id) WHERE status IN ('approved','accepted')`. FK `approved_by` NOT NULL (every assignment has an approving dispatcher — NFR-S1).
 - **Traceability:** SDS Tables 5.7, 5.8, §3.2; SRS NFR-S1, NFR-S6, UC-05/06 post-conditions.
@@ -322,6 +326,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** guard proven by test. **Priority:** P0. **Output:** model.
 
 #### B1-A1-11 — Models: audit_logs, settings, duplicate_candidates, confirmation_requests; initial schema migration
+- **Implementation status:** implemented together with B1-A1-07…11 on branch `feat/db-schema-v1` (one migration, `0002_initial_schema`); current state in `STATUS.md`; details in CHANGES.md. The original task text below is unchanged.
 - **Purpose / behaviour:** Complete the schema and apply it in one reviewed migration.
 - **Approach:** `models/audit.py` `AuditLog` (Table 5.10; `details` JSONB rather than text so AI-suggested vs chosen vehicles are queryable — recorded in D-004). Trigger `audit_logs_no_modify` blocks UPDATE/DELETE (NFR-C10). `models/settings.py` `Setting` (Table 5.11). `models/review.py` `DuplicateCandidate`, `ConfirmationRequest` (D-004). Generate `0002_initial_schema`, review by hand (enum CHECKs, partial indexes, triggers), apply.
 - **Traceability:** SDS Tables 5.10, 5.11, §2.2; SRS NFR-S9, NFR-C10, UC-04, UC-03 6, UC-12 5.

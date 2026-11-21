@@ -3,79 +3,23 @@ so they never touch the application database or ``dispatch_test``. Skipped with 
 PostgreSQL server is reachable."""
 from __future__ import annotations
 
-import os
-from collections.abc import Iterator
-from pathlib import Path
-
-import psycopg2
 import pytest
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
-from psycopg2 import sql
-from sqlalchemy.engine import make_url
 from sqlalchemy.exc import DBAPIError
+
+from tests.integration.conftest import ALEMBIC_INI, alembic_config, query
 
 pytestmark = pytest.mark.db
 
-BACKEND = Path(__file__).resolve().parents[2]
-ALEMBIC_INI = BACKEND / "alembic.ini"
 MIGRATION_DB = "dispatch_migrations_test"
-
-
-def _admin_dsn(async_url: str) -> str:
-    return make_url(async_url).set(drivername="postgresql", database="postgres").render_as_string(hide_password=False)
-
-
-def _sync_dsn(async_url: str) -> str:
-    return make_url(async_url).set(drivername="postgresql").render_as_string(hide_password=False)
-
-
-def _recreate(admin_dsn: str, name: str, drop_only: bool = False) -> None:
-    conn = psycopg2.connect(admin_dsn, connect_timeout=3)
-    conn.autocommit = True
-    try:
-        with conn.cursor() as cur:
-            cur.execute(sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(sql.Identifier(name)))
-            if not drop_only:
-                cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
-    finally:
-        conn.close()
-
-
-@pytest.fixture
-def migration_db() -> Iterator[str]:
-    """Async URL of a brand-new, empty database (no PostGIS yet)."""
-    base = os.environ.get("DATABASE_URL")
-    if not base:
-        pytest.skip("no DATABASE_URL set; migration tests not run")
-    url = make_url(base).set(database=MIGRATION_DB).render_as_string(hide_password=False)
-    try:
-        _recreate(_admin_dsn(url), MIGRATION_DB)
-    except psycopg2.OperationalError as exc:
-        pytest.skip(f"PostgreSQL not reachable ({exc.__class__.__name__}); migration tests not run")
-    try:
-        yield url
-    finally:
-        _recreate(_admin_dsn(url), MIGRATION_DB, drop_only=True)
-
-
-def alembic_config(url: str) -> Config:
-    cfg = Config(str(ALEMBIC_INI))
-    cfg.attributes["database_url"] = url
-    cfg.attributes["configure_logger"] = False  # keep pytest's logging setup
-    return cfg
-
-
-def query(url: str, statement: str) -> list[tuple]:
-    conn = psycopg2.connect(_sync_dsn(url), connect_timeout=3)
-    conn.autocommit = True
-    try:
-        with conn.cursor() as cur:
-            cur.execute(statement)
-            return cur.fetchall() if cur.description else []
-    finally:
-        conn.close()
+HEAD = ScriptDirectory.from_config(Config(str(ALEMBIC_INI))).get_current_head()
+APP_TABLES = {
+    "users", "user_sessions", "callers", "incidents", "incident_groups", "vehicles", "vehicle_locations",
+    "hospitals", "recommendations", "assignments", "audit_logs", "settings", "duplicate_candidates",
+    "confirmation_requests", "worker_heartbeats",
+}
 
 
 def extensions(url: str) -> set[str]:
@@ -91,9 +35,14 @@ def current_revision(url: str) -> str | None:
 
 
 # ---------------------------------------------------------------- tests
-def test_migration_chain_has_one_head_starting_at_0001() -> None:
+def public_tables(url: str) -> set[str]:
+    return {r[0] for r in query(url, "SELECT tablename FROM pg_tables WHERE schemaname = 'public'")}
+
+
+def test_migration_chain_is_linear_0001_then_0002() -> None:
     scripts = ScriptDirectory.from_config(Config(str(ALEMBIC_INI)))
-    assert scripts.get_heads() == ["0001"]
+    assert scripts.get_heads() == ["0002"] == [HEAD]
+    assert scripts.get_revision("0002").down_revision == "0001"
     assert scripts.get_revision("0001").down_revision is None
 
 
@@ -103,15 +52,20 @@ def test_upgrade_downgrade_upgrade_is_clean(migration_db: str) -> None:
 
     command.upgrade(cfg, "head")
     assert "postgis" in extensions(migration_db)
-    assert current_revision(migration_db) == "0001"
+    assert current_revision(migration_db) == HEAD
     assert query(migration_db, "SELECT postgis_version()")[0][0]
+    assert public_tables(migration_db) == APP_TABLES | {"alembic_version", "spatial_ref_sys"}
+
+    command.downgrade(cfg, "0001")
+    assert public_tables(migration_db) == {"alembic_version", "spatial_ref_sys"}
+    assert not query(migration_db, "SELECT proname FROM pg_proc WHERE proname IN ('audit_logs_no_modify', 'incidents_keep_original')")
 
     command.downgrade(cfg, "base")
     assert "postgis" not in extensions(migration_db)
     assert current_revision(migration_db) is None
 
     command.upgrade(cfg, "head")
-    assert current_revision(migration_db) == "0001"
+    assert current_revision(migration_db) == HEAD
 
 
 def test_models_and_database_have_no_differences(migration_db: str) -> None:
@@ -143,7 +97,8 @@ def test_downgrade_refuses_when_something_depends_on_postgis(migration_db: str) 
     with pytest.raises(DBAPIError, match="depend"):
         command.downgrade(cfg, "base")
     assert {"postgis", "postgis_topology"} <= extensions(migration_db)
-    assert current_revision(migration_db) == "0001"
+    # the whole downgrade ran in one transaction, so the dropped tables came back too
+    assert current_revision(migration_db) == HEAD and APP_TABLES <= public_tables(migration_db)
 
 
 def test_alembic_ini_holds_no_url_or_password() -> None:
