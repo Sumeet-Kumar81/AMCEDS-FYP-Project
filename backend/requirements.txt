@@ -11,12 +11,13 @@ alembic==1.20.1
 bcrypt==5.0.0
 python-multipart==0.0.34
 httpx==0.28.1
+langgraph==1.2.24  # agent orchestrator, SDS §4.2 (B1-A2-13, CR-003 approved 2026-11-21)
 pytest==9.2.0
 pytest-asyncio==1.5.0
 # Deliberately NOT pinned yet (left unchanged by approval; separate decision):
 psycopg2-binary>=2.9
 python-jose[cryptography]>=3.3
 # AI deps are added on their day:
-#   Day 5 : groq / google-generativeai, langgraph
+#   Day 5 : (Groq is called over httpx, no SDK: D-008)
 #   Day 9 : sentence-transformers
 #   Day 10: faster-whisper

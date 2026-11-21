@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     llm_provider: str = "groq"
     llm_model: str = "llama-3.3-70b-versatile"
     llm_api_key: str = ""
+    llm_base_url: str = ""  # empty = the provider's standard URL (Groq: api.groq.com/openai/v1)
+    llm_timeout_s: float = 8.0  # per model call (NFR-P1), B1-A2-02
+    worker_concurrency: int = 2  # AI worker jobs in parallel, B1-A2-14
     ollama_url: str = "http://ollama:11434"
     osrm_url: str = "http://osrm:5000"
     nominatim_url: str = "https://nominatim.openstreetmap.org"
