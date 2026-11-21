@@ -3,12 +3,13 @@
 Safety rule for B1-A1-25: vehicles are locked only here, at approval by an authenticated
 dispatcher; 409 if a vehicle already has an open assignment.
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.deps import DISPATCHER
 from app.api.errors import ERROR_RESPONSES, NotImplementedYet
 from app.schemas.incident import AssignmentOut
 
-router = APIRouter(tags=["dispatch"], responses=ERROR_RESPONSES)
+router = APIRouter(tags=["dispatch"], responses=ERROR_RESPONSES, dependencies=[Depends(DISPATCHER)])
 
 
 @router.post("/incidents/{incident_id}/dispatch", status_code=201, response_model=list[AssignmentOut])

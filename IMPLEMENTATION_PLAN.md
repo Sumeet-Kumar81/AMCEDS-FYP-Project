@@ -356,6 +356,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** used by every state-changing service (checked in review). **Priority:** P0. **Output:** service.
 
 #### B1-A1-14 — Authentication service and endpoints
+- **Implementation status:** implemented on branch `feat/auth-rbac` (not yet committed); current state in `STATUS.md`; details in CHANGES.md. Refresh token = JWT of type `refresh` with the session id (no schema change), absolute lifetime 12 h (developer assumption); lockout/idle values come from the settings service. The original task text below is unchanged.
 - **Purpose / behaviour:** Personal accounts, bcrypt hashes, JWT sessions, 5-failure lockout for 15 min, 30-min idle logout, logout ends session, drivers with an active assignment stay signed in.
 - **Approach:** `core/security.py` (bcrypt hash/verify; JWT encode/decode with `jti`, `sub`, `role`, `exp`). `services/auth.py`: `login` (check `is_active`, `locked_until`; increment `failed_login_count`; lock at 5; reset on success; create `UserSession`), `refresh` (reject when `last_activity_at` > 30 min ago unless driver with open assignment; D-023), `logout` (revoke), `touch_session`. Routes in `api/routes/auth.py`. Same error message for unknown user and wrong password. Secret from `JWT_SECRET`; startup refuses the dev default outside `ENV=dev`.
 - **Traceability:** SRS UC-11 (1, 1a, 1b, 3), NFR-C1, NFR-C4, NFR-C9; SDS Table 4.1 (JWT), §6.2; TC-32.
@@ -366,6 +367,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** all tests pass. **Priority:** P0. **Output:** auth module.
 
 #### B1-A1-15 — Role-based access control
+- **Implementation status:** implemented on branch `feat/auth-rbac` (not yet committed); current state in `STATUS.md`; details in CHANGES.md. The role matrix is `backend/tests/api/test_rbac_matrix.py` and is also checked against the Role column of `docs/API_CONTRACT.md`; simulator routes stay unprotected and 501 until D-014/B4-01. Response-field filtering (caller phone/location) is left to the tasks that build those responses. The original task text below is unchanged.
 - **Purpose / behaviour:** Each role sees only what it needs; drivers only their own assignments; only admins manage users and settings.
 - **Approach:** `api/deps.py`: `get_current_user` (validates token + session not revoked/idle, touches session), `require_roles(*roles)`, `require_driver_owns_assignment`. Role matrix in `docs/API_CONTRACT.md`. Caller phone/location only in dispatcher/admin responses.
 - **Traceability:** SRS NFR-C2, NFR-C5; TC-48, TC-46.

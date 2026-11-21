@@ -21,6 +21,7 @@ from app.core.config import get_settings
 API_PREFIX = "/api/v1"  # D-006; only GET /health stays unprefixed (Docker healthcheck)
 
 settings = get_settings()
+settings.check_secrets()  # refuses weak JWT secrets outside ENV=dev (B1-A1-14)
 app = FastAPI(title="AI Emergency Dispatch API", version="0.1.0")
 
 app.add_middleware(

@@ -17,10 +17,10 @@ CONTRACT: dict[tuple[str, str], str] = {
     ("POST", "/api/v1/reports/{reference_no}/confirmation"): "B1-A1-24",
     ("POST", "/api/v1/intake/sms"): "B4-01",
     ("POST", "/api/v1/intake/voice"): "B4-02",
-    ("POST", "/api/v1/auth/login"): "B1-A1-14",
-    ("POST", "/api/v1/auth/refresh"): "B1-A1-14",
-    ("POST", "/api/v1/auth/logout"): "B1-A1-14",
-    ("GET", "/api/v1/auth/me"): "B1-A1-14",
+    ("POST", "/api/v1/auth/login"): "exists",  # built in B1-A1-14
+    ("POST", "/api/v1/auth/refresh"): "exists",
+    ("POST", "/api/v1/auth/logout"): "exists",
+    ("GET", "/api/v1/auth/me"): "exists",
     ("GET", "/api/v1/incidents"): "B1-A1-20",
     ("GET", "/api/v1/incidents/{incident_id}"): "B1-A1-20",
     ("PATCH", "/api/v1/incidents/{incident_id}"): "B1-A1-21",
@@ -62,13 +62,14 @@ CONTRACT: dict[tuple[str, str], str] = {
     ("GET", "/api/v1/analytics/export"): "B1-A1-32",
 }
 STUBS = {k: v for k, v in CONTRACT.items() if v != "exists"}
+# Stubs anyone may call. Every other stub needs a signed-in user with the right role and is checked
+# (401 / 403 / 501) in test_rbac_matrix.py (B1-A1-15).
+OPEN_STUBS = {k: v for k, v in STUBS.items() if k[1].startswith(("/api/v1/reports", "/api/v1/intake/"))}
 PATH_VALUES = {"incident_id": "1", "candidate_id": "1", "assignment_id": "1", "user_id": "1",
                "vehicle_id": "1", "hospital_id": "1", "reference_no": "INC-000001", "key": "dup_auto_link"}
 VALID_BODIES: dict[tuple[str, str], dict[str, Any]] = {
     ("POST", "/api/v1/reports"): {"json": {"description": "SIMULATED test report", "channel": "web"}},
     ("POST", "/api/v1/reports/voice"): {"files": {"audio": ("clip.wav", b"RIFF0000WAVE", "audio/wav")}},
-    ("POST", "/api/v1/auth/login"): {"json": {"username": "dispatcher1", "password": "SIMULATED-pass"}},
-    ("POST", "/api/v1/auth/refresh"): {"json": {"refresh_token": "SIMULATED"}},
 }
 DOC = Path(os.environ.get("API_CONTRACT_DOC", Path(__file__).resolve().parents[3] / "docs" / "API_CONTRACT.md"))
 
@@ -101,8 +102,8 @@ def test_contract_document_matches_openapi() -> None:
 
 
 # ---------------------------------------------------------------- stubs answer 501, never fake data
-@pytest.mark.parametrize(("method", "path"), sorted(STUBS), ids=lambda x: str(x))
-async def test_stub_returns_501_with_contract_error_body(client: httpx.AsyncClient, method: str, path: str) -> None:
+@pytest.mark.parametrize(("method", "path"), sorted(OPEN_STUBS), ids=lambda x: str(x))
+async def test_open_stub_returns_501_with_contract_error_body(client: httpx.AsyncClient, method: str, path: str) -> None:
     r = await client.request(method, concrete(path), **VALID_BODIES.get((method, path), {}))
     assert r.status_code == 501, r.text
     assert r.json() == {

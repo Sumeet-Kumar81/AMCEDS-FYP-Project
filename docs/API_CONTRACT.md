@@ -14,7 +14,14 @@ equal by `backend/tests/api/test_api_contract.py`; a change to either fails the 
 - **JSON** in and out (`application/json`), except voice upload (`multipart/form-data`) and the
   analytics export (CSV or PDF). Timestamps are ISO 8601 with a time zone (UTC on the wire).
 - **Roles:** `P` public, `D` dispatcher, `R` driver, `A` admin, `S` simulator (shared secret), and
-  `staff` = D, R or A. Role checks are added in B1-A1-15; until then the stubs answer 501 to everyone.
+  `staff` = D, R or A. Since B1-A1-15 every private route checks them: not signed in → `401`,
+  wrong role → `403`, right role → the answer (or `501` until built). The role is read from the
+  database on every request. A driver may act only on assignments of the vehicle they drive (`403`
+  otherwise, TC-48). `S` routes are not protected yet (D-014 open) and answer `501`.
+- **Sessions (C-3, D-023):** send `Authorization: Bearer <access_token>`. Access tokens last 15
+  minutes; refresh at `POST /api/v1/auth/refresh` with the refresh token. A session ends at logout,
+  after 30 minutes idle (except a driver with an open assignment) or when the account is disabled;
+  then every token of that session answers `401` with code `session_ended`.
 - **Path ids:** SDS Table 4.3 writes `{id}`; the API names them by what they are
   (`{incident_id}`, `{candidate_id}`, `{assignment_id}`, `{user_id}`, `{vehicle_id}`, `{hospital_id}`).
 
@@ -27,7 +34,7 @@ equal by `backend/tests/api/test_api_contract.py`; a change to either fails the 
 | HTTP | `code` | When |
 |---|---|---|
 | 400 | `bad_request` | The request cannot be understood |
-| 401 | `unauthorized` | Not signed in, token expired, or session ended |
+| 401 | `unauthorized`, `invalid_credentials`, `account_locked`, `session_ended` | Not signed in; wrong username or password; locked after too many wrong passwords (TC-32); session ended or token expired |
 | 403 | `forbidden` | Signed in but the role may not do this |
 | 404 | `not_found` | No such resource (or path) |
 | 409 | `conflict` | State conflict, e.g. a vehicle already has an open assignment (dispatch) |
@@ -151,3 +158,4 @@ sends the full event. The API wakes the worker with `NOTIFY report_pending`.
 |---|---|---|
 | v1 | 2026-11-21 | First version: all 48 endpoints of SDS Table 4.3 (plus `/health`) as 501 stubs; error body; C-3 auth shapes |
 | v1.1 | 2026-11-21 | §4 WebSocket events (C-5, B1-A1-05) |
+| v1.2 | 2026-11-21 | Auth endpoints built; role checks on every private route (B1-A1-14/15) |

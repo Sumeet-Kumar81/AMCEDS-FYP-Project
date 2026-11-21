@@ -1,10 +1,11 @@
 """Dispatcher incident queue, detail, edit and audio (UC-06, UC-01). 501 stubs until their tasks."""
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.deps import DISPATCHER
 from app.api.errors import ERROR_RESPONSES, NotImplementedYet
 from app.schemas.incident import IncidentDetailOut, IncidentSummaryOut
 
-router = APIRouter(prefix="/incidents", tags=["incidents"], responses=ERROR_RESPONSES)
+router = APIRouter(prefix="/incidents", tags=["incidents"], responses=ERROR_RESPONSES, dependencies=[Depends(DISPATCHER)])
 
 
 @router.get("", response_model=list[IncidentSummaryOut])

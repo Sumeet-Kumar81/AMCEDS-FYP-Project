@@ -158,6 +158,13 @@ async def get_all(session: AsyncSession) -> dict[str, Value]:
     return values
 
 
+async def get_value(session: AsyncSession, key: str) -> Value:
+    """One setting: the stored value, or its default if not stored."""
+    spec = spec_for(key)
+    raw = await session.scalar(select(Setting.setting_value).where(Setting.setting_key == key))
+    return spec.default if raw is None else spec.parse(raw)
+
+
 async def get_snapshot(session: AsyncSession) -> dict[str, Value]:
     """All values in force now, for ``incidents.settings_snapshot``."""
     return await get_all(session)
