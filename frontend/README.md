@@ -21,7 +21,9 @@ npm install          # exact versions from package-lock.json
 
 ## Run
 
-Start the backend first (`python3 scripts/run_project.py` from the repository root), then in another terminal:
+Easiest, from the repository root: `python3 scripts/run_project.py web` (both pages; Ctrl+C stops them) and `python3 scripts/run_project.py test-web` (tests, typecheck, build).
+
+Or by hand: start the backend first (`python3 scripts/run_project.py` from the repository root), then in another terminal:
 
 ```bash
 cd frontend

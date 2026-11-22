@@ -3,3 +3,36 @@
 .report-header h1 { margin: 0; font-size: 1.4rem; }
 .report-main { padding: 0 16px 24px; display: grid; gap: 16px; }
 .report-simulated { color: var(--am-muted); font-size: 0.85rem; }
+
+/* Report form (B1-A3-03). Mobile first: works from 360 px wide. */
+.rf { display: grid; gap: 16px; }
+.rf-intro { margin: 0; }
+.rf-group { display: grid; gap: 6px; margin: 0; padding: 12px; border: 1px solid var(--am-border); border-radius: 8px;
+  background: var(--am-surface); min-width: 0; }
+.rf-group legend { font-weight: 700; padding: 0 4px; }
+.rf label { font-weight: 600; margin-top: 4px; }
+.rf textarea, .rf input { width: 100%; font: inherit; padding: 10px; border: 1px solid var(--am-border);
+  border-radius: 6px; background: var(--am-surface); color: var(--am-text); min-height: 44px; }
+.rf textarea:focus, .rf input:focus { outline: 3px solid var(--am-accent); outline-offset: 1px; }
+.rf [aria-invalid="true"] { border-color: var(--am-critical); border-width: 2px; }
+.rf-tag { font-weight: 400; color: var(--am-muted); font-size: 0.85rem; }
+.rf-required { color: var(--am-critical); }
+.rf-hint, .rf-note, .rf-muted { margin: 0; color: var(--am-muted); font-size: 0.9rem; }
+.rf-counter { margin: 0; text-align: end; font-size: 0.85rem; color: var(--am-muted); }
+.rf-over { color: var(--am-critical); font-weight: 700; }
+.rf-error { margin: 0; color: var(--am-critical); font-weight: 600; }
+.rf-warning { margin: 0; color: var(--am-warn); background: var(--am-warn-bg); padding: 8px; border-radius: 6px; }
+.rf-gps { display: grid; gap: 8px; }
+.rf-gps-ok { margin: 0; color: var(--am-low); font-weight: 600; }
+.rf-locate { justify-self: start; }
+.rf-voice button { justify-self: start; opacity: 0.7; cursor: not-allowed; }
+.rf-problem { padding: 12px; border-radius: 8px; background: var(--am-danger-bg); color: var(--am-critical);
+  border: 2px solid var(--am-critical); font-weight: 600; }
+.rf-primary { background: var(--am-accent); color: #fff; border-color: var(--am-accent); font-weight: 700; }
+.rf-send { min-height: 52px; font-size: 1.1rem; width: 100%; }
+.rf-send:disabled { opacity: 0.7; cursor: progress; }
+.rf-sent { display: grid; gap: 8px; padding: 20px; border: 2px solid var(--am-low); border-radius: 8px;
+  background: var(--am-surface); text-align: center; }
+.rf-sent h2 { margin: 0; color: var(--am-low); }
+.rf-reference { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: 0.05em; font-family: ui-monospace, monospace; }
+@media (prefers-color-scheme: dark) { .rf-primary { color: #0b1220; } }

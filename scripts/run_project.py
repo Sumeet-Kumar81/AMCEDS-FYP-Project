@@ -9,6 +9,8 @@ Run it from anywhere:
     python3 scripts/run_project.py test         # run the automatic tests
     python3 scripts/run_project.py status       # show what is running
     python3 scripts/run_project.py stop         # stop everything (your data is kept)
+    python3 scripts/run_project.py web          # start the web pages (report page + dashboard); Ctrl+C stops them
+    python3 scripts/run_project.py test-web     # run the web tests, typecheck and build
 
 It only calls the same Docker commands that are written in the run guide; it never prints the values in
 ``.env`` and never deletes data. Press Ctrl+C to stop the AI worker; the database and API keep running
@@ -18,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -29,6 +32,8 @@ ROOT = Path(__file__).resolve().parent.parent
 ENV_FILE = ROOT / ".env"
 HEALTH_URL = "http://localhost:8000/health"
 DOCS_URL = "http://localhost:8000/docs"
+FRONTEND = ROOT / "frontend"
+WEB_APPS = (("report page", "dev:pwa", "http://localhost:5174"), ("dashboard", "dev:dashboard", "http://localhost:5173"))
 WORKER_NAME = "amceds-ai-worker"  # fixed name, so an old worker can always be found and stopped
 
 # Runs inside the api container. Prints only the HTTP status and model names, never the key.
@@ -239,14 +244,85 @@ def test(_: argparse.Namespace) -> None:
     sys.exit(code)
 
 
+def check_node() -> None:
+    if shutil.which("node") is None or shutil.which("npm") is None:
+        fail("Node.js and npm are needed for the web pages (Node 22.12 or newer). Install them first.")
+    major = subprocess.run(["node", "-p", "process.versions.node.split('.')[0]"], capture_output=True, text=True).stdout
+    if major.strip().isdigit() and int(major) < 22:
+        fail(f"Node {major.strip()} is too old for the web pages; install Node 22.12 or newer.")
+    if not (FRONTEND / "node_modules").exists():
+        say("Installing the web packages (first time only, exact versions from package-lock.json)")
+        if subprocess.run(["npm", "ci", "--no-audit", "--no-fund"], cwd=FRONTEND).returncode != 0:
+            fail("'npm ci' failed. Read the messages above.")
+
+
+def npm(*args: str) -> int:
+    print("   $ npm " + " ".join(args), flush=True)
+    return subprocess.run(["npm", *args], cwd=FRONTEND).returncode
+
+
+def web(_: argparse.Namespace) -> None:
+    check_node()
+    try:
+        with urllib.request.urlopen(HEALTH_URL, timeout=3) as resp:
+            ok = '"database":"ok"' in resp.read().decode("utf-8", "replace").replace(" ", "")
+    except (urllib.error.URLError, ConnectionError, TimeoutError, OSError):
+        ok = False
+    if not ok:
+        print("   WARNING: the API is not running or its database is down. Start it first in another terminal:\n"
+              "     python3 scripts/run_project.py\n"
+              "   The pages will open, but reports cannot be sent until the API is up.")
+    say("Starting the web pages. Press Ctrl+C to stop them.")
+    stopping = False
+
+    def on_ctrl_c(_signum, _frame):  # Ctrl+C also reaches npm, which may exit first: that is not a crash
+        nonlocal stopping
+        stopping = True
+
+    previous = signal.signal(signal.SIGINT, on_ctrl_c)
+    procs = [subprocess.Popen(["npm", "run", script], cwd=FRONTEND) for _, script, _ in WEB_APPS]
+    try:
+        time.sleep(3)
+        for name, _, url in WEB_APPS:
+            print(f"   - {name:12}: {url}")
+        while not stopping and all(p.poll() is None for p in procs):
+            time.sleep(0.5)
+        time.sleep(0.5)
+        if not stopping:
+            print("\n   A web server stopped by itself (is the port already in use?). Read the messages above.")
+    finally:
+        signal.signal(signal.SIGINT, previous)
+        for p in procs:
+            if p.poll() is None:
+                p.terminate()
+        for p in procs:
+            try:
+                p.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                p.kill()
+        print("\n   Web pages stopped.")
+
+
+def test_web(_: argparse.Namespace) -> None:
+    check_node()
+    say("Running the web tests, typecheck and build")
+    results = [(name, npm(*cmd)) for name, cmd in (("tests", ("test",)), ("typecheck", ("run", "typecheck")),
+                                                    ("build", ("run", "build")))]
+    print()
+    for name, code in results:
+        print(f"   {name:10}: {'passed' if code == 0 else f'FAILED (exit code {code})'}")
+    sys.exit(0 if all(code == 0 for _, code in results) else 1)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Start, stop or test the AMCEDS prototype with Docker.")
-    parser.add_argument("command", nargs="?", default="start", choices=("start", "stop", "status", "test"))
+    parser.add_argument("command", nargs="?", default="start", choices=("start", "stop", "status", "test", "web", "test-web"))
     parser.add_argument("--no-worker", action="store_true", help="do not start the AI worker")
     parser.add_argument("--no-seed", action="store_true", help="do not load the SIMULATED sample data")
     parser.add_argument("--size", choices=("small", "full"), default="small", help="sample data size")
     args = parser.parse_args()
-    {"start": start, "stop": stop, "status": status, "test": test}[args.command](args)
+    commands = {"start": start, "stop": stop, "status": status, "test": test, "web": web, "test-web": test_web}
+    commands[args.command](args)
 
 
 if __name__ == "__main__":

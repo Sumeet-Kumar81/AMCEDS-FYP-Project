@@ -32,6 +32,12 @@ export interface RequestOptions {
 
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
+/** A successful answer with its HTTP status (e.g. 201 created vs 200 already saved). */
+export interface ApiResponse<T> {
+  status: number;
+  data: T;
+}
+
 export class ApiClient {
   readonly baseUrl: string;
   readonly tokens: TokenStore;
@@ -51,6 +57,11 @@ export class ApiClient {
   }
 
   async request<T>(method: Method, path: string, options: RequestOptions = {}): Promise<T> {
+    return (await this.requestWithStatus<T>(method, path, options)).data;
+  }
+
+  /** Like `request`, but also returns the HTTP status of the successful answer. */
+  async requestWithStatus<T>(method: Method, path: string, options: RequestOptions = {}): Promise<ApiResponse<T>> {
     const auth = options.auth ?? this.tokens.get() !== null;
     try {
       return await this.send<T>(method, path, options, auth);
@@ -88,7 +99,7 @@ export class ApiClient {
     if (!this.refreshing) {
       this.refreshing = this.send<TokenOut>("POST", `${API_PREFIX}/auth/refresh`,
         { body: { refresh_token: current.refreshToken } }, false)
-        .then((out) => {
+        .then(({ data: out }) => {
           this.tokens.set({ accessToken: out.access_token, refreshToken: out.refresh_token });
           return true;
         })
@@ -100,7 +111,7 @@ export class ApiClient {
     return this.refreshing;
   }
 
-  private async send<T>(method: Method, path: string, options: RequestOptions, auth: boolean): Promise<T> {
+  private async send<T>(method: Method, path: string, options: RequestOptions, auth: boolean): Promise<ApiResponse<T>> {
     const headers: Record<string, string> = { Accept: "application/json" };
     if (options.body !== undefined) headers["Content-Type"] = "application/json";
     const token = this.tokens.get()?.accessToken;
@@ -135,7 +146,7 @@ export class ApiClient {
       if (error.serviceUnavailable) this.onServiceUnavailable?.(error);
       throw error;
     }
-    return body as T;
+    return { status: response.status, data: body as T };
   }
 }
 

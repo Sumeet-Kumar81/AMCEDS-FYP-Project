@@ -773,6 +773,7 @@ mobile/               (proposed, D-002) React Native Android app — citizen mod
 - **Acceptance:** components used by all screens (review checklist). **Priority:** P0. **Output:** UI kit.
 
 #### B1-A3-03 — Public web report page
+- **Implementation status:** text reports implemented on branch `feat/report-page` (not yet committed), 2026-11-22, as group F2; F1 (B1-A3-01, 02) merged via PR #17 (`5ac6368`). Voice recording is shown disabled ("coming soon") until B1-A1-17; 429 is handled although the backend limit (B1-A1-18) is not built yet. The sent screen is a state of the same page (no `/sent` route, no router package). Details in CHANGES.md. The original task text below is unchanged.
 - **Purpose / behaviour:** Anyone can report without calling: notice "If life is in danger, also call 1122", description or voice recording, GPS or typed address/landmark, optional name/phone, Send → reference number.
 - **Approach:** Single mobile-first page (`frontend/pwa`). GPS via `navigator.geolocation` (refusal → prompt for landmark; none → still sendable, location unknown). Voice via `MediaRecorder` (max 2 min, preview, re-record) → `POST /reports/voice`; text → `POST /reports`. `client_request_id` generated per submission (safe retry). Validation messages; 429 message; 503 message with the 1122 notice; success screen with the reference number. EN/UR toggle. Only the fields NFR-C6 allows.
 - **Traceability:** SRS UC-01 1–5, 2a, 3a, 5b, NFR-S7, NFR-C6, NFR-P16; SDS §7.1; TC-01, TC-03, TC-47.

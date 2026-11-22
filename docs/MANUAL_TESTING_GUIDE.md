@@ -24,8 +24,9 @@ Ye guide aap ko batati hai ke **ab tak jo kuch bana hai** usay apne data ke saat
 | Login, token, logout, roles (admin/dispatcher/driver) | ✅ bana hai | Step 7 |
 | 5 ghalat password par account lock (TC-32) | ✅ bana hai | Step 7.4 |
 | Audit log ko koi badal/mita nahi sakta | ✅ bana hai | Step 8 |
-| Automatic tests (887) | ✅ bana hai | Step 9 |
-| Incident list/detail, dispatch approval, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, dashboard, mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
+| Automatic tests (887 backend + 95 web) | ✅ bana hai | Step 9 |
+| Browser wala report page (English/Urdu, GPS, reference number) | ✅ bana hai | Step 12 |
+| Incident list/detail, dispatch approval, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, dashboard screens (login, queue), mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
 
 ---
 
@@ -520,6 +521,86 @@ Abhi nahi bana: incident list/detail, dispatch approval aur gaari lock, driver d
 
 ---
 
+## Step 12 — Browser mein report page (citizen ka page)
+
+Is ke liye Node.js 22.12 ya naya chahiye (`node -v`). Pehli dafa script khud packages install karegi.
+
+1. **Terminal 1** mein backend chal raha ho (Step 1: `python3 scripts/run_project.py`).
+2. **Terminal 2** mein:
+   ```bash
+   python3 scripts/run_project.py web
+   ```
+   **Sahi output:**
+   ```
+   ==> Starting the web pages. Press Ctrl+C to stop them.
+      - report page : http://localhost:5174
+      - dashboard   : http://localhost:5173
+   ```
+3. Browser mein **http://localhost:5174** kholein.
+
+### 12.1 Page dekhein
+✅ Pass agar:
+- Sab se upar laal dabbe mein **"If life is in danger, also call 1122."** hai.
+- Peeli warning **nahi** hai (backend chal raha hai). Backend band karein to ~15 second mein "Cannot reach the server." aata hai, aur 1122 wala dabba phir bhi rehta hai.
+- **"Record voice (coming soon)"** button dabta nahi (voice abhi nahi bana).
+- Mobile size par bhi theek dikhta hai (Chrome mein F12 → phone icon → 360 px).
+
+### 12.2 Apni report bhejein
+1. "What happened?" mein likhein, masalan: `SIMULATED: Clock Tower ke paas bus accident, 3 log zakhmi`
+2. **"Use my location"** dabayein → browser ijazat maange to **Allow** → `Your location is added (accurate to about … m).`
+   (Inkaar karein to: `Location permission was refused. Please type the place or a landmark below.` — report phir bhi ja sakti hai.)
+3. Optional: "Place or landmark" mein `near Clock Tower`, naam, phone `0300 1234567`.
+4. **Send report** dabayein.
+
+**Sahi output:** hari screen **"✔ Report saved"**, bara reference number, masalan **`INC-000012`**, aur "Your report is saved and is in the dispatcher's queue."
+Database mein check (Step 0 wala tareeqa):
+```sql
+SELECT reference_no, channel, status, location_text, location_source, client_request_id
+  FROM incidents ORDER BY incident_id DESC LIMIT 1;
+```
+→ wahi reference, `channel = web`, aap ka landmark, GPS di thi to `location_source = gps`. AI worker chal raha ho to kuch second baad `status = triaged` (Step 4.2 wali query).
+
+### 12.3 Ghalat form
+| Kya karein | Sahi nateeja (koi request nahi jati) |
+|---|---|
+| Khaali "What happened?" ke saath Send | `Please describe what happened.` aur cursor us box par |
+| Phone mein `abc` | `Use digits only, for example 0300 1234567.` aur box laal |
+| 2000 se zyada characters | neeche ginti laal `2001 / 2000` aur `Too long: at most 2000 characters.` |
+
+### 12.4 Network band ho to (TC-04)
+1. Form bharein. Phir F12 → **Network** tab → **Offline** chunein → **Send report**.
+   → `Your report was not sent: no connection. … it will not be sent twice.` (koi reference number **nahi**)
+2. **Online** wapas karein → **Send report** dobara.
+   → "Report saved" aur reference number. Database mein ye report **sirf ek dafa** honi chahiye:
+   ```sql
+   SELECT client_request_id, count(*) FROM incidents GROUP BY 1 HAVING count(*) > 1;
+   ```
+   → `(0 rows)`
+
+### 12.5 Database band ho to (503)
+Terminal 2 mein `docker compose stop postgres`, page par report bhejein:
+→ `Your report was NOT saved. If life is in danger, call 1122 now.` — **koi reference number nahi**, aap ka likha text form mein mehfooz.
+Phir `docker compose start postgres`, 10 second baad dobara Send → "Report saved".
+
+### 12.6 Urdu
+Upar **اردو** button → poora page right-to-left, labels Urdu mein ("کیا ہوا ہے؟", "رپورٹ بھیجیں"), 1122 notice: "اگر جان کو خطرہ ہو تو 1122 پر بھی کال کریں۔". Urdu mein report likh kar bhejein → "رپورٹ محفوظ ہو گئی". **English** button se wapas.
+
+Band karna: Terminal 2 mein **Ctrl+C** → `Web pages stopped.`
+
+### 12.7 Web ke automatic tests
+```bash
+python3 scripts/run_project.py test-web
+```
+**Sahi output** (aakhir mein):
+```
+   tests     : passed
+   typecheck : passed
+   build     : passed
+```
+(Upar kahin `Tests  95 passed (95)` bhi likha hoga.)
+
+---
+
 ## Aakhri checklist — tick karte jayein
 
 | # | Check | Sahi nateeja | ✔ |
@@ -545,5 +626,13 @@ Abhi nahi bana: incident list/detail, dispatch approval aur gaari lock, driver d
 | 19 | Heartbeat | `llm_ready: true` | ☐ |
 | 20 | Automatic tests | `887 passed, 3 skipped`, `0 failed` | ☐ |
 | 21 | Na bane endpoints | `501` + task number | ☐ |
+| 22 | Report page khulta hai | 1122 notice, peeli warning nahi, voice button band | ☐ |
+| 23 | Browser se report | "Report saved" + `INC-…`, database mein `channel = web` | ☐ |
+| 24 | GPS / inkaar | location added / "permission was refused", report phir bhi jati hai | ☐ |
+| 25 | Ghalat form | request nahi jati, saaf message | ☐ |
+| 26 | Offline → online | pehle "not sent", phir saved; database mein sirf ek dafa | ☐ |
+| 27 | Database band | "NOT saved … call 1122", reference nahi | ☐ |
+| 28 | Urdu | RTL, Urdu labels aur notice | ☐ |
+| 29 | Web tests | tests, typecheck, build sab `passed` | ☐ |
 
 Agar koi check fail ho: us ka **command aur poora output** copy karke bhejein, hum wajah dhoond kar theek karenge.
