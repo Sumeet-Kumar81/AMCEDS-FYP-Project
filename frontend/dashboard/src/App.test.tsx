@@ -98,7 +98,6 @@ describe("signing in", () => {
     expect(await screen.findByRole("heading", { name: "Incident queue" })).toBeInTheDocument();
     expect(path()).toBe("/queue");
     expect(screen.getByText("Signed in as SIMULATED Dispatcher One (Dispatcher)")).toBeInTheDocument();
-    expect(screen.getByText(/comes in the next step \(F4, task B1-A1-20\)/)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Administration" })).not.toBeInTheDocument();
   });
 

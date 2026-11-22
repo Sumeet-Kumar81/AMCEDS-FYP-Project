@@ -56,7 +56,8 @@ ROLES: dict[tuple[str, str], str | frozenset[UserRole]] = {
 }
 PRIVATE = sorted(k for k, v in ROLES.items() if isinstance(v, frozenset))
 DRIVER_OWNED = {p for (_, p) in ROLES if p.startswith("/api/v1/driver/assignments/{assignment_id}")}
-REAL = {("POST", "/api/v1/auth/logout"): 204, ("GET", "/api/v1/auth/me"): 200}
+REAL = {("POST", "/api/v1/auth/logout"): 204, ("GET", "/api/v1/auth/me"): 200,
+        ("GET", "/api/v1/incidents"): 200, ("GET", "/api/v1/incidents/{incident_id}"): 404}  # 404: no incident 1 in the test data
 DOC = Path(os.environ.get("API_CONTRACT_DOC", Path(__file__).resolve().parents[3] / "docs" / "API_CONTRACT.md"))
 
 

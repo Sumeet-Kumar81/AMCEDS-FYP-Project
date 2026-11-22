@@ -193,7 +193,8 @@ export interface paths {
         };
         /**
          * List Incidents
-         * @description Incident queue, sorted by severity then received time.
+         * @description Incident queue: open reports by default, critical → high → unknown → medium → low, then the
+         *     longest-waiting first. Read-only.
          */
         get: operations["list_incidents_api_v1_incidents_get"];
         put?: never;
@@ -211,7 +212,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Incident */
+        /**
+         * Get Incident
+         * @description Everything the review screen needs: the report as sent, AI results with their confidence, trust
+         *     reasons, current recommendations (with plates), duplicates and assignments. Read-only.
+         */
         get: operations["get_incident_api_v1_incidents__incident_id__get"];
         put?: never;
         post?: never;
@@ -1091,6 +1096,8 @@ export interface components {
             batch_no: number;
             /** Is Current */
             is_current: boolean;
+            /** Plate Number */
+            plate_number?: string | null;
         };
         /** RefreshIn */
         RefreshIn: {
@@ -1595,7 +1602,16 @@ export interface operations {
     };
     list_incidents_api_v1_incidents_get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Only these statuses (repeat the parameter) */
+                status?: components["schemas"]["IncidentStatus"][] | null;
+                /** @description Only these severities; 'unknown' = not set yet */
+                severity?: ("critical" | "high" | "medium" | "low" | "unknown")[] | null;
+                /** @description Also show closed and fake reports (ignored when status is given) */
+                include_closed?: boolean;
+                limit?: number;
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;

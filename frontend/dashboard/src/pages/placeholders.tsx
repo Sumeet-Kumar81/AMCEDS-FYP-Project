@@ -1,16 +1,5 @@
-// Start pages per role. Their content is built in later groups; until then they say so plainly
-// (no made-up incidents, no fake admin data).
+// Admin start page. Its content is built in B1-A1-31; until then it says so plainly (no fake admin data).
 import { useI18n } from "@amceds/shared";
-
-export function QueuePage() {
-  const { t } = useI18n();
-  return (
-    <section className="dash-page">
-      <h2>{t("queue.title")}</h2>
-      <p className="dash-not-built">{t("queue.not_built")}</p>
-    </section>
-  );
-}
 
 export function AdminPage() {
   const { t } = useI18n();

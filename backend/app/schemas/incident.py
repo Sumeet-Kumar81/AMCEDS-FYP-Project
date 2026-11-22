@@ -114,6 +114,9 @@ class RecommendationOut(_Contract):
     route_geometry: str | None = None
     batch_no: int = Field(ge=1)  # recommendation rounds start at 1 (C-1 v1 note, DECISIONS_LOG)
     is_current: bool
+    # C-1 v1.2 (F4): the vehicle's plate, so the dispatcher sees "SIM-AMB-01", not "vehicle 3".
+    # Optional so v1/v1.1 data stays valid; filled from vehicles.plate_number by the incident API.
+    plate_number: str | None = None
 
 
 class AssignmentOut(_Contract):

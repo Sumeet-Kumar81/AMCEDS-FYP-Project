@@ -70,8 +70,8 @@ this file and OpenAPI together.
 | `POST` | `/api/v1/auth/refresh` | P (refresh token) | `RefreshIn` | `TokenOut`; `401` if the session is idle > 30 min (drivers with an open assignment exempt) | B1-A1-14 |
 | `POST` | `/api/v1/auth/logout` | staff | — | `204`; the session ends | B1-A1-14 |
 | `GET` | `/api/v1/auth/me` | staff | — | `MeOut` | B1-A1-14 |
-| `GET` | `/api/v1/incidents` | D | query filters defined in task | `IncidentSummaryOut[]`, severity then received time | B1-A1-20 |
-| `GET` | `/api/v1/incidents/{incident_id}` | D | — | `IncidentDetailOut` | B1-A1-20 |
+| `GET` | `/api/v1/incidents` | D | query: `status` (repeatable), `severity` (repeatable: `critical`, `high`, `medium`, `low`, `unknown`), `include_closed` (default `false`: only new, triaged, needs_check, dispatched, on_scene), `limit` 1–500 (default 100), `offset` | `IncidentSummaryOut[]`: critical → high → unknown → medium → low, then longest-waiting first. Read-only | **built** (B1-A1-20) |
+| `GET` | `/api/v1/incidents/{incident_id}` | D | — | `IncidentDetailOut` (current recommendations only, each with `plate_number`, C-1 v1.2); `404 not_found` if missing. Read-only | **built** (B1-A1-20) |
 | `PATCH` | `/api/v1/incidents/{incident_id}` | D | type, severity, victims or location; defined in task | `IncidentDetailOut`; recommendation recalculated | B1-A1-21 |
 | `GET` | `/api/v1/incidents/{incident_id}/audio` | D | — | the saved audio file | B1-A1-17 |
 | `POST` | `/api/v1/duplicate-candidates/{candidate_id}/confirm` | D | defined in task | defined in task | B1-A1-22 |
@@ -160,3 +160,4 @@ sends the full event. The API wakes the worker with `NOTIFY report_pending`.
 | v1.1 | 2026-11-21 | §4 WebSocket events (C-5, B1-A1-05) |
 | v1.2 | 2026-11-21 | Auth endpoints built; role checks on every private route (B1-A1-14/15) |
 | v1.3 | 2026-11-21 | `POST /api/v1/reports` built (B1-A1-16) |
+| v1.4 | 2026-11-22 | `GET /api/v1/incidents` and `GET /api/v1/incidents/{incident_id}` built, read-only (B1-A1-20); C-1 v1.2 adds optional `RecommendationOut.plate_number` |

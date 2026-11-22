@@ -49,7 +49,8 @@
       "is_spare": false,
       "route_geometry": null,
       "batch_no": 1,
-      "is_current": true
+      "is_current": true,
+      "plate_number": "SIM-AMB-05"
     },
     {
       "rec_id": 12,
@@ -63,7 +64,8 @@
       "is_spare": true,
       "route_geometry": null,
       "batch_no": 1,
-      "is_current": true
+      "is_current": true,
+      "plate_number": "SIM-AMB-08"
     }
   ],
   "assignments": [

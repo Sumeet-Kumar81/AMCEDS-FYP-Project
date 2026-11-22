@@ -21,8 +21,8 @@ CONTRACT: dict[tuple[str, str], str] = {
     ("POST", "/api/v1/auth/refresh"): "exists",
     ("POST", "/api/v1/auth/logout"): "exists",
     ("GET", "/api/v1/auth/me"): "exists",
-    ("GET", "/api/v1/incidents"): "B1-A1-20",
-    ("GET", "/api/v1/incidents/{incident_id}"): "B1-A1-20",
+    ("GET", "/api/v1/incidents"): "exists",  # built in B1-A1-20
+    ("GET", "/api/v1/incidents/{incident_id}"): "exists",  # built in B1-A1-20
     ("PATCH", "/api/v1/incidents/{incident_id}"): "B1-A1-21",
     ("GET", "/api/v1/incidents/{incident_id}/audio"): "B1-A1-17",
     ("POST", "/api/v1/duplicate-candidates/{candidate_id}/confirm"): "B1-A1-22",
