@@ -347,7 +347,12 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Approve Dispatch */
+        /**
+         * Approve Dispatch
+         * @description Send the chosen vehicles: locks them, creates one approved assignment each (who and when), sets the
+         *     incident to dispatched and audits the AI suggestion next to the dispatcher's choice.
+         *     409 ``vehicle_locked`` / ``vehicle_unavailable`` (with ``next_best``) or ``incident_not_dispatchable``.
+         */
         post: operations["approve_dispatch_api_v1_incidents__incident_id__dispatch_post"];
         delete?: never;
         options?: never;
@@ -396,7 +401,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Vehicles */
+        /**
+         * List Vehicles
+         * @description Every vehicle with its driver, duty, last GPS and whether it can take an assignment now (manual
+         *     dispatch, "pick another vehicle"). With ``incident_id``: dispatchable first, then nearest. Read-only.
+         */
         get: operations["list_vehicles_api_v1_vehicles_get"];
         put?: never;
         post?: never;
@@ -852,6 +861,18 @@ export interface components {
          * @enum {string}
          */
         Channel: "voice" | "sms" | "web" | "app";
+        /** DispatchIn */
+        DispatchIn: {
+            /** Vehicle Ids */
+            vehicle_ids: number[];
+            /** Hospital Id */
+            hospital_id?: number | null;
+            /**
+             * Override Reason
+             * @description Why the dispatcher chose differently from the AI (optional)
+             */
+            override_reason?: string | null;
+        };
         /**
          * DispatcherDecisionOut
          * @description What the dispatcher approved, and when (SRS Table 3.4). Taken from ``assignments.approved_by/approved_at``.
@@ -1190,6 +1211,54 @@ export interface components {
          * @enum {string}
          */
         UserRole: "dispatcher" | "driver" | "admin";
+        /**
+         * VehicleOut
+         * @description A vehicle as the dispatcher needs it to choose. ``can_dispatch`` = status available, a driver
+         *     on duty and no open assignment. GPS older than ``signal_lost_s`` is ``signal_lost`` (a warning only).
+         */
+        VehicleOut: {
+            /** Vehicle Id */
+            vehicle_id: number;
+            /** Plate Number */
+            plate_number: string;
+            vehicle_type: components["schemas"]["VehicleType"];
+            status: components["schemas"]["VehicleStatus"];
+            /** Station Name */
+            station_name?: string | null;
+            /** Patient Capacity */
+            patient_capacity: number;
+            /** Driver Id */
+            driver_id?: number | null;
+            /** Driver Name */
+            driver_name?: string | null;
+            /** Driver On Duty */
+            driver_on_duty: boolean;
+            /** Lat */
+            lat?: number | null;
+            /** Lon */
+            lon?: number | null;
+            /** Last Seen At */
+            last_seen_at?: string | null;
+            /** Signal Lost */
+            signal_lost: boolean;
+            /** Has Open Assignment */
+            has_open_assignment: boolean;
+            /** Can Dispatch */
+            can_dispatch: boolean;
+            /** Distance Meters */
+            distance_meters?: number | null;
+            /**
+             * Distance Is Approximate
+             * @default true
+             */
+            distance_is_approximate: boolean;
+        };
+        /**
+         * VehicleStatus
+         * @description ``vehicles.status`` (``at_hospital`` added by D-005 for UC-09).
+         * @enum {string}
+         */
+        VehicleStatus: "available" | "assigned" | "en_route" | "on_scene" | "transporting" | "at_hospital" | "offline";
         /**
          * VehicleType
          * @enum {string}
@@ -1974,7 +2043,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DispatchIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             201: {
@@ -2087,7 +2160,14 @@ export interface operations {
     };
     list_vehicles_api_v1_vehicles_get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Sort by straight-line distance to this incident */
+                incident_id?: number | null;
+                /** @description Only these vehicle types (repeat the parameter) */
+                type?: components["schemas"]["VehicleType"][] | null;
+                /** @description Only vehicles that can be dispatched now */
+                available_only?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2100,7 +2180,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["VehicleOut"][];
                 };
             };
             /** @description Validation error */

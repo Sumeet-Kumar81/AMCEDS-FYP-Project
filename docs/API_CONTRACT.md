@@ -51,6 +51,7 @@ equal by `backend/tests/api/test_api_contract.py`; a change to either fails the 
 | AI results (`TriageResult`, `TrustAssessment`, `AllocationResult`, …) | C-2, `backend/app/schemas/ai.py` | v1; JSON Schemas in `backend/tests/fixtures/contracts/ai/schemas/` |
 | `LoginIn`, `RefreshIn`, `TokenOut`, `MeOut`, `AccessTokenClaims`, `UserRole` | C-3, `backend/app/schemas/auth.py` | v1, session design D-023 |
 | `ReportIn` | `backend/app/schemas/report.py` | `channel` uses the C-1 vocabulary |
+| `DispatchIn`, `VehicleOut` | `backend/app/schemas/dispatch.py` | B1-A1-25: dispatch request; vehicle list for manual dispatch |
 | `ErrorBody` | `backend/app/api/errors.py` | §1.1 |
 
 "Defined in task X" below means the body is not fixed yet; the named task defines it and updates
@@ -79,10 +80,10 @@ this file and OpenAPI together.
 | `GET` | `/api/v1/review-queue` | D | — | `IncidentSummaryOut[]` with `review_reasons` | B1-A1-23 |
 | `POST` | `/api/v1/incidents/{incident_id}/confirmation-requests` | D | defined in task | defined in task | B1-A1-24 |
 | `POST` | `/api/v1/incidents/{incident_id}/review-decision` | D | `{decision: real \| fake \| need_info, note}`; defined in task | defined in task | B1-A1-23 |
-| `POST` | `/api/v1/incidents/{incident_id}/dispatch` | D | `{vehicle_ids[], hospital_id?, override_reason?}`; defined in task | `201 AssignmentOut[]`; `409` if a vehicle is already locked | B1-A1-25 |
+| `POST` | `/api/v1/incidents/{incident_id}/dispatch` | D | `DispatchIn {vehicle_ids[1–10, unique], hospital_id?, override_reason? (≤ 500)}` | `201 AssignmentOut[]` (one `approved` assignment per vehicle; vehicle → `assigned`, incident → `dispatched`; audit `dispatch.approved` with AI suggestion vs choice). `409 vehicle_locked {vehicle_ids, next_best}` (open assignment), `409 vehicle_unavailable {vehicles[{vehicle_id, reason}], next_best}` (not available / no driver / driver off duty), `409 incident_not_dispatchable` (fake or closed), `404` unknown incident, vehicle or hospital. Driver alert not sent yet (B1-A1-30) | **built** (B1-A1-25) |
 | `PATCH` | `/api/v1/assignments/{assignment_id}/hospital` | D | defined in task | `AssignmentOut` | B1-A1-26 |
 | `POST` | `/api/v1/assignments/{assignment_id}/cancel` | D | defined in task | `AssignmentOut` | B1-A1-26 |
-| `GET` | `/api/v1/vehicles` | D | filters defined in task | defined in task | B1-A1-25 |
+| `GET` | `/api/v1/vehicles` | D | query: `incident_id` (sort by straight-line distance), `type` (repeatable), `available_only` | `VehicleOut[]` (driver, duty, last GPS, `signal_lost`, `has_open_assignment`, `can_dispatch`, approximate `distance_meters`); with `incident_id`: dispatchable first, then nearest. Read-only | **built** (B1-A1-25) |
 | `GET` | `/api/v1/fleet/live` | D | — | defined in task | B1-A1-27 (\*) |
 | `GET` | `/api/v1/hospitals` | D, R | — | defined in task | B1-A1-26 (\*) |
 | `GET` | `/api/v1/routing/route` | D, R | `from`, `to` (lat,lon); defined in task | defined in task; OSRM is never exposed | B1-A2-15 |
@@ -161,3 +162,4 @@ sends the full event. The API wakes the worker with `NOTIFY report_pending`.
 | v1.2 | 2026-11-21 | Auth endpoints built; role checks on every private route (B1-A1-14/15) |
 | v1.3 | 2026-11-21 | `POST /api/v1/reports` built (B1-A1-16) |
 | v1.4 | 2026-11-22 | `GET /api/v1/incidents` and `GET /api/v1/incidents/{incident_id}` built, read-only (B1-A1-20); C-1 v1.2 adds optional `RecommendationOut.plate_number` |
+| v1.5 | 2026-11-22 | `POST /api/v1/incidents/{incident_id}/dispatch` and `GET /api/v1/vehicles` built (B1-A1-25); new shapes `DispatchIn`, `VehicleOut` (`backend/app/schemas/dispatch.py`) |

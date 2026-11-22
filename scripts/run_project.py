@@ -4,7 +4,7 @@
 Run it from anywhere:
 
     python3 scripts/run_project.py            # start everything (database, API, migrations, seed, AI worker)
-    python3 scripts/run_project.py --no-worker  # start without the AI worker
+    python3 scripts/run_project.py --no-worker  # start without the AI worker (stops it if it was running)
     python3 scripts/run_project.py --no-seed    # skip the SIMULATED sample data
     python3 scripts/run_project.py test         # run the automatic tests
     python3 scripts/run_project.py status       # show what is running
@@ -13,7 +13,8 @@ Run it from anywhere:
     python3 scripts/run_project.py test-web     # run the web tests, typecheck and build
 
 It only calls the same Docker commands that are written in the run guide; it never prints the values in
-``.env`` and never deletes data. Press Ctrl+C to stop the AI worker; the database and API keep running
+``.env`` and never deletes data. The AI worker is the ``ai-worker`` compose service (CR-004): after start
+the script shows its log; Ctrl+C only stops showing the log — the database, API and worker keep running
 until you run ``stop``.
 """
 from __future__ import annotations
@@ -174,21 +175,19 @@ def stop_old_worker() -> None:
 
 
 def run_worker() -> None:
-    stop_old_worker()
-    cmd = ["docker", "compose", "run", "--rm", "--name", WORKER_NAME, "api", "python", "-m", "app.workers.ai_worker"]
-    print("   $ " + " ".join(cmd), flush=True)
-    proc = subprocess.Popen(cmd, cwd=ROOT)
+    """Start (or restart, to pick up code changes) the ai-worker service, then follow its log."""
+    stop_old_worker()  # a worker from the old one-off style must not take reports as well
+    compose("up", "-d", "--force-recreate", "ai-worker")
+    print("   The AI worker runs in the background. Its log follows; Ctrl+C stops only the log.", flush=True)
+    proc = subprocess.Popen(["docker", "compose", "logs", "-f", "--tail", "20", "ai-worker"], cwd=ROOT)
     try:
         proc.wait()
     except KeyboardInterrupt:
-        print("\n   Stopping the AI worker (it finishes the report it is working on)...", flush=True)
-        subprocess.run(["docker", "stop", "-t", "30", WORKER_NAME], capture_output=True)
+        proc.terminate()
         try:
-            proc.wait(timeout=40)
+            proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
             proc.kill()
-    finally:
-        stop_old_worker()  # make sure nothing is left running in the background
 
 
 def start(args: argparse.Namespace) -> None:
@@ -196,7 +195,7 @@ def start(args: argparse.Namespace) -> None:
     check_env()
 
     say("Building and starting the database and the API")
-    compose("up", "-d", "--build")
+    compose("up", "-d", "--build", "postgres", "api")
     wait_for_api()
 
     check_llm()
@@ -213,14 +212,16 @@ def start(args: argparse.Namespace) -> None:
     print(f"\n   The project is running.\n   - Health check : {HEALTH_URL}\n   - Try the API  : {DOCS_URL}")
 
     if args.no_worker:
-        print("\n   AI worker not started (--no-worker). Stop everything later with:\n"
+        compose("stop", "ai-worker", check=False)
+        print("\n   AI worker not running (--no-worker). Stop everything later with:\n"
               "     python3 scripts/run_project.py stop")
         return
 
-    say("Starting the AI worker (it reads new reports). Press Ctrl+C to stop the worker.")
+    say("Starting the AI worker (it reads new reports)")
     run_worker()
-    print("\n   AI worker stopped. The database and API are still running.\n"
-          "   Stop them with: python3 scripts/run_project.py stop")
+    print("\n   Stopped showing the log. The database, API and AI worker are still running.\n"
+          "   Worker log again: docker compose logs -f ai-worker\n"
+          "   Stop everything : python3 scripts/run_project.py stop")
 
 
 def stop(_: argparse.Namespace) -> None:

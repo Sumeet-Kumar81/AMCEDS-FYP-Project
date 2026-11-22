@@ -169,7 +169,7 @@
   "inc.km": "{km} km",
   "inc.min": "{min} min",
   "inc.approve": "Approve dispatch",
-  "inc.approve_not_built": "Dispatch approval is not built yet (task B1-A1-25). No vehicle is sent from this screen.",
+  "inc.approve_not_built": "Approving from this screen comes in the next step (F5, task B1-A3-08). No vehicle is sent from this screen yet.",
   "vehicle.ambulance": "Ambulance",
   "vehicle.fire_truck": "Fire truck",
   "vehicle.backup": "Backup"
