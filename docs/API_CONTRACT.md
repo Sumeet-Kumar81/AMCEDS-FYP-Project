@@ -81,18 +81,18 @@ this file and OpenAPI together.
 | `POST` | `/api/v1/incidents/{incident_id}/confirmation-requests` | D | defined in task | defined in task | B1-A1-24 |
 | `POST` | `/api/v1/incidents/{incident_id}/review-decision` | D | `{decision: real \| fake \| need_info, note}`; defined in task | defined in task | B1-A1-23 |
 | `POST` | `/api/v1/incidents/{incident_id}/dispatch` | D | `DispatchIn {vehicle_ids[1–10, unique], hospital_id?, override_reason? (≤ 500)}` | `201 AssignmentOut[]` (one `approved` assignment per vehicle; vehicle → `assigned`, incident → `dispatched`; audit `dispatch.approved` with AI suggestion vs choice). `409 vehicle_locked {vehicle_ids, next_best}` (open assignment), `409 vehicle_unavailable {vehicles[{vehicle_id, reason}], next_best}` (not available / no driver / driver off duty), `409 incident_not_dispatchable` (fake or closed), `404` unknown incident, vehicle or hospital. Driver alert not sent yet (B1-A1-30) | **built** (B1-A1-25) |
-| `PATCH` | `/api/v1/assignments/{assignment_id}/hospital` | D | defined in task | `AssignmentOut` | B1-A1-26 |
-| `POST` | `/api/v1/assignments/{assignment_id}/cancel` | D | defined in task | `AssignmentOut` | B1-A1-26 |
+| `PATCH` | `/api/v1/assignments/{assignment_id}/hospital` | D | `HospitalChangeIn {hospital_id}` | `AssignmentOut`; only an open assignment (`409 invalid_transition` otherwise); `404` unknown or inactive hospital; audit `assignment.hospital_changed` | **built** (B1-A1-26) |
+| `POST` | `/api/v1/assignments/{assignment_id}/cancel` | D | `CancelIn {reason?}` (body optional) | `AssignmentOut` (`cancelled`); vehicle free; incident back to `needs_check` + `vehicle_cancelled` when no vehicle is left and none finished, `closed` when one finished; `409` if not open | **built** (B1-A1-26) |
 | `GET` | `/api/v1/vehicles` | D | query: `incident_id` (sort by straight-line distance), `type` (repeatable), `available_only` | `VehicleOut[]` (driver, duty, last GPS, `signal_lost`, `has_open_assignment`, `can_dispatch`, approximate `distance_meters`); with `incident_id`: dispatchable first, then nearest. Read-only | **built** (B1-A1-25) |
 | `GET` | `/api/v1/fleet/live` | D | — | defined in task | B1-A1-27 (\*) |
-| `GET` | `/api/v1/hospitals` | D, R | — | defined in task | B1-A1-26 (\*) |
+| `GET` | `/api/v1/hospitals` | D, R | — | `HospitalOut[]` (C-7): active hospitals with position, by name | **built** (B1-A1-26) (\*) |
 | `GET` | `/api/v1/routing/route` | D, R | `from`, `to` (lat,lon); defined in task | defined in task; OSRM is never exposed | B1-A2-15 |
 | `POST` | `/api/v1/driver/duty/start` | R | — | defined in task | B1-A1-27 |
 | `POST` | `/api/v1/driver/duty/end` | R | — | defined in task | B1-A1-27 |
-| `GET` | `/api/v1/driver/assignments/current` | R | — | defined in task (contract C-7) | B1-A1-26 |
-| `POST` | `/api/v1/driver/assignments/{assignment_id}/accept` | R | — | defined in task (C-7) | B1-A1-26 |
-| `POST` | `/api/v1/driver/assignments/{assignment_id}/decline` | R | reason; defined in task | defined in task (C-7) | B1-A1-26 |
-| `POST` | `/api/v1/driver/assignments/{assignment_id}/status` | R | on scene, picked up, at hospital, available; defined in task | defined in task (C-7) | B1-A1-26 |
+| `GET` | `/api/v1/driver/assignments/current` | R | — | `DriverAssignmentOut` (C-7) for the vehicle this driver drives; `204` when there is none | **built** (B1-A1-26) |
+| `POST` | `/api/v1/driver/assignments/{assignment_id}/accept` | R (own vehicle) | — | `AssignmentOut` (`accepted`, vehicle `en_route`); `409 driver_off_duty` / `invalid_transition` | **built** (B1-A1-26) |
+| `POST` | `/api/v1/driver/assignments/{assignment_id}/decline` | R (own vehicle) | `DeclineIn {reason: vehicle_problem \| crew_unavailable \| already_busy \| too_far \| other}` (C-7 v1.1) | `AssignmentOut` (`declined`); vehicle free; incident back to `needs_check` + `vehicle_declined` when no vehicle is left; only from `approved` | **built** (B1-A1-26) |
+| `POST` | `/api/v1/driver/assignments/{assignment_id}/status` | R (own vehicle) | `TripStatusIn {status: on_scene \| picked_up \| at_hospital \| available}` | `AssignmentOut` with the step's timestamp; vehicle `on_scene` → `transporting` → `at_hospital` → `available` (C-7 order, `409 invalid_transition` otherwise); `available` = `completed`; first arrival → incident `on_scene`, last finished trip → `closed` | **built** (B1-A1-26) |
 | `POST` | `/api/v1/driver/locations` | R (on duty) | batch of GPS points; defined in task | defined in task | B1-A1-27 |
 | `GET` | `/api/v1/admin/users` | A | — | defined in task | B1-A1-31 |
 | `POST` | `/api/v1/admin/users` | A | defined in task | `201`, defined in task | B1-A1-31 |
@@ -163,3 +163,4 @@ sends the full event. The API wakes the worker with `NOTIFY report_pending`.
 | v1.3 | 2026-11-21 | `POST /api/v1/reports` built (B1-A1-16) |
 | v1.4 | 2026-11-22 | `GET /api/v1/incidents` and `GET /api/v1/incidents/{incident_id}` built, read-only (B1-A1-20); C-1 v1.2 adds optional `RecommendationOut.plate_number` |
 | v1.5 | 2026-11-22 | `POST /api/v1/incidents/{incident_id}/dispatch` and `GET /api/v1/vehicles` built (B1-A1-25); new shapes `DispatchIn`, `VehicleOut` (`backend/app/schemas/dispatch.py`) |
+| v1.6 | 2026-11-22 | Assignment lifecycle built (B1-A1-26): driver current/accept/decline/status, dispatcher cancel and hospital change, `GET /hospitals`; shapes `DeclineIn`, `TripStatusIn`, `CancelIn`, `HospitalChangeIn`; C-7 v1.1 `DeclineReason` |

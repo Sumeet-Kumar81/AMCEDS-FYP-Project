@@ -36,6 +36,15 @@ class TripStatus(StrEnum):
     AVAILABLE = "available"
 
 
+class DeclineReason(StrEnum):
+    """Why a driver cannot take an assignment (C-7 v1.1, UC-08 2a: picked from a list, no typing)."""
+    VEHICLE_PROBLEM = "vehicle_problem"
+    CREW_UNAVAILABLE = "crew_unavailable"
+    ALREADY_BUSY = "already_busy"
+    TOO_FAR = "too_far"
+    OTHER = "other"
+
+
 class _Contract(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

@@ -25,7 +25,8 @@ export function reasonText(t: Translate, code: string): string {
 }
 
 /** Reasons that need the dispatcher's eye first get the warning colour. */
-export const URGENT_REASONS: ReadonlySet<string> = new Set(["ai_failed", "low_trust_urgent", "vehicle_shortage", "missing_info"]);
+export const URGENT_REASONS: ReadonlySet<string> = new Set(["ai_failed", "low_trust_urgent", "vehicle_shortage", "missing_info",
+  "vehicle_declined", "vehicle_cancelled"]);
 
 export function locationText(t: Translate, loc: LocationOut): string {
   const parts: string[] = [];

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.assignment import DeclineReason, TripStatus
 from app.schemas.enums import VehicleStatus, VehicleType
 
 MAX_VEHICLES_PER_DISPATCH = 10
@@ -59,3 +60,33 @@ class VehicleOut(BaseModel):
     #: straight-line distance to the incident, only when ``incident_id`` was given and both places are known
     distance_meters: int | None = Field(default=None, ge=0)
     distance_is_approximate: bool = True
+
+
+# ---------------------------------------------------------------- assignment lifecycle (B1-A1-26)
+class DeclineIn(BaseModel):
+    """Driver: "Cannot go", with a reason from the list (UC-08 2a)."""
+    model_config = ConfigDict(extra="forbid")
+    reason: DeclineReason
+
+
+class TripStatusIn(BaseModel):
+    """Driver: the next trip step (UC-09): on_scene, picked_up, at_hospital or available."""
+    model_config = ConfigDict(extra="forbid")
+    status: TripStatus
+
+
+class CancelIn(BaseModel):
+    """Dispatcher: stop an open assignment and free the vehicle."""
+    model_config = ConfigDict(extra="forbid")
+    reason: str | None = Field(default=None, max_length=500)
+
+    @field_validator("reason", mode="before")
+    @classmethod
+    def _blank_is_none(cls, value: object) -> object:
+        return (value.strip() or None) if isinstance(value, str) else value
+
+
+class HospitalChangeIn(BaseModel):
+    """Dispatcher: send an open assignment to another hospital (UC-09 2a)."""
+    model_config = ConfigDict(extra="forbid")
+    hospital_id: int = Field(ge=1)
