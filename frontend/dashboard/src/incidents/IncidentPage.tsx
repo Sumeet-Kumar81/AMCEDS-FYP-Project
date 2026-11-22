@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   AiRecommendationLabel,
   ApiError,
-  ApproximateEtaTag,
   ConfidenceMeter,
   ErrorState,
   LoadingState,
@@ -19,6 +18,7 @@ import {
   type Translate,
 } from "@amceds/shared";
 import { useAuth } from "../auth/AuthProvider";
+import { DispatchPanel } from "../dispatch/DispatchPanel";
 import { URGENT_REASONS, channelText, dateTime, locationText, reasonText, statusText, typeText, vehicleText } from "./labels";
 
 export const DETAIL_REFRESH_MS = 5_000;
@@ -99,33 +99,8 @@ function VehiclesSection({ incident }: { incident: IncidentDetailOut }) {
         <p className="inc-alert" role="alert">{t("inc.shortage", { list: countsText(t, alloc.shortage) })}</p>
       )}
       {alloc?.victims_unknown_check && <p className="inc-warn">{t("inc.victims_check")}</p>}
-      {(incident.recommendations ?? []).length === 0 ? (
-        <p className="q-muted">{t("inc.no_recs")}</p>
-      ) : (
-        <table className="inc-recs">
-          <thead>
-            <tr>
-              <th scope="col">{t("inc.col_rank")}</th><th scope="col">{t("inc.col_vehicle")}</th>
-              <th scope="col">{t("inc.col_type")}</th><th scope="col">{t("inc.col_distance")}</th><th scope="col">{t("inc.col_eta")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(incident.recommendations ?? []).map((r) => (
-              <tr key={r.rec_id} data-testid="rec-row">
-                <td>{r.rank}</td>
-                <td dir="ltr">{r.plate_number ?? `#${r.vehicle_id}`}{r.is_spare && <span className="inc-spare"> ({t("inc.spare")})</span>}</td>
-                <td>{vehicleText(t, r.vehicle_type)}</td>
-                <td>{t("inc.km", { km: (r.distance_meters / 1000).toFixed(1) })}</td>
-                <td>{t("inc.min", { min: Math.max(1, Math.round(r.eta_seconds / 60)) })} <ApproximateEtaTag approximate={r.eta_is_approximate} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      <div className="inc-approve">
-        <button type="button" disabled aria-describedby="inc-approve-note">{t("inc.approve")}</button>
-        <p id="inc-approve-note" className="q-muted">{t("inc.approve_not_built")}</p>
-      </div>
+      {(incident.recommendations ?? []).length === 0 && <p className="q-muted">{t("inc.no_recs")}</p>}
+      <DispatchPanel incident={incident} />
     </section>
   );
 }

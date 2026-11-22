@@ -67,3 +67,25 @@
 .inc-spare { color: var(--am-muted); }
 .inc-approve { margin-top: 12px; display: grid; gap: 4px; }
 .inc-approve button { justify-self: start; opacity: 0.6; cursor: not-allowed; }
+
+/* Dispatch approval panel (B1-A3-08) */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.dsp { display: grid; gap: 10px; }
+.dsp-blocked { opacity: 0.6; }
+.dsp-reason { color: var(--am-warn); font-size: 0.85rem; font-weight: 600; }
+.dsp-other summary { cursor: pointer; font-weight: 600; color: var(--am-accent); }
+.dsp-approve { background: var(--am-accent); color: #fff; border-color: var(--am-accent); font-weight: 700; min-height: 46px; }
+.dsp-approve:disabled { opacity: 0.5; cursor: not-allowed; }
+.dsp-done { padding: 12px; border-radius: 8px; border: 2px solid var(--am-low); background: var(--am-low-bg); color: var(--am-low); }
+.dsp-done p { margin: 0; }
+.dsp-call { margin-top: 6px !important; color: var(--am-warn) !important; font-weight: 700; }
+.dsp-backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.45); display: grid; place-items: center; padding: 16px; z-index: 10; }
+.dsp-dialog { width: 100%; max-width: 520px; max-height: 90vh; overflow: auto; background: var(--am-surface); color: var(--am-text);
+  border-radius: 10px; padding: 20px; display: grid; gap: 8px; box-shadow: 0 10px 40px rgb(0 0 0 / 0.3); }
+.dsp-dialog h3 { margin: 0; }
+.dsp-dialog ul { margin: 0; padding-inline-start: 20px; font-weight: 600; }
+.dsp-dialog textarea { font: inherit; padding: 8px; border: 1px solid var(--am-border); border-radius: 6px; background: var(--am-surface); color: var(--am-text); }
+.dsp-actions { display: flex; gap: 10px; margin-top: 8px; }
+.dsp-confirm { background: var(--am-critical); color: #fff; border-color: var(--am-critical); font-weight: 700; min-height: 46px; min-width: 120px; }
+.dsp-next { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+@media (prefers-color-scheme: dark) { .dsp-approve, .dsp-confirm { color: #0b1220; } }

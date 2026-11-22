@@ -24,13 +24,14 @@ Ye guide aap ko batati hai ke **ab tak jo kuch bana hai** usay apne data ke saat
 | Login, token, logout, roles (admin/dispatcher/driver) | ✅ bana hai | Step 7 |
 | 5 ghalat password par account lock (TC-32) | ✅ bana hai | Step 7.4 |
 | Audit log ko koi badal/mita nahi sakta | ✅ bana hai | Step 8 |
-| Automatic tests (938 backend + 130 web) | ✅ bana hai | Step 9 |
+| Automatic tests (938 backend + 146 web) | ✅ bana hai | Step 9 |
 | Browser wala report page (English/Urdu, GPS, reference number) | ✅ bana hai | Step 12 |
 | Dashboard login, roles, idle logout | ✅ bana hai | Step 13 |
 | Dashboard par incident queue aur review (AI ke nateeje, gaariyon ke plates) | ✅ bana hai | Step 14 |
 | Dispatch approval (gaari bhejna, lock, do dispatcher ek gaari) — API se | ✅ bana hai | Step 15 |
+| Dashboard se gaari bhejna (3 click, next best, manual mode) | ✅ bana hai | Step 16 |
 | AI worker Docker service (`ai-worker`) | ✅ bana hai | Step 1, 6 |
-| Dashboard par dispatch button, driver ko alert, incident edit, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
+| Driver ko alert, hospital chunna, map/route, incident edit, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
 
 ---
 
@@ -509,7 +510,7 @@ Ye endpoints contract mein hain lekin abhi bane nahi. Inhe kholein to **501** au
 | POST /api/v1/reports/{ref}/confirmation | `501` … `B1-A1-24` |
 | POST /api/v1/reports/voice (audio file ke saath) | `501` … `B1-A1-17` |
 
-Abhi nahi bana: dashboard par dispatch ka button (F5), driver ko alert, driver duty/GPS, admin panel, voice/SMS reports, duplicate detection (Coordination Agent), jagah ke naam se location (geocoding), asal road route (OSRM), live dashboard, mobile app.
+Abhi nahi bana: driver ko alert, hospital chunna, driver duty/GPS, admin panel, voice/SMS reports, duplicate detection (Coordination Agent), jagah ke naam se location (geocoding), asal road route (OSRM), live dashboard, mobile app.
 
 ---
 
@@ -602,7 +603,7 @@ python3 scripts/run_project.py test-web
    typecheck : passed
    build     : passed
 ```
-(Upar kahin `Tests  130 passed (130)` bhi likha hoga.)
+(Upar kahin `Tests  146 passed (146)` bhi likha hoga.)
 
 ---
 
@@ -688,7 +689,7 @@ Kisi card par click → `/incidents/<id>`.
   4  SIM-BKP-01  Backup     5.0 km  7 min  ≈ Approximate
   ```
   aur kami ho to laal "Not enough vehicles: … missing."
-- **Approve dispatch** button **dabta nahi**, neeche: "Approving from this screen comes in the next step (F5, task B1-A3-08)." (Gaari bhejna API se ho chuka hai: Step 15.)
+- **Send vehicles** hissa: har gaari ke saath checkbox aur **Approve dispatch** button — Step 16 dekhein.
 
 Ghair-wazeh report kholein → AI values mein "not known", "More information needed", aur gaariyon ki jagah "No vehicle could be recommended…".
 Address bar mein `/incidents/99999` → "There is no incident with this number." `admin1` se `/incidents/1` → "Not allowed".
@@ -700,7 +701,7 @@ http://localhost:8000/docs → **Authorize** (dispatcher token) → **GET /api/v
 
 ## Step 15 — Gaari bhejna (dispatch approval) — API se
 
-Dashboard par "Approve dispatch" button agle step (F5) mein aayega; abhi ye API se check hota hai. Backend chal raha ho aur Step 14.1 ki tarah kam az kam 2 reports AI ne padh li hon. Drivers on-duty hon:
+Ye wahi kaam API se hai jo Step 16 mein dashboard ka button karta hai. Backend chal raha ho aur Step 14.1 ki tarah kam az kam 2 reports AI ne padh li hon. Drivers on-duty hon:
 ```sql
 UPDATE users SET on_duty = true WHERE role = 'driver';
 ```
@@ -763,6 +764,53 @@ UPDATE vehicles SET status = 'available' WHERE status = 'assigned';
 
 ---
 
+## Step 16 — Dashboard se gaari bhejna (Approve → Confirm)
+
+Backend (worker service ke saath) aur `python3 scripts/run_project.py web` chal rahe hon. Gaariyan free aur drivers on-duty hon (SIMULATED):
+```sql
+UPDATE assignments SET status = 'completed', completed_at = now() WHERE status = 'approved';
+UPDATE vehicles SET status = 'available', last_seen_at = now();
+UPDATE users SET on_duty = true WHERE role = 'driver';
+```
+Phir ek nayi accident report bhejein (report page ya Step 4.1 ka `curl`) aur ~10 second intezar karein.
+
+### 16.1 Teen click (NFR-P14)
+1. http://localhost:5173 → `dispatcher1` → queue mein nayi report par **click** (1).
+2. "Recommended vehicles" mein **zaroori gaariyan pehle se ticked** hongi (spare aur busy gaariyan nahi). Asal run: `SIM-AMB-03` aur `SIM-BKP-01` ticked.
+3. **Approve dispatch** (2) → dabba "Confirm dispatch": reference, severity, "Vehicles to send: SIM-AMB-03 — Ambulance …".
+4. **Confirm** (3).
+
+**Sahi output:**
+```
+✔ Dispatched: SIM-AMB-03, SIM-BKP-01.
+☎ The driver is not alerted automatically yet — inform the driver by radio or phone.
+```
+Neeche "Dispatched vehicles": `SIM-AMB-03 — approved, approved hh:mm:ss by you`. Upar status **Dispatched**. Queue mein bhi status badal jata hai.
+Database (Step 15.2 wali query) → `assigned`, `approved`, `dispatcher1`, audit `same_as_ai = true`.
+
+### 16.2 Kuch na bhejna
+**Approve dispatch** → dabba khule → **Cancel** ya **Esc** → dabba band, koi request nahi (assignments mein nayi row nahi).
+
+### 16.3 AI se alag gaari
+Ticked gaari ka tick hatayein → **Other vehicles** kholein → koi aur gaari tick karein → Approve → dabbe mein **"Different from the AI suggestion."** aur "Reason (optional)" box. Wajah likh kar Confirm → audit mein `override_reason` aur `same_as_ai = false`.
+
+### 16.4 Busy gaari aur next best (TC-22)
+1. Do browser windows (ya ek normal + ek private window) mein `dispatcher1` aur `dispatcher2` se login.
+2. Dono **ek hi nayi report** kholein, dono "Approve dispatch" dabayein (dabba khula rahe).
+3. Pehle window mein **Confirm** → "Dispatched".
+4. Doosre window mein **Confirm** → laal dabba: **"Not sent: SIM-AMB-03 is already on another job."** aur button **"Use SIM-AMB-01 instead"**.
+5. Us button par click → dabbe mein gaari badal jati hai → **Confirm** → "Dispatched: SIM-AMB-01".
+
+Busy gaari list mein bhi dikhti hai: halki, checkbox band, "not available now: already on another job". Driver off-duty ho to "driver off duty".
+
+### 16.5 Manual mode
+Ghair-wazeh report (koi jagah nahi, AI ka mashwara nahi) kholein → **"🛠 Manual dispatch — no AI recommendation."**, "Other vehicles" khud khuli, kuch ticked nahi, Approve band. Ek gaari tick → Approve → dabbe mein "Manual dispatch (no AI recommendation)." → Confirm → audit `manual_mode = true`.
+
+### 16.6 Fake report
+`UPDATE incidents SET status='fake' WHERE reference_no='INC-0000xx';` → review screen par **"This report is fake: no vehicle can be sent."**, koi checkbox ya Approve button nahi.
+
+---
+
 ## Aakhri checklist — tick karte jayein
 
 | # | Check | Sahi nateeja | ✔ |
@@ -808,10 +856,16 @@ UPDATE vehicles SET status = 'available' WHERE status = 'assigned';
 | 39 | Review: AI | har value ke saath confidence, 60% se kam par "Dispatcher must check" | ☐ |
 | 40 | Review: trust aur reasons | har point ki wajah, review reasons saaf alfaaz mein | ☐ |
 | 41 | Review: gaariyan | plate, km, minute, "≈ Approximate" | ☐ |
-| 42 | Approve dispatch (dashboard) | button abhi band, F5 mein chalega | ☐ |
+| 42 | Approval panel dikhta hai | zaroori gaariyan ticked, spare/busy nahi | ☐ |
 | 43 | Gaariyon ki list | `can_dispatch`, doori, off-duty driver par `false` | ☐ |
 | 44 | Dispatch (API) | 201, gaari `assigned`, incident `dispatched`, audit mein AI vs choice | ☐ |
 | 45 | Wahi gaari doosra dispatcher | `409 vehicle_locked` + `next_best` | ☐ |
 | 46 | Fake / off-duty / ghalat body / ghalat role | 409 / 409 / 422 / 401-403, koi assignment nahi | ☐ |
+| 47 | 3 click se dispatch | "Dispatched: …" + "inform the driver", status Dispatched | ☐ |
+| 48 | Cancel / Esc | kuch nahi jata | ☐ |
+| 49 | AI se alag gaari | "Different from the AI suggestion", wajah audit mein | ☐ |
+| 50 | Do dispatcher ek gaari | "already on another job" + "Use … instead" → Dispatched | ☐ |
+| 51 | Manual mode | label, list khuli, audit `manual_mode` | ☐ |
+| 52 | Fake report | koi dispatch control nahi | ☐ |
 
 Agar koi check fail ho: us ka **command aur poora output** copy karke bhejein, hum wajah dhoond kar theek karenge.
