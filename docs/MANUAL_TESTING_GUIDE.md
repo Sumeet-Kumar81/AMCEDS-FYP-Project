@@ -24,8 +24,9 @@ Ye guide aap ko batati hai ke **ab tak jo kuch bana hai** usay apne data ke saat
 | Login, token, logout, roles (admin/dispatcher/driver) | ✅ bana hai | Step 7 |
 | 5 ghalat password par account lock (TC-32) | ✅ bana hai | Step 7.4 |
 | Audit log ko koi badal/mita nahi sakta | ✅ bana hai | Step 8 |
-| Automatic tests (887 backend + 95 web) | ✅ bana hai | Step 9 |
+| Automatic tests (887 backend + 112 web) | ✅ bana hai | Step 9 |
 | Browser wala report page (English/Urdu, GPS, reference number) | ✅ bana hai | Step 12 |
+| Dashboard login, roles, idle logout | ✅ bana hai | Step 13 |
 | Incident list/detail, dispatch approval, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, dashboard screens (login, queue), mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
 
 ---
@@ -597,7 +598,44 @@ python3 scripts/run_project.py test-web
    typecheck : passed
    build     : passed
 ```
-(Upar kahin `Tests  95 passed (95)` bhi likha hoga.)
+(Upar kahin `Tests  112 passed (112)` bhi likha hoga.)
+
+---
+
+## Step 13 — Dashboard: login aur roles
+
+Backend aur `python3 scripts/run_project.py web` chal rahe hon (Step 12). Browser mein **http://localhost:5173** kholein.
+
+### 13.1 Bina login
+**Sahi output:** khud **http://localhost:5173/login** par aa jata hai: "Sign in" form. http://localhost:5173/queue seedha kholein → wapas login.
+
+### 13.2 Dispatcher
+Username `dispatcher1`, password = aap ka `SEED_DISPATCHER_PASSWORD` → **Sign in**.
+**Sahi output:** address `/queue`, upar "AMCEDS — Dispatcher Dashboard", "Incident queue" link, `Signed in as SIMULATED Dispatcher One (Dispatcher)`, page par "The incident queue comes in the next step (F4, task B1-A1-20)."
+Ab address bar mein `/admin` likhein → **"Not allowed — Your role may not open this page."** aur "Go to my start page" link.
+
+### 13.3 Admin
+**Sign out** → "You have signed out." Phir `admin1` + `SEED_ADMIN_PASSWORD` → address `/admin`, "Administration is not built yet (task B1-A1-31)." `/queue` kholein → "Not allowed".
+
+### 13.4 Driver
+`driver01` + `SEED_DRIVER_PASSWORD` → **"Drivers use the mobile app, not the dashboard. You have been signed out."** (login page par hi rehta hai).
+
+### 13.5 Ghalat password aur lock (TC-32)
+`dispatcher2` + ghalat password → "Wrong username or password." aur password box khaali. 5 dafa ghalat → "Too many wrong passwords. The account is locked; try again in 15 minute(s)." Unlock (Step 7.4 wali SQL):
+```sql
+UPDATE users SET failed_login_count = 0, locked_until = NULL WHERE username = 'dispatcher2';
+```
+
+### 13.6 Sign out aur reload
+- **Sign out** → "You have signed out.", database mein `auth.logout` audit row:
+  ```sql
+  SELECT l.action, u.username, l.created_at::time(0) FROM audit_logs l JOIN users u USING (user_id)
+   WHERE l.action LIKE 'auth.%' ORDER BY l.log_id DESC LIMIT 4;
+  ```
+- Login ke baad page **reload (F5)** karein → dobara login maangta hai. Ye **sahi** hai: token sirf memory mein rehta hai (zyada mehfooz).
+
+### 13.7 Idle logout (optional, 30 minute)
+Login karke 28 minute kuch na chhooein → peeli pati "No activity for a while: you will be signed out in 2 minutes." aur **Stay signed in** button. Kuch na karein → 30 minute par login page: "You were signed out after 30 minutes without activity." (Itna intezar na karna ho to ye automatic tests mein nakli ghadi se check hota hai: Step 12.7.)
 
 ---
 
@@ -634,5 +672,11 @@ python3 scripts/run_project.py test-web
 | 27 | Database band | "NOT saved … call 1122", reference nahi | ☐ |
 | 28 | Urdu | RTL, Urdu labels aur notice | ☐ |
 | 29 | Web tests | tests, typecheck, build sab `passed` | ☐ |
+| 30 | Dashboard bina login | `/login` par bhej deta hai | ☐ |
+| 31 | Dispatcher login | `/queue`, naam aur role, `/admin` par "Not allowed" | ☐ |
+| 32 | Admin login | `/admin`, `/queue` par "Not allowed" | ☐ |
+| 33 | Driver login | "Drivers use the mobile app", sign out | ☐ |
+| 34 | Ghalat password / lock | saaf message, 5 ke baad locked | ☐ |
+| 35 | Sign out / reload | "You have signed out.", reload par dobara login | ☐ |
 
 Agar koi check fail ho: us ka **command aur poora output** copy karke bhejein, hum wajah dhoond kar theek karenge.

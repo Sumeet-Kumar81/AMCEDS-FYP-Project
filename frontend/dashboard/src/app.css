@@ -1,6 +1,28 @@
-.dash-header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; padding: 12px 24px;
+.dash-header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 12px 24px;
   background: var(--am-surface); border-bottom: 1px solid var(--am-border); }
-.dash-header h1 { margin: 0; font-size: 1.25rem; }
-.dash-simulated, .report-simulated { color: var(--am-muted); font-size: 0.85rem; }
+.dash-header h1 { margin: 0; font-size: 1.2rem; }
+.dash-nav { display: flex; gap: 12px; flex: 1; }
+.dash-nav a { color: var(--am-accent); font-weight: 600; text-decoration: none; padding: 6px 8px; border-radius: 6px; }
+.dash-nav a.active { background: var(--am-medium-bg); }
+.dash-user { color: var(--am-muted); font-size: 0.9rem; }
 .dash-main { padding: 24px; max-width: 1200px; }
-.dash-ok { color: var(--am-low); font-weight: 600; }
+.dash-page h2 { margin-top: 0; }
+.dash-not-built { color: var(--am-muted); }
+.dash-footer { padding: 12px 24px; color: var(--am-muted); font-size: 0.85rem; }
+.dash-idle { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 12px 24px;
+  background: var(--am-warn-bg); color: var(--am-warn); border-bottom: 2px solid var(--am-warn); font-weight: 600; }
+.dash-idle p { margin: 0; }
+.login { display: grid; place-items: center; min-height: 100vh; padding: 16px; }
+.login-card { display: grid; gap: 8px; width: 100%; max-width: 380px; padding: 24px; background: var(--am-surface);
+  border: 1px solid var(--am-border); border-radius: 10px; }
+.login-card h2 { margin: 0; }
+.login-intro { margin: 0 0 8px; color: var(--am-muted); }
+.login-card label { font-weight: 600; }
+.login-card input { font: inherit; padding: 10px; border: 1px solid var(--am-border); border-radius: 6px;
+  background: var(--am-surface); color: var(--am-text); min-height: 44px; }
+.login-card input:focus { outline: 3px solid var(--am-accent); outline-offset: 1px; }
+.login-error { margin: 0; color: var(--am-critical); font-weight: 600; }
+.login-notice { margin: 0; padding: 8px; border-radius: 6px; background: var(--am-medium-bg); color: var(--am-medium); }
+.login-submit { margin-top: 8px; background: var(--am-accent); color: #fff; border-color: var(--am-accent);
+  font-weight: 700; min-height: 46px; }
+@media (prefers-color-scheme: dark) { .login-submit { color: #0b1220; } }

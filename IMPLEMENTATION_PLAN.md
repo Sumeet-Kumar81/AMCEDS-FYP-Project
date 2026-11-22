@@ -782,6 +782,7 @@ mobile/               (proposed, D-002) React Native Android app — citizen mod
 - **Acceptance:** works at 360 px width in Chrome/Edge/Firefox. **Priority:** P0. **Output:** public page.
 
 #### B1-A3-04 — Dashboard authentication and role routing
+- **Implementation status:** implemented on branch `feat/dashboard-auth` (not yet committed), 2026-11-22, as group F3; F2 merged via PR #18 (`b4bcad6`). Dispatcher → `/queue`, admin → `/admin` (both say plainly that their content comes later); drivers are signed out at once (mobile app). Idle limit fixed at the SRS default of 30 min until the settings API exists; while the user is active the dashboard calls `/auth/me` every 5 min, because the server counts requests, not clicks. Details in CHANGES.md. The original task text below is unchanged.
 - **Purpose / behaviour:** Dispatcher and admin log in, land on their role's home, are signed out after 30 min idle, and can log out.
 - **Approach:** Login form (`/auth/login`), lockout message, token kept in memory with refresh; idle timer warning at 28 min; route guards by role (dispatcher: queue/map/review/reports; admin: admin panel + reports).
 - **Traceability:** SRS UC-11 1, 1a, 1b, 3, NFR-C2, NFR-C4; TC-32.
