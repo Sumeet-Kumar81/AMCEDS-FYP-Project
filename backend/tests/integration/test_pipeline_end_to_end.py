@@ -42,7 +42,7 @@ async def ambulance(db: AsyncSession, plate: str, km: float) -> Vehicle:
     db.add(driver)
     await db.flush()
     v = Vehicle(vehicle_type="ambulance", plate_number=plate, driver_id=driver.user_id, status="available",
-                last_location=pt(SUKKUR[0] + km / 111.2, SUKKUR[1]), last_seen_at=NOW - timedelta(seconds=5),
+                last_location=pt(SUKKUR[0] + km / 111.2, SUKKUR[1]), last_seen_at=datetime.now(timezone.utc) - timedelta(seconds=5),
                 patient_capacity=2)
     db.add(v)
     await db.flush()

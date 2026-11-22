@@ -228,7 +228,7 @@ describe("incident review (read-only)", () => {
     await openAs(b, "/incidents/5");
     const approve = await screen.findByRole("button", { name: "Approve dispatch" });
     expect(approve).toBeDisabled();
-    expect(screen.getByText(/Dispatch approval is not built yet \(task B1-A1-25\)/)).toBeInTheDocument();
+    expect(screen.getByText(/comes in the next step \(F5, task B1-A3-08\)/)).toBeInTheDocument();
     expect(b.calls.some((c) => c.includes("/dispatch"))).toBe(false);
   });
 

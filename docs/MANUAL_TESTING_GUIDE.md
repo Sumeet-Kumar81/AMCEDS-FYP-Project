@@ -24,11 +24,13 @@ Ye guide aap ko batati hai ke **ab tak jo kuch bana hai** usay apne data ke saat
 | Login, token, logout, roles (admin/dispatcher/driver) | ✅ bana hai | Step 7 |
 | 5 ghalat password par account lock (TC-32) | ✅ bana hai | Step 7.4 |
 | Audit log ko koi badal/mita nahi sakta | ✅ bana hai | Step 8 |
-| Automatic tests (906 backend + 130 web) | ✅ bana hai | Step 9 |
+| Automatic tests (938 backend + 130 web) | ✅ bana hai | Step 9 |
 | Browser wala report page (English/Urdu, GPS, reference number) | ✅ bana hai | Step 12 |
 | Dashboard login, roles, idle logout | ✅ bana hai | Step 13 |
 | Dashboard par incident queue aur review (AI ke nateeje, gaariyon ke plates) | ✅ bana hai | Step 14 |
-| Dispatch approval, incident edit, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
+| Dispatch approval (gaari bhejna, lock, do dispatcher ek gaari) — API se | ✅ bana hai | Step 15 |
+| AI worker Docker service (`ai-worker`) | ✅ bana hai | Step 1, 6 |
+| Dashboard par dispatch button, driver ko alert, incident edit, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
 
 ---
 
@@ -46,7 +48,7 @@ Ye guide aap ko batati hai ke **ab tak jo kuch bana hai** usay apne data ke saat
    - `SEED_ADMIN_PASSWORD`, `SEED_DISPATCHER_PASSWORD`, `SEED_DRIVER_PASSWORD` (kam az kam 8 characters)
 
 Is guide mein **do terminal** use honge:
-- **Terminal 1:** project + AI worker chalega (isay khula rehne dein).
+- **Terminal 1:** project start hota hai aur AI worker ka log dikhta hai. Ctrl+C sirf log band karta hai; worker, API aur database chalte rehte hain (`stop` se band).
 - **Terminal 2:** aap tests chalayenge.
 
 **Database kholne ka tareeqa** (Step 2, 4, 5, 6, 8 mein kaam aayega). Terminal 2 mein:
@@ -77,8 +79,9 @@ python3 scripts/run_project.py
 ==> Loading SIMULATED sample data (size small; running it again adds nothing)
 created: {'users': 9, 'vehicles': 6, 'hospitals': 2, 'driver_links': 6}
    The project is running.
-==> Starting the AI worker (it reads new reports). Press Ctrl+C to stop the worker.
-... INFO app.workers.ai_worker: ai-worker-...-1 starting with 2 slot(s)
+==> Starting the AI worker (it reads new reports)
+   The AI worker runs in the background. Its log follows; Ctrl+C stops only the log.
+ai-worker-1  | ... INFO app.workers.ai_worker: ai-worker-...-1 starting with 2 slot(s)
 ```
 - Pehli dafa `created: {'users': 9, ...}` aayega. Dobara chalane par `created: {'users': 0, ...}` aur `already present: {'users': 9, 'vehicles': 6, 'hospitals': 2}` aayega — ye bhi **sahi** hai (sample data dobara nahi daalta).
 - `WARNING: ... is empty` aaye to `.env` mein wo cheez bharein.
@@ -327,11 +330,11 @@ Agar `review_reasons = {vehicle_shortage}` aaye aur mashwara khaali ho → 60 se
 
 ### 6.1 Worker band karke report bhejein
 
-1. Terminal 1 mein **Ctrl+C** dabayein. Sahi output:
+1. Worker band karein (Terminal 2):
+   ```bash
+   docker compose stop ai-worker
    ```
-      Stopping the AI worker (it finishes the report it is working on)...
-      AI worker stopped. The database and API are still running.
-   ```
+   Sahi output: `Container amceds-fyp-project-ai-worker-1 Stopped` (wo haath ki report poori karke rukta hai).
 2. Terminal 2 se report bhejein:
    ```bash
    curl -s -w ' [HTTP %{http_code}]\n' -X POST localhost:8000/api/v1/reports -H 'Content-Type: application/json' \
@@ -343,17 +346,18 @@ Agar `review_reasons = {vehicle_shortage}` aaye aur mashwara khaali ho → 60 se
     INC-000005   | new    | pending
    ```
    Report line mein intezar kar rahi hai.
-4. Terminal 1 mein worker dobara chalayein (sirf worker, baaqi sab chal raha hai):
+4. Worker dobara chalayein:
    ```bash
-   python3 scripts/run_project.py --no-seed
+   docker compose up -d ai-worker
    ```
    Kuch second baad wahi query → `triaged | done`. ✅ Pass: koi report zaya nahi hui.
 
 ### 6.2 AI fail ho jaye (manual mode) — optional
 
-Terminal 1 mein worker band karein (Ctrl+C), phir jaan-boojh kar ghalat model se chalayein:
+Asli worker band karein aur jaan-boojh kar ghalat model wala worker chalayein:
 ```bash
-docker compose run --rm --name amceds-ai-worker -e LLM_MODEL=SIMULATED-broken-model api python -m app.workers.ai_worker
+docker compose stop ai-worker
+docker compose run --rm -e LLM_MODEL=SIMULATED-broken-model ai-worker
 ```
 Terminal 2 se ek report bhejein, 15 second baad:
 ```sql
@@ -363,7 +367,7 @@ SELECT reference_no, status, pipeline_state, trust_tier, review_reasons FROM inc
 ```
  INC-000006   | needs_check | failed         | medium     | {ai_failed}
 ```
-✅ Pass: report save hai, `needs_check` (dispatcher khud dekhe), trust phir bhi calculate hua. Ctrl+C se ye worker band karein aur `python3 scripts/run_project.py --no-seed` se sahi worker wapas chalayein.
+✅ Pass: report save hai, `needs_check` (dispatcher khud dekhe), trust phir bhi calculate hua. Ctrl+C se ye ghalat worker band karein aur sahi wala wapas: `docker compose up -d ai-worker`.
 
 ---
 
@@ -479,7 +483,7 @@ python3 scripts/run_project.py test
 SKIPPED [1] tests/api/test_api_contract.py:98: docs/API_CONTRACT.md not visible here ...
 SKIPPED [1] tests/api/test_rbac_matrix.py:75: docs/API_CONTRACT.md not visible here ...
 SKIPPED [1] tests/unit/schemas/test_events.py:176: docs/API_CONTRACT.md not visible here ...
-887 passed, 3 skipped in 79.42s
+938 passed, 3 skipped in 48.04s
 
    RESULT: all tests passed
 ```
@@ -487,7 +491,7 @@ SKIPPED [1] tests/unit/schemas/test_events.py:176: docs/API_CONTRACT.md not visi
   ```bash
   docker compose run --rm -v "$PWD":/repo -w /repo/backend api pytest -q -rs
   ```
-  → **890 passed, 0 skipped**.
+  → **941 passed, 0 skipped**.
 - Tests aap ke asli data ko **nahi** chhooti; ye alag `dispatch_test` database par chalti hain.
 
 ✅ Pass: `0 failed`.
@@ -505,13 +509,13 @@ Ye endpoints contract mein hain lekin abhi bane nahi. Inhe kholein to **501** au
 | POST /api/v1/reports/{ref}/confirmation | `501` … `B1-A1-24` |
 | POST /api/v1/reports/voice (audio file ke saath) | `501` … `B1-A1-17` |
 
-Abhi nahi bana: dispatch approval aur gaari lock, driver duty/GPS, admin panel, voice/SMS reports, duplicate detection (Coordination Agent), jagah ke naam se location (geocoding), asal road route (OSRM), live dashboard, mobile app.
+Abhi nahi bana: dashboard par dispatch ka button (F5), driver ko alert, driver duty/GPS, admin panel, voice/SMS reports, duplicate detection (Coordination Agent), jagah ke naam se location (geocoding), asal road route (OSRM), live dashboard, mobile app.
 
 ---
 
 ## Step 11 — Band karna
 
-- Sirf AI worker: Terminal 1 mein **Ctrl+C**.
+- Sirf AI worker: `docker compose stop ai-worker` (wapas: `docker compose up -d ai-worker`). Terminal 1 ka Ctrl+C sirf log band karta hai.
 - Sab kuch (data mehfooz rehta hai):
   ```bash
   python3 scripts/run_project.py stop
@@ -684,13 +688,78 @@ Kisi card par click → `/incidents/<id>`.
   4  SIM-BKP-01  Backup     5.0 km  7 min  ≈ Approximate
   ```
   aur kami ho to laal "Not enough vehicles: … missing."
-- **Approve dispatch** button **dabta nahi**, neeche: "Dispatch approval is not built yet (task B1-A1-25). No vehicle is sent from this screen."
+- **Approve dispatch** button **dabta nahi**, neeche: "Approving from this screen comes in the next step (F5, task B1-A3-08)." (Gaari bhejna API se ho chuka hai: Step 15.)
 
 Ghair-wazeh report kholein → AI values mein "not known", "More information needed", aur gaariyon ki jagah "No vehicle could be recommended…".
 Address bar mein `/incidents/99999` → "There is no incident with this number." `admin1` se `/incidents/1` → "Not allowed".
 
 ### 14.4 API seedha (optional)
 http://localhost:8000/docs → **Authorize** (dispatcher token) → **GET /api/v1/incidents** → 200 aur list; `severity=unknown` filter sirf woh reports deta hai jin ki severity abhi tay nahi. **GET /api/v1/incidents/{id}** → `recommendations[].plate_number` maujood.
+
+---
+
+## Step 15 — Gaari bhejna (dispatch approval) — API se
+
+Dashboard par "Approve dispatch" button agle step (F5) mein aayega; abhi ye API se check hota hai. Backend chal raha ho aur Step 14.1 ki tarah kam az kam 2 reports AI ne padh li hon. Drivers on-duty hon:
+```sql
+UPDATE users SET on_duty = true WHERE role = 'driver';
+```
+(GPS purani ho to bhi dispatch hota hai — sirf audit mein `signal_lost` warning likhi jati hai.)
+
+### 15.1 Login aur gaariyan dekhein
+http://localhost:8000/docs → **POST /api/v1/auth/login** (`dispatcher1`) → token → **Authorize**.
+**GET /api/v1/incidents** → accident wali report ka `incident_id` note karein (masalan `1`).
+**GET /api/v1/vehicles** with `incident_id = 1` → **Sahi output** (asal run):
+```
+SIM-AMB-03  can_dispatch: true  distance_meters: 802   signal_lost: true
+SIM-AMB-01  can_dispatch: true  distance_meters: 903
+...
+```
+Jis gaari ka driver off-duty ho us par `can_dispatch: false`, `driver_on_duty: false`.
+
+### 15.2 Gaari bhejein (TC-21)
+**GET /api/v1/incidents/1** → `recommendations[0].vehicle_id` (masalan `5`, SIM-AMB-03).
+**POST /api/v1/incidents/1/dispatch** body:
+```json
+{"vehicle_ids": [5]}
+```
+**Sahi output (201):**
+```json
+[{"assignment_id": 1, "vehicle_id": 5, "approved_by": 2, "status": "approved", "approved_at": "…", …}]
+```
+Database mein:
+```sql
+SELECT a.assignment_id, i.reference_no, v.plate_number, v.status AS vehicle_status, a.status, u.username AS approved_by
+  FROM assignments a JOIN incidents i USING (incident_id) JOIN vehicles v USING (vehicle_id) JOIN users u ON u.user_id = a.approved_by;
+SELECT action, details->'recommended' AS ai, details->'selected' AS chosen, details->'same_as_ai' AS same
+  FROM audit_logs WHERE action = 'dispatch.approved';
+```
+→ `INC-000001 | SIM-AMB-03 | assigned | approved | dispatcher1`, aur audit mein AI ki list aur chuni hui gaari (`same = true`). Incident ab `dispatched` (GET /incidents/1).
+
+### 15.3 Doosra dispatcher, wahi gaari (TC-22)
+`dispatcher2` se login karke doosri report (masalan `2`) ke liye **wahi** gaari bhejein: `{"vehicle_ids": [5]}`
+**Sahi output (409):**
+```json
+{"code": "vehicle_locked", "message": "A chosen vehicle already has an open assignment.",
+ "details": {"vehicle_ids": [5], "next_best": [1, 2, 4]}}
+```
+`next_best` ki pehli gaari bhejein → **201**. ✅ Pass: ek gaari kabhi do jagah nahi jati.
+
+### 15.4 Inkaar ke baaqi raaste
+| Kya karein | Sahi output |
+|---|---|
+| Driver off-duty wali gaari (`UPDATE users SET on_duty=false WHERE username='driver06';` phir us ki gaari) | `409 vehicle_unavailable`, `reason: "driver_off_duty"` + `next_best` |
+| Fake report par dispatch (`UPDATE incidents SET status='fake' WHERE incident_id=3;`) | `409 incident_not_dispatchable` — fake kabhi dispatch nahi hoti |
+| `{"vehicle_ids": []}` ya `[5, 5]` | `422 validation_error` |
+| Bina token / driver ya admin token | `401` / `403`, aur `assignments` mein koi nayi row nahi (TC-46) |
+
+**Test ke baad gaariyan wapas free karein** (SIMULATED, sirf testing ke liye — asal mein ye trip poori hone par hota hai, B1-A1-26):
+```sql
+UPDATE assignments SET status = 'completed', completed_at = now() WHERE status = 'approved';
+UPDATE vehicles SET status = 'available' WHERE status = 'assigned';
+```
+
+> Driver ko abhi koi alert **nahi** jata (audit mein likha hai: "not sent: notification service not built yet"). Driver app aur alerts baad ke tasks hain.
 
 ---
 
@@ -708,7 +777,7 @@ http://localhost:8000/docs → **Authorize** (dispatcher token) → **GET /api/v
 | 8 | Vague report | `needs_check` + `missing_info` | ☐ |
 | 9 | Trust | har point ki wajah likhi | ☐ |
 | 10 | Mashwara | qareeb gaari rank 1, `eta_is_approximate = t`, gaariyan `available`, assignments `0` | ☐ |
-| 11 | Worker band → report | `201`, `pending`, worker chalne par `done` | ☐ |
+| 11 | Worker band → report | `201`, `pending`, `docker compose up -d ai-worker` ke baad `done` | ☐ |
 | 12 | AI fail | `needs_check`, `failed`, `{ai_failed}` | ☐ |
 | 13 | Login | `200`, `expires_in: 900` | ☐ |
 | 14 | /auth/me | apna naam aur role | ☐ |
@@ -717,7 +786,7 @@ http://localhost:8000/docs → **Authorize** (dispatcher token) → **GET /api/v
 | 17 | Logout | `204`, phir purana token `session_ended` | ☐ |
 | 18 | Audit/original text badalna | teeno `ERROR` | ☐ |
 | 19 | Heartbeat | `llm_ready: true` | ☐ |
-| 20 | Automatic tests | `887 passed, 3 skipped`, `0 failed` | ☐ |
+| 20 | Automatic tests | `938 passed, 3 skipped`, `0 failed` | ☐ |
 | 21 | Na bane endpoints | `501` + task number | ☐ |
 | 22 | Report page khulta hai | 1122 notice, peeli warning nahi, voice button band | ☐ |
 | 23 | Browser se report | "Report saved" + `INC-…`, database mein `channel = web` | ☐ |
@@ -739,6 +808,10 @@ http://localhost:8000/docs → **Authorize** (dispatcher token) → **GET /api/v
 | 39 | Review: AI | har value ke saath confidence, 60% se kam par "Dispatcher must check" | ☐ |
 | 40 | Review: trust aur reasons | har point ki wajah, review reasons saaf alfaaz mein | ☐ |
 | 41 | Review: gaariyan | plate, km, minute, "≈ Approximate" | ☐ |
-| 42 | Approve dispatch | button band, "not built yet (B1-A1-25)" | ☐ |
+| 42 | Approve dispatch (dashboard) | button abhi band, F5 mein chalega | ☐ |
+| 43 | Gaariyon ki list | `can_dispatch`, doori, off-duty driver par `false` | ☐ |
+| 44 | Dispatch (API) | 201, gaari `assigned`, incident `dispatched`, audit mein AI vs choice | ☐ |
+| 45 | Wahi gaari doosra dispatcher | `409 vehicle_locked` + `next_best` | ☐ |
+| 46 | Fake / off-duty / ghalat body / ghalat role | 409 / 409 / 422 / 401-403, koi assignment nahi | ☐ |
 
 Agar koi check fail ho: us ka **command aur poora output** copy karke bhejein, hum wajah dhoond kar theek karenge.

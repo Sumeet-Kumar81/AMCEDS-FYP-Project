@@ -24,8 +24,18 @@ services:
     volumes: ["./backend:/code"]
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
+  # AI worker (B1-A2-14, CR-004): same image as the API; reads saved reports from the database queue.
+  # Code changes need `docker compose restart ai-worker` (no auto-reload).
+  ai-worker:
+    build: ./backend
+    env_file: .env
+    depends_on:
+      postgres: { condition: service_healthy }
+    volumes: ["./backend:/code"]
+    command: python -m app.workers.ai_worker
+    stop_grace_period: 40s  # lets a running job finish (the worker stops cleanly on SIGTERM)
+
   # ---- ADD LATER ----
-  # ai-worker (Day 6): same image as api, command: python -m app.workers.ai_worker
   # osrm (Day 3): routing container, data in infra/osrm
   # nginx (Day 27): TLS + static builds
   # sms-simulator (Day 22)

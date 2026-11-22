@@ -30,10 +30,10 @@ CONTRACT: dict[tuple[str, str], str] = {
     ("GET", "/api/v1/review-queue"): "B1-A1-23",
     ("POST", "/api/v1/incidents/{incident_id}/confirmation-requests"): "B1-A1-24",
     ("POST", "/api/v1/incidents/{incident_id}/review-decision"): "B1-A1-23",
-    ("POST", "/api/v1/incidents/{incident_id}/dispatch"): "B1-A1-25",
+    ("POST", "/api/v1/incidents/{incident_id}/dispatch"): "exists",  # built in B1-A1-25
     ("PATCH", "/api/v1/assignments/{assignment_id}/hospital"): "B1-A1-26",
     ("POST", "/api/v1/assignments/{assignment_id}/cancel"): "B1-A1-26",
-    ("GET", "/api/v1/vehicles"): "B1-A1-25",
+    ("GET", "/api/v1/vehicles"): "exists",  # built in B1-A1-25
     ("GET", "/api/v1/fleet/live"): "B1-A1-27",
     ("GET", "/api/v1/hospitals"): "B1-A1-26",
     ("GET", "/api/v1/routing/route"): "B1-A2-15",
