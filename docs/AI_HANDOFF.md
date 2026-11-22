@@ -23,7 +23,7 @@ Team roles (team slide, A-007): **Arjun Kumar** = AI & backend; **Khalid Hussain
 |---|---|---|---|
 | **Agent 1 Backend & DB** | B1-A1-02 is complete; start with Phase 1A: B1-A1-03 → (A2's B1-A2-01) → B1-A1-04 → B1-A1-05 | api, core, models, schemas (not `ai.py`), services, ws, main.py, migrations, db/seed, db/sql, backend API/integration tests | agents, llm, workers, integrations, frontend, mobile |
 | **Agent 2 AI** | Done or awaiting commit: B1-A2-01, 02, 03, 06, 07, 11, 13, 14. Next: B1-A2-05 (needs D-009), 10, 08/09 (D-007/D-033), 04 | agents, llm, workers, integrations, `schemas/ai.py`, agent tests, ai_eval, db/eval_data, infra/osrm, infra/gazetteer | models, migrations, routes, services, frontend |
-| **Agent 3 Frontend/Mobile** | Review contracts; B1-A3-01, 02, 05; B1-A3-13 after the Android spike | frontend/**, mobile/**, docs/user-guides | anything under backend/ |
+| **Agent 3 Frontend/Mobile** | Done or awaiting commit: B1-A3-01, 02 (F1: `frontend/` workspace, typed client, UI kit, EN/UR). Next: F2 = B1-A3-03 report page, F3 = B1-A3-04 login, F4 = B1-A1-20 + queue/review screens (read-only). Run `cd frontend && npm install && npm test` | frontend/**, mobile/**, docs/user-guides | anything under backend/ |
 
 Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github/`, `README.md`) change only through a Coordination Request in DECISIONS_LOG.md §4.
 
@@ -40,6 +40,7 @@ Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github
 - The audit and blueprint environments could not install packages; use Docker (`docker compose run --rm api pytest -q`) or CI for real results.
 - Do not use the linear duplicate formula from the first D-007 text; it cannot pass TC-13 (D-033).
 - LangGraph wiring in `06_AI_AGENTS.md` is **not verified**; build a one-node graph first.
+- Frontend: after any backend API change run `cd frontend && npm run gen:api` (backend running) and commit `shared/src/api/schema.ts`; `npm run gen:api:check` fails when it is stale. Tokens stay in memory only (no `localStorage`).
 
 ## 6. Next recommended action
 The next task and the current state are in `STATUS.md` (one place, so this file does not go stale). The developer authorises each task before work starts. Stop and wait for that approval; do not start development on your own.

@@ -1,0 +1,12 @@
+{
+  "name": "@amceds/shared",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Typed API client, UI kit and English/Urdu text shared by the dashboard and the report page.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./ui.css": "./src/ui/ui.css"
+  },
+  "peerDependencies": { "react": "19.3.1", "react-dom": "19.3.1" }
+}

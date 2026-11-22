@@ -151,7 +151,8 @@ Entries marked **APPROVED** below were approved on 2026-11-20 and are kept here 
 ### D-015 — Web frontend structure and test runner
 - **Problem:** Repo plans two Vite apps with React + TypeScript + Tailwind + Leaflet. SDS specifies React and Leaflet/MapLibre; TypeScript and Tailwind are not mentioned. SDS §8.1 names Jest; Vite projects usually use Vitest.
 - **Recommendation:** React + TypeScript + Leaflet (allowed by SDS); Tailwind acceptable (styling only). Use Jest + React Testing Library as the SDS says, or approve Vitest (Jest-compatible API) as a recorded deviation.
-- **Status:** OPEN – needs approval.
+- **Decision (2026-11-22, approved by the project developer (sole developer), with the F1 frontend plan):** React 19 + TypeScript + Vite in an npm workspace `frontend/` (`shared`, `dashboard`, `pwa`, one lock file); **Vitest + React Testing Library + jsdom** instead of Jest — a recorded deviation from SDS §8.1 (same test style and API; works with Vite without extra setup); **plain CSS** with shared colour tokens, no Tailwind (fewer dependencies); English/Urdu text with a small in-house hook, no i18n library; API types generated from `/openapi.json` with `openapi-typescript`. Every package pinned to an exact version published at least two weeks earlier; `npm audit` 0 vulnerabilities. TypeScript stays on 5.9.3 because `openapi-typescript` 7.13 requires TypeScript 5. `react-router-dom` and `@tanstack/react-query` are approved but added only in the group whose screens use them (F3/F4). Leaflet comes with the map task.
+- **Status:** APPROVED 2026-11-22 (project developer).
 
 ### D-016 — Driver turn-by-turn navigation
 - **Problem:** UC-08 requires navigation that opens automatically, recalculates off-route and needs no typing.
@@ -331,3 +332,4 @@ Template: `CR-xxx | date | from agent | to owner | file/contract | change wanted
 | 2026-11-20 | A-008, A-009, D-030 (new, approved); D-002, D-004, D-005, D-006, D-010, D-011, D-012, D-020 approved; D-003 answered | Team chose the Nov SRS/SDS and approved the recommendations; all written into SRS/SDS v1.1 |
 | 2026-11-20 | D-031…D-035 (new, open); D-019 extended; D-007 amended note | Added by the implementation blueprint (`docs/blueprint/`); nothing approved by this session |
 | 2026-11-21 | D-008 (provisional), CR-003 | Groq over httpx + Ollama + fake model for tests (B1-A2-02); `langgraph==1.2.24` added for the orchestrator (B1-A2-13) |
+| 2026-11-22 | D-015 approved | Frontend stack for F1 (B1-A3-01, 02): React + TypeScript + Vite workspace, Vitest + React Testing Library (deviation from SDS Jest), plain CSS, generated API types; approved by the project developer (sole developer) |
