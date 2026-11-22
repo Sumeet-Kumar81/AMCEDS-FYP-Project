@@ -223,12 +223,10 @@ describe("incident review (read-only)", () => {
     expect(screen.getByText("Needed: 1 × Ambulance")).toBeInTheDocument();
   });
 
-  it("dispatch cannot be approved here (not built), so nothing can be sent", async () => {
+  it("the review screen has the approval panel, and opening it sends nothing", async () => {
     const b = backend({ list: [], details: { 5: detail(5) } });
     await openAs(b, "/incidents/5");
-    const approve = await screen.findByRole("button", { name: "Approve dispatch" });
-    expect(approve).toBeDisabled();
-    expect(screen.getByText(/comes in the next step \(F5, task B1-A3-08\)/)).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Approve dispatch" })).toBeInTheDocument();
     expect(b.calls.some((c) => c.includes("/dispatch"))).toBe(false);
   });
 

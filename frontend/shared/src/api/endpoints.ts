@@ -96,3 +96,31 @@ export function listIncidents(client: ApiClient, query: IncidentQuery = {}, sign
 export function getIncident(client: ApiClient, incidentId: number, signal?: AbortSignal): Promise<IncidentDetailOut> {
   return client.get<IncidentDetailOut>(`${API_PREFIX}/incidents/${encodeURIComponent(String(incidentId))}`, { auth: true, signal });
 }
+
+// ---------------------------------------------------------------- dispatch (B1-A1-25, dispatcher)
+export type VehicleOut = Schemas["VehicleOut"];
+export type DispatchIn = Schemas["DispatchIn"];
+export type AssignmentOut = Schemas["AssignmentOut"];
+export type VehicleType = Schemas["VehicleType"];
+
+export interface VehicleQuery {
+  incidentId?: number;
+  type?: VehicleType[];
+  availableOnly?: boolean;
+}
+
+/** All vehicles with whether they can go now; with `incidentId`: dispatchable first, then nearest. */
+export function listVehicles(client: ApiClient, query: VehicleQuery = {}, signal?: AbortSignal): Promise<VehicleOut[]> {
+  const params = new URLSearchParams();
+  if (query.incidentId != null) params.set("incident_id", String(query.incidentId));
+  for (const t of query.type ?? []) params.append("type", t);
+  if (query.availableOnly) params.set("available_only", "true");
+  const qs = params.toString();
+  return client.get<VehicleOut[]>(`${API_PREFIX}/vehicles${qs ? `?${qs}` : ""}`, { auth: true, signal });
+}
+
+/** The only way a vehicle is sent. Resolves only on 201; a 409 carries `vehicle_locked` /
+ * `vehicle_unavailable` (with `next_best`) or `incident_not_dispatchable` in the ApiError. */
+export function dispatchIncident(client: ApiClient, incidentId: number, body: DispatchIn): Promise<AssignmentOut[]> {
+  return client.post<AssignmentOut[]>(`${API_PREFIX}/incidents/${encodeURIComponent(String(incidentId))}/dispatch`, body, { auth: true });
+}
