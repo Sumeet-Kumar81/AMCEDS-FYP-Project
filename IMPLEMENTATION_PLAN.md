@@ -754,6 +754,7 @@ mobile/               (proposed, D-002) React Native Android app — citizen mod
 ```
 
 #### B1-A3-01 — Web scaffolding and typed API client
+- **Implementation status:** implemented on branch `feat/frontend-foundation` (not yet committed), 2026-11-22, as group F1 with B1-A3-02. npm workspace `frontend/{shared,dashboard,pwa}`; types generated from the running API (`npm run gen:api`, drift check `npm run gen:api:check`); client with auth header, one shared refresh on 401, session end, `{code, message, details}` mapping, 503 hook, timeout. No mock mode was built: the screens built so far use only endpoints that already work. Stack decision D-015. Details in CHANGES.md. The original task text below is unchanged.
 - **Purpose / behaviour:** Create the two Vite React apps and a shared client generated from the backend OpenAPI so the UI cannot drift from the contract.
 - **Approach:** Follow `frontend/README.md` (Vite `react-ts`) for `dashboard` and `pwa`; `frontend/shared` package with `openapi-typescript`-generated types and a thin fetch wrapper (auth header, refresh on 401, error body `{code, message}` mapping, 503 → service warning). `VITE_API_URL`. A mock mode serving only the contract fixtures, with a visible "MOCK DATA" banner, until the real endpoint passes its tests. Linting and the test runner per D-015.
 - **Traceability:** SRS SW-8, NFR-P17, NFR-P18; SDS Table 4.1.
@@ -763,6 +764,7 @@ mobile/               (proposed, D-002) React Native Android app — citizen mod
 - **Acceptance:** both apps build; types regenerate from a running API with one command. **Priority:** P0. **Output:** scaffolds.
 
 #### B1-A3-02 — Shared UI rules: severity, trust, confidence, warnings, bilingual text
+- **Implementation status:** implemented on branch `feat/frontend-foundation` (not yet committed), 2026-11-22, with B1-A3-01. Components in `frontend/shared/src/ui/` (`badges.tsx`, `states.tsx`, `ui.css`) and English/Urdu text in `frontend/shared/src/i18n/` (not `frontend/shared/ui/*` as written below; the workspace keeps sources under `src/`). Added `CallNotice` (safety rule 10). The original task text below is unchanged.
 - **Purpose / behaviour:** Apply SDS §7.6 consistently: same colours everywhere, confidence with every AI result, trust tier on every report, service-unavailable warnings, English/Urdu text.
 - **Approach:** Components: `SeverityBadge` (red critical, orange high, blue medium, green low, plus text/icon so colour is not the only cue), `TrustBadge` (tier + score), `ConfidenceMeter` (percentage + "dispatcher must check" below threshold), `AiRecommendationLabel` ("AI recommendation — dispatcher decides"), `ServiceStatusBanner` (from `system.service_status`), `ApproximateEtaTag`, `EmptyState`, `LoadingState`, `ErrorState`. i18n with EN/UR resource files and RTL support for Urdu on public/citizen screens; Sindhi accepted as free text.
 - **Traceability:** SRS NFR-S2, NFR-P16, NFR-S5; SDS §7.6, §7.2.

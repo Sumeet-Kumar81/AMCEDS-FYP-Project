@@ -1,0 +1,85 @@
+/* AMCEDS shared UI kit (SDS §7.6). Severity colours: red critical, orange high, blue medium, green low.
+   Every badge also carries text and a symbol, so colour is never the only cue. */
+:root {
+  --am-bg: #f6f7f9;
+  --am-surface: #ffffff;
+  --am-text: #1b1f24;
+  --am-muted: #5b6573;
+  --am-border: #d6dae0;
+  --am-accent: #0b5cad;
+  --am-critical: #b3261e;
+  --am-critical-bg: #fde7e5;
+  --am-high: #9a4a00;
+  --am-high-bg: #ffecd6;
+  --am-medium: #0b5cad;
+  --am-medium-bg: #e3efff;
+  --am-low: #1e6b34;
+  --am-low-bg: #e2f5e7;
+  --am-unknown: #4a5361;
+  --am-unknown-bg: #eceef1;
+  --am-warn: #7a4b00;
+  --am-warn-bg: #fff4d6;
+  --am-danger-bg: #fde7e5;
+  font-family: system-ui, -apple-system, "Segoe UI", "Noto Nastaliq Urdu", "Noto Naskh Arabic", sans-serif;
+  color: var(--am-text);
+  background: var(--am-bg);
+  line-height: 1.5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --am-bg: #14171b;
+    --am-surface: #1d2126;
+    --am-text: #e8eaed;
+    --am-muted: #a4acb7;
+    --am-border: #363c44;
+    --am-accent: #7fb6ff;
+    --am-critical: #ffb4ab;
+    --am-critical-bg: #4a1410;
+    --am-high: #ffc58a;
+    --am-high-bg: #43280b;
+    --am-medium: #a8cbff;
+    --am-medium-bg: #132c4d;
+    --am-low: #9fe0b0;
+    --am-low-bg: #12351d;
+    --am-unknown: #c4cad3;
+    --am-unknown-bg: #2b3037;
+    --am-warn: #ffd88a;
+    --am-warn-bg: #3d2d08;
+    --am-danger-bg: #4a1410;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--am-bg); color: var(--am-text); }
+button { font: inherit; cursor: pointer; border-radius: 6px; border: 1px solid var(--am-border);
+  background: var(--am-surface); color: var(--am-text); padding: 6px 12px; min-height: 40px; }
+button:focus-visible { outline: 3px solid var(--am-accent); outline-offset: 2px; }
+
+.am-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px;
+  font-size: 0.875rem; font-weight: 600; border: 1px solid currentColor; white-space: nowrap; }
+.am-sev-critical { color: var(--am-critical); background: var(--am-critical-bg); }
+.am-sev-high { color: var(--am-high); background: var(--am-high-bg); }
+.am-sev-medium { color: var(--am-medium); background: var(--am-medium-bg); }
+.am-sev-low { color: var(--am-low); background: var(--am-low-bg); }
+.am-sev-unknown, .am-trust-none { color: var(--am-unknown); background: var(--am-unknown-bg); }
+.am-trust-high { color: var(--am-low); background: var(--am-low-bg); }
+.am-trust-medium { color: var(--am-medium); background: var(--am-medium-bg); }
+.am-trust-low { color: var(--am-high); background: var(--am-high-bg); }
+.am-eta-approx { color: var(--am-warn); background: var(--am-warn-bg); }
+
+.am-confidence { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.am-confidence-bar { display: inline-block; width: 80px; height: 8px; border-radius: 4px; background: var(--am-unknown-bg);
+  overflow: hidden; }
+.am-confidence-bar > span { display: block; height: 100%; background: var(--am-accent); }
+.am-confidence-low .am-confidence-bar > span { background: var(--am-high); }
+.am-confidence-warning, .am-confidence-none strong { color: var(--am-high); }
+
+.am-ai-label { display: inline-block; font-size: 0.875rem; color: var(--am-muted); border: 1px dashed var(--am-border);
+  padding: 2px 8px; border-radius: 6px; }
+.am-call-notice { margin: 0; padding: 12px 16px; background: var(--am-danger-bg); color: var(--am-critical);
+  border: 2px solid var(--am-critical); border-radius: 8px; font-size: 1.05rem; }
+.am-service-banner { padding: 10px 16px; background: var(--am-warn-bg); color: var(--am-warn);
+  border-bottom: 2px solid var(--am-warn); }
+.am-state { padding: 24px 16px; text-align: center; color: var(--am-muted); }
+.am-error { color: var(--am-critical); }
+.am-error-code { font-family: ui-monospace, monospace; font-size: 0.8rem; color: var(--am-muted); }
+.am-lang-toggle { min-width: 88px; }
