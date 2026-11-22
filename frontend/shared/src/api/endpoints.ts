@@ -124,3 +124,22 @@ export function listVehicles(client: ApiClient, query: VehicleQuery = {}, signal
 export function dispatchIncident(client: ApiClient, incidentId: number, body: DispatchIn): Promise<AssignmentOut[]> {
   return client.post<AssignmentOut[]>(`${API_PREFIX}/incidents/${encodeURIComponent(String(incidentId))}/dispatch`, body, { auth: true });
 }
+
+// ---------------------------------------------------------------- assignment lifecycle (B1-A1-26)
+export type HospitalOut = Schemas["HospitalOut"];
+
+export function listHospitals(client: ApiClient, signal?: AbortSignal): Promise<HospitalOut[]> {
+  return client.get<HospitalOut[]>(`${API_PREFIX}/hospitals`, { auth: true, signal });
+}
+
+/** Dispatcher stops an open assignment; the vehicle is free again. */
+export function cancelAssignment(client: ApiClient, assignmentId: number, reason: string | null): Promise<AssignmentOut> {
+  return client.post<AssignmentOut>(`${API_PREFIX}/assignments/${encodeURIComponent(String(assignmentId))}/cancel`,
+    { reason }, { auth: true });
+}
+
+/** Dispatcher sends an open assignment to another hospital. */
+export function changeHospital(client: ApiClient, assignmentId: number, hospitalId: number): Promise<AssignmentOut> {
+  return client.request<AssignmentOut>("PATCH", `${API_PREFIX}/assignments/${encodeURIComponent(String(assignmentId))}/hospital`,
+    { body: { hospital_id: hospitalId }, auth: true });
+}

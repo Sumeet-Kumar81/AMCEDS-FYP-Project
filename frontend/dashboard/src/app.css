@@ -89,3 +89,21 @@
 .dsp-confirm { background: var(--am-critical); color: #fff; border-color: var(--am-critical); font-weight: 700; min-height: 46px; min-width: 120px; }
 .dsp-next { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 @media (prefers-color-scheme: dark) { .dsp-approve, .dsp-confirm { color: #0b1220; } }
+
+/* Trip tracking (F6) */
+.trips { display: grid; gap: 8px; }
+.trip-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.trip { padding: 10px 12px; border: 1px solid var(--am-border); border-inline-start: 5px solid var(--am-accent); border-radius: 8px;
+  background: var(--am-surface); display: grid; gap: 4px; }
+.trip p { margin: 0; }
+.trip-completed, .trip-cancelled, .trip-declined, .trip-timed_out { border-inline-start-color: var(--am-unknown); opacity: 0.85; }
+.trip-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.trip-state { margin-inline-start: auto; font-weight: 700; color: var(--am-medium); }
+.trip-steps { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding-inline-start: 18px; font-size: 0.85rem; color: var(--am-muted); }
+.trip-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.trip-actions select, .dsp-hospital select { font: inherit; padding: 6px; border-radius: 6px; border: 1px solid var(--am-border);
+  background: var(--am-surface); color: var(--am-text); min-height: 40px; }
+.trip-cancel { color: var(--am-critical); border-color: var(--am-critical); }
+.trip-confirm { display: grid; gap: 6px; padding: 10px; border: 2px solid var(--am-critical); border-radius: 8px; background: var(--am-danger-bg); }
+.trip-confirm textarea { font: inherit; padding: 6px; border-radius: 6px; border: 1px solid var(--am-border); background: var(--am-surface); color: var(--am-text); }
+.dsp-hospital { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
