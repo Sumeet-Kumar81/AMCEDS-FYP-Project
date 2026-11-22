@@ -67,3 +67,32 @@ export async function logout(client: ApiClient): Promise<void> {
     client.tokens.clear();
   }
 }
+
+// ---------------------------------------------------------------- incidents (B1-A1-20, read-only, dispatcher)
+export type RecommendationOut = Schemas["RecommendationOut"];
+export type TrustSignalOut = Schemas["TrustSignalOut"];
+export type LocationOut = Schemas["LocationOut"];
+
+export interface IncidentQuery {
+  status?: IncidentStatus[];
+  severity?: (Severity | "unknown")[];
+  includeClosed?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+/** Queue order comes from the server: critical, high, unknown, medium, low, then longest-waiting. */
+export function listIncidents(client: ApiClient, query: IncidentQuery = {}, signal?: AbortSignal): Promise<IncidentSummaryOut[]> {
+  const params = new URLSearchParams();
+  for (const s of query.status ?? []) params.append("status", s);
+  for (const s of query.severity ?? []) params.append("severity", s);
+  if (query.includeClosed) params.set("include_closed", "true");
+  if (query.limit != null) params.set("limit", String(query.limit));
+  if (query.offset != null) params.set("offset", String(query.offset));
+  const qs = params.toString();
+  return client.get<IncidentSummaryOut[]>(`${API_PREFIX}/incidents${qs ? `?${qs}` : ""}`, { auth: true, signal });
+}
+
+export function getIncident(client: ApiClient, incidentId: number, signal?: AbortSignal): Promise<IncidentDetailOut> {
+  return client.get<IncidentDetailOut>(`${API_PREFIX}/incidents/${encodeURIComponent(String(incidentId))}`, { auth: true, signal });
+}

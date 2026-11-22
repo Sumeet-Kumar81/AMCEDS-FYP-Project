@@ -261,8 +261,33 @@ def npm(*args: str) -> int:
     return subprocess.run(["npm", *args], cwd=FRONTEND).returncode
 
 
+def port_in_use(port: int) -> bool:
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(1)
+        return s.connect_ex(("127.0.0.1", port)) == 0
+
+
+def who_uses(port: int) -> str:
+    out = subprocess.run(["ss", "-ltnpH", f"sport = :{port}"], capture_output=True, text=True).stdout
+    pid = out.split("pid=")[1].split(",")[0] if "pid=" in out else ""
+    if not pid:
+        return "another program"
+    info = subprocess.run(["ps", "-o", "stat=,args=", "-p", pid], capture_output=True, text=True).stdout.strip()
+    stat, _, args = info.partition(" ")
+    paused = " — it is PAUSED (Ctrl+Z was pressed in its terminal)" if stat.startswith("T") else ""
+    return f"process {pid}: {args.strip()[:80]}{paused}"
+
+
 def web(_: argparse.Namespace) -> None:
     check_node()
+    busy = [(name, url, int(url.rsplit(":", 1)[1])) for name, _, url in WEB_APPS if port_in_use(int(url.rsplit(":", 1)[1]))]
+    if busy:
+        lines = "\n".join(f"       - {name} port {port}: {who_uses(port)}" for name, _, port in busy)
+        fail("the web ports are already taken, probably by an earlier 'web' run that is still open or paused:\n"
+             f"{lines}\n"
+             "       Fix: go to that terminal and press Ctrl+C (if it was paused, type 'fg' first, then Ctrl+C),\n"
+             "       or close that terminal. Then run this command again.")
     try:
         with urllib.request.urlopen(HEALTH_URL, timeout=3) as resp:
             ok = '"database":"ok"' in resp.read().decode("utf-8", "replace").replace(" ", "")

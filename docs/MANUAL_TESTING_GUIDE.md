@@ -24,10 +24,11 @@ Ye guide aap ko batati hai ke **ab tak jo kuch bana hai** usay apne data ke saat
 | Login, token, logout, roles (admin/dispatcher/driver) | ✅ bana hai | Step 7 |
 | 5 ghalat password par account lock (TC-32) | ✅ bana hai | Step 7.4 |
 | Audit log ko koi badal/mita nahi sakta | ✅ bana hai | Step 8 |
-| Automatic tests (887 backend + 112 web) | ✅ bana hai | Step 9 |
+| Automatic tests (906 backend + 130 web) | ✅ bana hai | Step 9 |
 | Browser wala report page (English/Urdu, GPS, reference number) | ✅ bana hai | Step 12 |
 | Dashboard login, roles, idle logout | ✅ bana hai | Step 13 |
-| Incident list/detail, dispatch approval, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, dashboard screens (login, queue), mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
+| Dashboard par incident queue aur review (AI ke nateeje, gaariyon ke plates) | ✅ bana hai | Step 14 |
+| Dispatch approval, incident edit, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
 
 ---
 
@@ -499,13 +500,12 @@ Ye endpoints contract mein hain lekin abhi bane nahi. Inhe kholein to **501** au
 
 | Endpoint | Sahi output |
 |---|---|
-| GET /api/v1/incidents (dispatcher token) | `501` `not_implemented` … `(task B1-A1-20)` |
 | POST /api/v1/driver/duty/start (driver token) | `501` … `B1-A1-27` |
 | GET /api/v1/admin/users (admin token) | `501` … `B1-A1-31` |
 | POST /api/v1/reports/{ref}/confirmation | `501` … `B1-A1-24` |
 | POST /api/v1/reports/voice (audio file ke saath) | `501` … `B1-A1-17` |
 
-Abhi nahi bana: incident list/detail, dispatch approval aur gaari lock, driver duty/GPS, admin panel, voice/SMS reports, duplicate detection (Coordination Agent), jagah ke naam se location (geocoding), asal road route (OSRM), live dashboard, mobile app.
+Abhi nahi bana: dispatch approval aur gaari lock, driver duty/GPS, admin panel, voice/SMS reports, duplicate detection (Coordination Agent), jagah ke naam se location (geocoding), asal road route (OSRM), live dashboard, mobile app.
 
 ---
 
@@ -598,7 +598,7 @@ python3 scripts/run_project.py test-web
    typecheck : passed
    build     : passed
 ```
-(Upar kahin `Tests  112 passed (112)` bhi likha hoga.)
+(Upar kahin `Tests  130 passed (130)` bhi likha hoga.)
 
 ---
 
@@ -611,7 +611,7 @@ Backend aur `python3 scripts/run_project.py web` chal rahe hon (Step 12). Browse
 
 ### 13.2 Dispatcher
 Username `dispatcher1`, password = aap ka `SEED_DISPATCHER_PASSWORD` → **Sign in**.
-**Sahi output:** address `/queue`, upar "AMCEDS — Dispatcher Dashboard", "Incident queue" link, `Signed in as SIMULATED Dispatcher One (Dispatcher)`, page par "The incident queue comes in the next step (F4, task B1-A1-20)."
+**Sahi output:** address `/queue`, upar "AMCEDS — Dispatcher Dashboard", "Incident queue" link, `Signed in as SIMULATED Dispatcher One (Dispatcher)`, aur neeche incident queue (Step 14).
 Ab address bar mein `/admin` likhein → **"Not allowed — Your role may not open this page."** aur "Go to my start page" link.
 
 ### 13.3 Admin
@@ -636,6 +636,61 @@ UPDATE users SET failed_login_count = 0, locked_until = NULL WHERE username = 'd
 
 ### 13.7 Idle logout (optional, 30 minute)
 Login karke 28 minute kuch na chhooein → peeli pati "No activity for a while: you will be signed out in 2 minutes." aur **Stay signed in** button. Kuch na karein → 30 minute par login page: "You were signed out after 30 minutes without activity." (Itna intezar na karna ho to ye automatic tests mein nakli ghadi se check hota hai: Step 12.7.)
+
+---
+
+## Step 14 — Dashboard par AI ke nateeje (queue aur review)
+
+Backend (AI worker ke saath, Step 1) aur `python3 scripts/run_project.py web` chal rahe hon.
+
+### 14.1 Data tayyar karein
+1. Gaariyon ka mashwara dekhne ke liye drivers on-duty karein (Step 5.1 wali SIMULATED SQL — sirf 60 second chalti hai):
+   ```sql
+   UPDATE users SET on_duty = true WHERE role = 'driver';
+   UPDATE vehicles SET last_seen_at = now();
+   ```
+2. Usi minute mein 2–3 reports bhejein (report page http://localhost:5174 se, ya Step 4.1 ke `curl` se) — masalan ek accident GPS ke saath, ek Urdu aag, ek ghair-wazeh ("kuch ho gaya hai jaldi aao").
+
+### 14.2 Queue
+http://localhost:5173 → `dispatcher1` se login → **Incident queue**.
+**Sahi output** (asal run, 2026-11-22):
+```
+▲▲ Critical  Accident  INC-000001  Triaged   1 min ago   📍 GPS 27.7100, 68.8500   Trust: Medium (60)   ⚠ Not enough vehicles
+?  Severity unknown  Type unknown  INC-000003  Needs check  📍 Location unknown  Trust: Low (35)
+   ⚠ Location unknown  ⚠ Low trust — urgent, not held back  ⚠ More information needed
+■  Medium  Fire  INC-000002  Triaged   📍 GPS 27.7000, 68.8600   Trust: Medium (60)
+```
+✅ Pass agar:
+- Tarteeb: **critical → high → severity maloom nahi → medium → low**; ek hi severity mein purani report upar.
+- Har card par rang ke saath **likha hua** severity, type, reference, waqt, jagah, trust aur flags.
+- Abhi bheji report pehle **"⏳ AI is reading this report…"** dikhati hai, 5–10 second mein khud badal jati hai (page reload ki zaroorat nahi — har 5 second refresh).
+- Nayi **critical** report aaye to upar **"🔴 1 new critical report(s)"** aur card laal chamakta hai.
+- Upar `Updated hh:mm:ss` har 5 second badalta hai. Doosre tab par jayein → refresh rukta hai; wapas aayein → turant refresh.
+
+### 14.3 Review screen
+Kisi card par click → `/incidents/<id>`.
+**Sahi output** (accident wali report, asal run):
+- **Report as received:** report bilkul waisi jaisi bheji (Urdu ho to right-to-left), reporter ka naam, "via Web".
+- **What the AI understood** + "🤖 AI recommendation — dispatcher decides":
+  `Type Accident — Type: 96%`, `Severity ▲▲ Critical — Severity: 85%`, `People hurt 7 — 80%`, `Language — 95%`, aur `Overall`.
+  Koi value 60% se kam ho to us ke saath **"Dispatcher must check"**.
+- **Trust:** `Trust: Medium (60)`, "Every report starts at 50.", `+10 the message names a place, an event or people hurt`.
+- **Why the dispatcher should look:** review reasons saaf alfaaz mein (masalan "Not enough vehicles").
+- **Recommended vehicles:**
+  ```
+  1  SIM-AMB-03  Ambulance  0.8 km  1 min  ≈ Approximate
+  2  SIM-AMB-01  Ambulance  0.9 km  1 min  ≈ Approximate
+  3  SIM-AMB-02  Ambulance  2.6 km  4 min  ≈ Approximate
+  4  SIM-BKP-01  Backup     5.0 km  7 min  ≈ Approximate
+  ```
+  aur kami ho to laal "Not enough vehicles: … missing."
+- **Approve dispatch** button **dabta nahi**, neeche: "Dispatch approval is not built yet (task B1-A1-25). No vehicle is sent from this screen."
+
+Ghair-wazeh report kholein → AI values mein "not known", "More information needed", aur gaariyon ki jagah "No vehicle could be recommended…".
+Address bar mein `/incidents/99999` → "There is no incident with this number." `admin1` se `/incidents/1` → "Not allowed".
+
+### 14.4 API seedha (optional)
+http://localhost:8000/docs → **Authorize** (dispatcher token) → **GET /api/v1/incidents** → 200 aur list; `severity=unknown` filter sirf woh reports deta hai jin ki severity abhi tay nahi. **GET /api/v1/incidents/{id}** → `recommendations[].plate_number` maujood.
 
 ---
 
@@ -678,5 +733,12 @@ Login karke 28 minute kuch na chhooein → peeli pati "No activity for a while: 
 | 33 | Driver login | "Drivers use the mobile app", sign out | ☐ |
 | 34 | Ghalat password / lock | saaf message, 5 ke baad locked | ☐ |
 | 35 | Sign out / reload | "You have signed out.", reload par dobara login | ☐ |
+| 36 | Queue ki tarteeb | critical → high → unknown → medium → low | ☐ |
+| 37 | Queue ka refresh | nayi report khud aati hai, "AI is reading" phir nateeja | ☐ |
+| 38 | Nayi critical | "🔴 new critical report(s)" aur laal card | ☐ |
+| 39 | Review: AI | har value ke saath confidence, 60% se kam par "Dispatcher must check" | ☐ |
+| 40 | Review: trust aur reasons | har point ki wajah, review reasons saaf alfaaz mein | ☐ |
+| 41 | Review: gaariyan | plate, km, minute, "≈ Approximate" | ☐ |
+| 42 | Approve dispatch | button band, "not built yet (B1-A1-25)" | ☐ |
 
 Agar koi check fail ho: us ka **command aur poora output** copy karke bhejein, hum wajah dhoond kar theek karenge.

@@ -419,6 +419,7 @@ used by the AI worker. Follows SDS §4–§6 and does not redesign the architect
 - **Acceptance:** all integration tests pass on PostGIS. **Priority:** P0. **Output:** persistence layer.
 
 #### B1-A1-20 — Incident queue and detail APIs
+- **Implementation status:** implemented on branch `feat/incident-queue` (not yet committed), 2026-11-22, as part of group F4; F3 merged via PR #19 (`5ce4ff0`). Read-only `services/incidents.py`; filters `status`, `severity` (incl. `unknown`), `include_closed`, `limit`, `offset`; order critical → high → unknown → medium → low, then longest-waiting; current recommendations with plates (C-1 v1.2). The detail returns the stored C-1 fields; computed flags beyond `review_reasons` (e.g. `eta_approximate`) are read by the screen from the data itself. Details in CHANGES.md. The original task text below is unchanged.
 - **Purpose / behaviour:** Give the dispatcher the severity-sorted queue and the full one-screen view.
 - **Approach:** `services/incidents.py` + `api/routes/incidents.py`. Queue: open statuses, sort by severity rank then `received_at`; filters; pagination. Detail: record, original text/transcript, AI details with per-field confidence, trust score/tier/signals, review reasons, duplicate candidates, group info (report_count, "multiple reports"), current recommendations (batch), assignments, flags: `low_confidence`, `transcript_unclear`, `location_unknown`, `ai_failed`, `eta_approximate`, `vehicle_shortage`.
 - **Traceability:** SRS UC-06 1, UC-02 1a/2a/4a, NFR-S2; SDS §7.2 items 1–6.
@@ -799,6 +800,7 @@ mobile/               (proposed, D-002) React Native Android app — citizen mod
 - **Acceptance:** tests pass. **Priority:** P0. **Output:** WS client.
 
 #### B1-A3-06 — Incident queue
+- **Implementation status:** implemented on branch `feat/incident-queue` (not yet committed), 2026-11-22, as part of F4, with 5-s polling (no WebSocket events yet, B1-A1-29) and a visual highlight for new critical reports (no sound yet). Filters in the UI are not built yet (the API has them). The original task text below is unchanged.
 - **Purpose / behaviour:** Severity-sorted list of incidents; each card shows severity colour, location, time, trust tier and flags (urgent-with-warning, possible duplicate, multiple reports, low confidence, AI failed).
 - **Approach:** `GET /incidents` + live events; sound/visual cue for new critical items; filters; empty and loading states.
 - **Traceability:** SRS UC-06 1, NFR-S2; SDS §7.2 item 1.
@@ -807,6 +809,7 @@ mobile/               (proposed, D-002) React Native Android app — citizen mod
 - **Acceptance:** tests pass. **Priority:** P0. **Output:** queue screen.
 
 #### B1-A3-07 — Incident review screen
+- **Implementation status:** read-only part implemented on branch `feat/incident-queue` (not yet committed), 2026-11-22, as part of F4: report as sent, AI values each with confidence, trust reasons, review reasons, recommendations with plate and approximate tag, disabled Approve. Not built yet: edit (B1-A1-21), duplicate actions (B1-A1-22), mark as fake (B1-A1-23), audio player (B1-A1-17), map. The original task text below is unchanged.
 - **Purpose / behaviour:** One screen with everything the dispatcher needs: original report exactly as sent (and audio player + transcript with "unclear" warning), AI-extracted type/severity/victims/location each with confidence, trust tier + score + reasons, review reasons, duplicate warning with Confirm / Keep separate, map of the location, edit details.
 - **Approach:** `GET /incidents/{id}`; edit form → `PATCH` (shows "recalculating recommendations…" until `recommendation.ready`); duplicate actions → confirm/reject endpoints; "Mark as fake" sends to the review decision flow with confirmation dialog. AI values and dispatcher-edited values shown distinctly.
 - **Traceability:** SRS UC-06 1–2, UC-02 1a/2a/4a, UC-03 6a, UC-04 4–5, NFR-S2; SDS §7.2 items 2–5, 7; TC-08, TC-10, TC-13, TC-23.
