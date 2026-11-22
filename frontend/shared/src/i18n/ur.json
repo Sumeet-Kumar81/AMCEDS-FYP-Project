@@ -217,5 +217,7 @@
   "asg.declined": "انکار",
   "asg.timed_out": "وقت ختم",
   "asg.completed": "مکمل",
-  "asg.cancelled": "منسوخ"
+  "asg.cancelled": "منسوخ",
+  "reason.vehicle_declined": "ایک گاڑی نہیں جا سکی — دوسری بھیجیں",
+  "reason.vehicle_cancelled": "گاڑی منسوخ — دوسری بھیجیں"
 }

@@ -4,8 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import DISPATCHER, DISPATCHER_OR_DRIVER, get_db
 from app.api.errors import ERROR_RESPONSES, NotImplementedYet
+from app.schemas.assignment import HospitalOut
 from app.schemas.dispatch import VehicleOut
 from app.schemas.enums import VehicleType
+from app.services import assignments as assignment_service
 from app.services import dispatch as dispatch_service
 
 router = APIRouter(tags=["fleet"], responses=ERROR_RESPONSES)
@@ -28,6 +30,7 @@ async def fleet_live():
     raise NotImplementedYet("B1-A1-27")
 
 
-@router.get("/hospitals", dependencies=[Depends(DISPATCHER_OR_DRIVER)])
-async def list_hospitals():
-    raise NotImplementedYet("B1-A1-26")
+@router.get("/hospitals", dependencies=[Depends(DISPATCHER_OR_DRIVER)], response_model=list[HospitalOut])
+async def list_hospitals(db: AsyncSession = Depends(get_db)) -> list[HospitalOut]:
+    """Active hospitals with their position (dispatcher and driver)."""
+    return await assignment_service.hospitals(db)

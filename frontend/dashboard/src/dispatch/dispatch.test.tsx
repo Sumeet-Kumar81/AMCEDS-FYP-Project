@@ -276,6 +276,18 @@ describe("refusals (TC-22)", () => {
 });
 
 describe("special cases", () => {
+  it("after the only vehicle declined, the needed vehicles are preticked again and no backup note is shown", async () => {
+    const b = backend({ incident: incident({ status: "needs_check", review_reasons: ["vehicle_declined"], assignments: [
+      { assignment_id: 7, vehicle_id: 1, approved_by: 9, hospital_id: null, status: "declined", approved_at: NOW, decline_reason: "too_far" }] }) });
+    const user = await openIncident(b);
+    await user.click(await screen.findByTestId("incident-card"));
+    await ready();
+    expect(box("SIM-AMB-03").checked).toBe(true);
+    expect(screen.queryByText(/You can send another vehicle \(backup\)/)).not.toBeInTheDocument();
+    expect(screen.getByTestId("assignments")).toHaveTextContent("SIM-AMB-01 — declined");
+    expect(screen.getByText(/A vehicle could not go — send another/)).toHaveClass("q-flag-urgent");
+  });
+
   it("manual mode: no AI suggestion, the vehicle list is open and nothing is preticked", async () => {
     const b = backend({ incident: incident({ recommendations: [], allocation_summary: null, review_reasons: ["ai_failed"], severity: null }) });
     const user = await openIncident(b);

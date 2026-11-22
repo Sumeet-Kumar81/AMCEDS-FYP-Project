@@ -373,7 +373,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Change Hospital */
+        /**
+         * Change Hospital
+         * @description Send an open assignment to another active hospital (UC-09 2a). The driver sees it in their current assignment.
+         */
         patch: operations["change_hospital_api_v1_assignments__assignment_id__hospital_patch"];
         trace?: never;
     };
@@ -386,7 +389,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Cancel Assignment */
+        /**
+         * Cancel Assignment
+         * @description Stop an open assignment and free the vehicle; the incident goes back to the dispatcher if no vehicle is left.
+         */
         post: operations["cancel_assignment_api_v1_assignments__assignment_id__cancel_post"];
         delete?: never;
         options?: never;
@@ -439,7 +445,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Hospitals */
+        /**
+         * List Hospitals
+         * @description Active hospitals with their position (dispatcher and driver).
+         */
         get: operations["list_hospitals_api_v1_hospitals_get"];
         put?: never;
         post?: never;
@@ -507,7 +516,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Current Assignment */
+        /**
+         * Current Assignment
+         * @description The open assignment of the vehicle this driver drives (UC-08 step 1), or 204 when there is none.
+         */
         get: operations["current_assignment_api_v1_driver_assignments_current_get"];
         put?: never;
         post?: never;
@@ -526,7 +538,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Accept Assignment */
+        /**
+         * Accept Assignment
+         * @description approved → accepted; the vehicle is en route. 409 if not on duty or not approved.
+         */
         post: operations["accept_assignment_api_v1_driver_assignments__assignment_id__accept_post"];
         delete?: never;
         options?: never;
@@ -543,7 +558,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Decline Assignment */
+        /**
+         * Decline Assignment
+         * @description "Cannot go" with a reason from the list: the vehicle is free again and the dispatcher must send another.
+         */
         post: operations["decline_assignment_api_v1_driver_assignments__assignment_id__decline_post"];
         delete?: never;
         options?: never;
@@ -562,7 +580,7 @@ export interface paths {
         put?: never;
         /**
          * Trip Status
-         * @description On scene, picked up, at hospital, available.
+         * @description On scene, picked up, at hospital, available (= trip completed, vehicle free) — in that order (C-7).
          */
         post: operations["trip_status_api_v1_driver_assignments__assignment_id__status_post"];
         delete?: never;
@@ -856,11 +874,32 @@ export interface components {
             audio: string;
         };
         /**
+         * CancelIn
+         * @description Dispatcher: stop an open assignment and free the vehicle.
+         */
+        CancelIn: {
+            /** Reason */
+            reason?: string | null;
+        };
+        /**
          * Channel
          * @description How the report arrived (SRS Table 3.4). The Android app is ``app``, not ``mobile``.
          * @enum {string}
          */
         Channel: "voice" | "sms" | "web" | "app";
+        /**
+         * DeclineIn
+         * @description Driver: "Cannot go", with a reason from the list (UC-08 2a).
+         */
+        DeclineIn: {
+            reason: components["schemas"]["DeclineReason"];
+        };
+        /**
+         * DeclineReason
+         * @description Why a driver cannot take an assignment (C-7 v1.1, UC-08 2a: picked from a list, no typing).
+         * @enum {string}
+         */
+        DeclineReason: "vehicle_problem" | "crew_unavailable" | "already_busy" | "too_far" | "other";
         /** DispatchIn */
         DispatchIn: {
             /** Vehicle Ids */
@@ -885,6 +924,33 @@ export interface components {
              * Format: date-time
              */
             approved_at: string;
+        };
+        /**
+         * DriverAssignmentOut
+         * @description The assignment as the driver app shows it (UC-08 step 1). Sent in ``assignment.new`` / ``.updated``.
+         */
+        DriverAssignmentOut: {
+            /** Assignment Id */
+            assignment_id: number;
+            /** Incident Id */
+            incident_id: number;
+            /** Reference No */
+            reference_no: string;
+            status: components["schemas"]["AssignmentStatus"];
+            incident_type: components["schemas"]["IncidentType"] | null;
+            severity: components["schemas"]["Severity"] | null;
+            location: components["schemas"]["LocationOut"];
+            /** Patients */
+            patients: number | null;
+            /** Eta Seconds */
+            eta_seconds: number | null;
+            /** Eta Is Approximate */
+            eta_is_approximate: boolean;
+            hospital?: components["schemas"]["HospitalOut"] | null;
+            /** Notified At */
+            notified_at?: string | null;
+            /** Respond By */
+            respond_by?: string | null;
         };
         /**
          * DuplicateCandidateOut
@@ -926,6 +992,28 @@ export interface components {
             message: string;
             /** Details */
             details?: unknown;
+        };
+        /**
+         * HospitalChangeIn
+         * @description Dispatcher: send an open assignment to another hospital (UC-09 2a).
+         */
+        HospitalChangeIn: {
+            /** Hospital Id */
+            hospital_id: number;
+        };
+        /**
+         * HospitalOut
+         * @description A hospital the driver can be sent to (SDS Table 5.9).
+         */
+        HospitalOut: {
+            /** Hospital Id */
+            hospital_id: number;
+            /** Name */
+            name: string;
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
         };
         /**
          * IncidentDetailOut
@@ -1186,6 +1274,19 @@ export interface components {
             expires_in: number;
             /** Refresh Token */
             refresh_token: string;
+        };
+        /**
+         * TripStatus
+         * @description What the driver app reports during a trip (SRS UC-09; SDS Table 4.3 ``.../status``).
+         * @enum {string}
+         */
+        TripStatus: "on_scene" | "picked_up" | "at_hospital" | "available";
+        /**
+         * TripStatusIn
+         * @description Driver: the next trip step (UC-09): on_scene, picked_up, at_hospital or available.
+         */
+        TripStatusIn: {
+            status: components["schemas"]["TripStatus"];
         };
         /**
          * TrustSignalOut
@@ -2087,7 +2188,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HospitalChangeIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -2127,7 +2232,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CancelIn"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -2256,7 +2365,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["HospitalOut"][];
                 };
             };
             /** @description Validation error */
@@ -2408,8 +2517,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["DriverAssignmentOut"];
                 };
+            };
+            /** @description No open assignment */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation error */
             422: {
@@ -2448,7 +2564,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AssignmentOut"];
                 };
             };
             /** @description Validation error */
@@ -2480,7 +2596,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeclineIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -2488,7 +2608,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AssignmentOut"];
                 };
             };
             /** @description Validation error */
@@ -2520,7 +2640,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TripStatusIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -2528,7 +2652,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["AssignmentOut"];
                 };
             };
             /** @description Validation error */

@@ -24,12 +24,13 @@ Ye guide aap ko batati hai ke **ab tak jo kuch bana hai** usay apne data ke saat
 | Login, token, logout, roles (admin/dispatcher/driver) | ✅ bana hai | Step 7 |
 | 5 ghalat password par account lock (TC-32) | ✅ bana hai | Step 7.4 |
 | Audit log ko koi badal/mita nahi sakta | ✅ bana hai | Step 8 |
-| Automatic tests (938 backend + 146 web) | ✅ bana hai | Step 9 |
+| Automatic tests (967 backend + 147 web) | ✅ bana hai | Step 9 |
 | Browser wala report page (English/Urdu, GPS, reference number) | ✅ bana hai | Step 12 |
 | Dashboard login, roles, idle logout | ✅ bana hai | Step 13 |
 | Dashboard par incident queue aur review (AI ke nateeje, gaariyon ke plates) | ✅ bana hai | Step 14 |
 | Dispatch approval (gaari bhejna, lock, do dispatcher ek gaari) — API se | ✅ bana hai | Step 15 |
 | Dashboard se gaari bhejna (3 click, next best, manual mode) | ✅ bana hai | Step 16 |
+| Driver ka safar (accept, decline, on scene … free) aur dispatcher ka cancel/hospital — API se | ✅ bana hai | Step 17 |
 | AI worker Docker service (`ai-worker`) | ✅ bana hai | Step 1, 6 |
 | Driver ko alert, hospital chunna, map/route, incident edit, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
 
@@ -484,7 +485,7 @@ python3 scripts/run_project.py test
 SKIPPED [1] tests/api/test_api_contract.py:98: docs/API_CONTRACT.md not visible here ...
 SKIPPED [1] tests/api/test_rbac_matrix.py:75: docs/API_CONTRACT.md not visible here ...
 SKIPPED [1] tests/unit/schemas/test_events.py:176: docs/API_CONTRACT.md not visible here ...
-938 passed, 3 skipped in 48.04s
+967 passed, 3 skipped in 79.79s
 
    RESULT: all tests passed
 ```
@@ -492,7 +493,7 @@ SKIPPED [1] tests/unit/schemas/test_events.py:176: docs/API_CONTRACT.md not visi
   ```bash
   docker compose run --rm -v "$PWD":/repo -w /repo/backend api pytest -q -rs
   ```
-  → **941 passed, 0 skipped**.
+  → **970 passed, 0 skipped**.
 - Tests aap ke asli data ko **nahi** chhooti; ye alag `dispatch_test` database par chalti hain.
 
 ✅ Pass: `0 failed`.
@@ -603,7 +604,7 @@ python3 scripts/run_project.py test-web
    typecheck : passed
    build     : passed
 ```
-(Upar kahin `Tests  146 passed (146)` bhi likha hoga.)
+(Upar kahin `Tests  147 passed (147)` bhi likha hoga.)
 
 ---
 
@@ -754,7 +755,7 @@ SELECT action, details->'recommended' AS ai, details->'selected' AS chosen, deta
 | `{"vehicle_ids": []}` ya `[5, 5]` | `422 validation_error` |
 | Bina token / driver ya admin token | `401` / `403`, aur `assignments` mein koi nayi row nahi (TC-46) |
 
-**Test ke baad gaariyan wapas free karein** (SIMULATED, sirf testing ke liye — asal mein ye trip poori hone par hota hai, B1-A1-26):
+**Test ke baad gaariyan free karein:** asal tareeqa Step 17 hai (driver trip poori kare, ya dispatcher cancel kare). Jaldi mein ho to SIMULATED SQL:
 ```sql
 UPDATE assignments SET status = 'completed', completed_at = now() WHERE status = 'approved';
 UPDATE vehicles SET status = 'available' WHERE status = 'assigned';
@@ -811,6 +812,57 @@ Ghair-wazeh report (koi jagah nahi, AI ka mashwara nahi) kholein → **"🛠 Man
 
 ---
 
+## Step 17 — Driver ka safar aur dispatcher ke kaam (API se)
+
+Driver app abhi nahi bani, is liye driver ke kaam http://localhost:8000/docs se hote hain. Pehle Step 16 ki tarah ek gaari dispatch karein (masalan SIM-AMB-03). Seed mein drivers ki gaariyan: `driver01` SIM-AMB-01, `driver02` SIM-FIRE-01, `driver03` SIM-AMB-02, `driver04` SIM-BKP-01, `driver05` SIM-AMB-03, `driver06` SIM-FIRE-02.
+
+### 17.1 Driver ko apna kaam dikhe
+`/docs` → **POST /api/v1/auth/login** (`driver05`, `SEED_DRIVER_PASSWORD`) → **Authorize** → **GET /api/v1/driver/assignments/current**.
+**Sahi output (200)**, asal run:
+```json
+{"assignment_id": 4, "reference_no": "INC-000005", "status": "approved", "incident_type": "accident",
+ "patients": 2, "eta_seconds": 74, "eta_is_approximate": true, "hospital": null, "location": {...}}
+```
+Koi kaam na ho → **204** (khaali jawab).
+
+### 17.2 Hospital (dispatcher)
+Doosri window/token: `dispatcher1` → **GET /api/v1/hospitals** → `[{"hospital_id": 1, "name": "SIMULATED General Hospital A", ...}, ...]`.
+**PATCH /api/v1/assignments/4/hospital** `{"hospital_id": 1}` → 200. Driver dobara 17.1 chalaye → `"hospital": {"name": "SIMULATED General Hospital A", ...}`.
+
+### 17.3 Poora safar (TC-29)
+Driver token ke saath, isi tarteeb mein:
+| Request | Sahi output | Gaari |
+|---|---|---|
+| `POST /driver/assignments/4/status` `{"status": "picked_up"}` (accept se pehle) | **409** `invalid_transition` | koi tabdeeli nahi |
+| `POST /driver/assignments/4/accept` | 200, `accepted`, `accepted_at` | `en_route` |
+| `…/status` `{"status": "on_scene"}` | 200, `on_scene_at` | `on_scene`; incident **On scene** |
+| `…/status` `{"status": "picked_up"}` | 200, `picked_up_at` | `transporting` |
+| `…/status` `{"status": "at_hospital"}` | 200, `at_hospital_at` | `at_hospital` |
+| `…/status` `{"status": "available"}` | 200, `completed`, `completed_at` | **`available`** (free) |
+
+Is incident ki aakhri gaari free hote hi incident **closed** ho jata hai (queue se hat jata hai; `GET /incidents?include_closed=true` mein dikhta hai). Driver ka `current` ab **204**. Mareez ke baghair trip: `on_scene` ke baad seedha `available`.
+
+### 17.4 "Cannot go" (decline, TC-27)
+Nayi dispatch karein, phir us gaari ka driver: **POST …/decline** `{"reason": "too_far"}` → 200, `declined`, `decline_reason: "too_far"`.
+Wajahein sirf ye: `vehicle_problem`, `crew_unavailable`, `already_busy`, `too_far`, `other` (koi aur → 422).
+Gaari foran **available**; agar is incident par koi aur gaari nahi ja rahi to incident wapas **Needs check** aur flag **"⚠ A vehicle could not go — send another"** (queue card aur review screen ke "Why the dispatcher should look" mein) — dispatcher F5 panel se doosri gaari bheje. Accept karne ke baad decline nahi ho sakta (409).
+
+### 17.5 Dispatcher cancel
+**POST /api/v1/assignments/{id}/cancel** `{"reason": "SIMULATED: wrong vehicle"}` (body optional) → 200, `cancelled`, gaari free; koi gaari na bachi ho to incident Needs check + `vehicle_cancelled`. Pehle se completed assignment ko cancel → 409.
+
+### 17.6 Hifazat
+- Doosre driver ke token se kisi aur ki assignment accept/decline/status → **403** (TC-48).
+- Off-duty driver accept kare → **409** `driver_off_duty` (`UPDATE users SET on_duty=false WHERE username='driver05';`).
+- Driver token se cancel ya hospital change → **403**.
+
+Audit:
+```sql
+SELECT action, details->>'step' AS step, details->>'reason' AS reason, created_at::time(0)
+  FROM audit_logs WHERE action LIKE 'assignment.%' OR action = 'vehicle.unlocked' ORDER BY log_id DESC LIMIT 10;
+```
+
+---
+
 ## Aakhri checklist — tick karte jayein
 
 | # | Check | Sahi nateeja | ✔ |
@@ -834,7 +886,7 @@ Ghair-wazeh report (koi jagah nahi, AI ka mashwara nahi) kholein → **"🛠 Man
 | 17 | Logout | `204`, phir purana token `session_ended` | ☐ |
 | 18 | Audit/original text badalna | teeno `ERROR` | ☐ |
 | 19 | Heartbeat | `llm_ready: true` | ☐ |
-| 20 | Automatic tests | `938 passed, 3 skipped`, `0 failed` | ☐ |
+| 20 | Automatic tests | `967 passed, 3 skipped`, `0 failed` | ☐ |
 | 21 | Na bane endpoints | `501` + task number | ☐ |
 | 22 | Report page khulta hai | 1122 notice, peeli warning nahi, voice button band | ☐ |
 | 23 | Browser se report | "Report saved" + `INC-…`, database mein `channel = web` | ☐ |
@@ -867,5 +919,11 @@ Ghair-wazeh report (koi jagah nahi, AI ka mashwara nahi) kholein → **"🛠 Man
 | 50 | Do dispatcher ek gaari | "already on another job" + "Use … instead" → Dispatched | ☐ |
 | 51 | Manual mode | label, list khuli, audit `manual_mode` | ☐ |
 | 52 | Fake report | koi dispatch control nahi | ☐ |
+| 53 | Driver current | 200 apna kaam / 204 koi nahi | ☐ |
+| 54 | Poora safar | har qadam ka waqt, gaari free, incident closed | ☐ |
+| 55 | Ghalat tarteeb | accept se pehle picked_up → 409 | ☐ |
+| 56 | Decline | gaari free, incident Needs check + vehicle_declined | ☐ |
+| 57 | Cancel / hospital (dispatcher) | 200; band assignment par 409 | ☐ |
+| 58 | Doosre driver ki assignment | 403 | ☐ |
 
 Agar koi check fail ho: us ka **command aur poora output** copy karke bhejein, hum wajah dhoond kar theek karenge.

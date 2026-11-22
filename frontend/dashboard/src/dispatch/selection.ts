@@ -23,14 +23,22 @@ export function serverReasonText(t: Translate, reason: string): string {
   return t(key) === key ? reason : t(key);
 }
 
+/** Assignments that still have a vehicle on the job (C-7: approved or accepted). */
+export const OPEN_ASSIGNMENT = new Set(["approved", "accepted"]);
+
+export function openAssignments(incident: IncidentDetailOut) {
+  return (incident.assignments ?? []).filter((a) => OPEN_ASSIGNMENT.has(a.status));
+}
+
 /**
  * Preselect what the AI says is needed: per vehicle type, as many of the top-ranked non-spare
  * recommendations as `allocation_summary.needed` asks for, skipping vehicles that cannot go now.
- * Nothing is preselected for an incident that already has vehicles (a backup is the dispatcher's call).
+ * Nothing is preselected while a vehicle is already on the job (a backup is the dispatcher's call); a declined
+ * or cancelled vehicle does not count, so the needed vehicles are preticked again.
  */
 export function preselect(incident: IncidentDetailOut, vehicles: Map<number, VehicleOut>): Set<number> {
   const recs: RecommendationOut[] = [...(incident.recommendations ?? [])].sort((a, b) => a.rank - b.rank);
-  if (!recs.length || (incident.assignments ?? []).length > 0) return new Set();
+  if (!recs.length || openAssignments(incident).length > 0) return new Set();
   const needed = (incident.allocation_summary as { needed?: Record<string, number> } | null)?.needed ?? {};
   const wanted: Record<string, number> = Object.keys(needed).length ? { ...needed } : { [recs[0]!.vehicle_type]: 1 };
   const picked = new Set<number>();

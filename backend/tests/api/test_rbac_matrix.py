@@ -58,7 +58,14 @@ PRIVATE = sorted(k for k, v in ROLES.items() if isinstance(v, frozenset))
 DRIVER_OWNED = {p for (_, p) in ROLES if p.startswith("/api/v1/driver/assignments/{assignment_id}")}
 REAL = {("POST", "/api/v1/auth/logout"): 204, ("GET", "/api/v1/auth/me"): 200,
         ("GET", "/api/v1/incidents"): 200, ("GET", "/api/v1/incidents/{incident_id}"): 404,  # 404: no incident 1 in the test data
-        ("GET", "/api/v1/vehicles"): 200, ("POST", "/api/v1/incidents/{incident_id}/dispatch"): 422}  # 422: the matrix sends no body
+        ("GET", "/api/v1/vehicles"): 200, ("POST", "/api/v1/incidents/{incident_id}/dispatch"): 422,  # 422: the matrix sends no body
+        # B1-A1-26: hospitals for D and R; the matrix driver has no open assignment of their own (204), is not on
+        # duty (accept 409) and sends no body (decline/status/hospital 422); dispatcher actions on assignment 1 → 404.
+        ("GET", "/api/v1/hospitals"): 200, ("GET", "/api/v1/driver/assignments/current"): 204,
+        ("POST", "/api/v1/driver/assignments/{assignment_id}/accept"): 409,
+        ("POST", "/api/v1/driver/assignments/{assignment_id}/decline"): 422,
+        ("POST", "/api/v1/driver/assignments/{assignment_id}/status"): 422,
+        ("PATCH", "/api/v1/assignments/{assignment_id}/hospital"): 422, ("POST", "/api/v1/assignments/{assignment_id}/cancel"): 404}
 DOC = Path(os.environ.get("API_CONTRACT_DOC", Path(__file__).resolve().parents[3] / "docs" / "API_CONTRACT.md"))
 
 

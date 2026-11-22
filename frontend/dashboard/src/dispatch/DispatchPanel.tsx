@@ -18,7 +18,7 @@ import {
 } from "@amceds/shared";
 import { useAuth } from "../auth/AuthProvider";
 import { clockTime, vehicleText } from "../incidents/labels";
-import { blockReason, differsFromAi, preselect, reasonText, serverReasonText } from "./selection";
+import { blockReason, differsFromAi, openAssignments, preselect, reasonText, serverReasonText } from "./selection";
 
 export const VEHICLES_REFRESH_MS = 10_000;
 
@@ -94,6 +94,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDetailOut }) {
   const others = (vehiclesQ.data ?? []).filter((v) => !recIds.has(v.vehicle_id));
   const manual = recs.length === 0;
   const hasAssignments = (incident.assignments ?? []).length > 0;
+  const vehicleOnTheWay = openAssignments(incident).length > 0;
   const chosen = [...selected];
   const differs = differsFromAi(incident, selected);
 
@@ -167,7 +168,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDetailOut }) {
           <p className="dsp-call">☎ {t("dsp.call_driver")}</p>
         </div>
       )}
-      {hasAssignments && <p className="q-muted">{t("dsp.backup")}</p>}
+      {vehicleOnTheWay && <p className="q-muted">{t("dsp.backup")}</p>}
       {manual && <p className="inc-warn" data-testid="manual-mode">🛠 {t("dsp.manual")}</p>}
       {vehiclesQ.isError && <ErrorState error={vehiclesQ.error} onRetry={() => void vehiclesQ.refetch()} />}
 

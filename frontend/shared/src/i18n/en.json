@@ -217,5 +217,7 @@
   "asg.declined": "declined",
   "asg.timed_out": "timed out",
   "asg.completed": "completed",
-  "asg.cancelled": "cancelled"
+  "asg.cancelled": "cancelled",
+  "reason.vehicle_declined": "A vehicle could not go — send another",
+  "reason.vehicle_cancelled": "Vehicle cancelled — send another"
 }

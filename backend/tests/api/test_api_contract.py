@@ -31,18 +31,18 @@ CONTRACT: dict[tuple[str, str], str] = {
     ("POST", "/api/v1/incidents/{incident_id}/confirmation-requests"): "B1-A1-24",
     ("POST", "/api/v1/incidents/{incident_id}/review-decision"): "B1-A1-23",
     ("POST", "/api/v1/incidents/{incident_id}/dispatch"): "exists",  # built in B1-A1-25
-    ("PATCH", "/api/v1/assignments/{assignment_id}/hospital"): "B1-A1-26",
-    ("POST", "/api/v1/assignments/{assignment_id}/cancel"): "B1-A1-26",
+    ("PATCH", "/api/v1/assignments/{assignment_id}/hospital"): "exists",  # built in B1-A1-26
+    ("POST", "/api/v1/assignments/{assignment_id}/cancel"): "exists",  # built in B1-A1-26
     ("GET", "/api/v1/vehicles"): "exists",  # built in B1-A1-25
     ("GET", "/api/v1/fleet/live"): "B1-A1-27",
-    ("GET", "/api/v1/hospitals"): "B1-A1-26",
+    ("GET", "/api/v1/hospitals"): "exists",  # built in B1-A1-26
     ("GET", "/api/v1/routing/route"): "B1-A2-15",
     ("POST", "/api/v1/driver/duty/start"): "B1-A1-27",
     ("POST", "/api/v1/driver/duty/end"): "B1-A1-27",
-    ("GET", "/api/v1/driver/assignments/current"): "B1-A1-26",
-    ("POST", "/api/v1/driver/assignments/{assignment_id}/accept"): "B1-A1-26",
-    ("POST", "/api/v1/driver/assignments/{assignment_id}/decline"): "B1-A1-26",
-    ("POST", "/api/v1/driver/assignments/{assignment_id}/status"): "B1-A1-26",
+    ("GET", "/api/v1/driver/assignments/current"): "exists",  # built in B1-A1-26
+    ("POST", "/api/v1/driver/assignments/{assignment_id}/accept"): "exists",  # built in B1-A1-26
+    ("POST", "/api/v1/driver/assignments/{assignment_id}/decline"): "exists",  # built in B1-A1-26
+    ("POST", "/api/v1/driver/assignments/{assignment_id}/status"): "exists",  # built in B1-A1-26
     ("POST", "/api/v1/driver/locations"): "B1-A1-27",
     ("GET", "/api/v1/admin/users"): "B1-A1-31",
     ("POST", "/api/v1/admin/users"): "B1-A1-31",
