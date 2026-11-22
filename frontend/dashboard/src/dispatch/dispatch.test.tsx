@@ -10,6 +10,8 @@ import { describe, expect, it } from "vitest";
 import { Root } from "../App";
 
 const NOW = new Date().toISOString();
+const HOSPITALS = [{ hospital_id: 1, name: "SIMULATED General Hospital A", lat: 27.70, lon: 68.86 },
+  { hospital_id: 2, name: "SIMULATED General Hospital B", lat: 27.71, lon: 68.87 }];
 
 function vehicle(id: number, plate: string, extra: Partial<VehicleOut> = {}): VehicleOut {
   return { vehicle_id: id, plate_number: plate, vehicle_type: "ambulance", status: "available", station_name: null,
@@ -59,6 +61,7 @@ function backend(opts: { incident?: IncidentDetailOut; vehicles?: VehicleOut[]; 
     if (path.startsWith("/api/v1/incidents?") || path === "/api/v1/incidents") return json(200, [inc]);
     if (path === "/api/v1/incidents/1") return json(200, inc);
     if (path.startsWith("/api/v1/vehicles")) return json(200, fleet);
+    if (path === "/api/v1/hospitals") return json(200, HOSPITALS);
     if (path === "/api/v1/incidents/1/dispatch") {
       const body = JSON.parse(String(init.body));
       posts.push(body);
@@ -114,9 +117,10 @@ describe("three clicks for a recommended dispatch", () => {
     expect(await screen.findByText("✔ Dispatched: SIM-AMB-03.")).toBeInTheDocument();
     expect(screen.getByText(/The driver is not alerted automatically yet — inform the driver by radio or phone\./)).toBeInTheDocument();
     expect(clicks).toBe(3);
-    expect(b.posts).toEqual([{ vehicle_ids: [5], override_reason: null }]);
-    expect(await screen.findByTestId("assignments")).toHaveTextContent("SIM-AMB-03 — approved");
-    expect(screen.getByTestId("assignments")).toHaveTextContent("by you");
+    expect(b.posts).toEqual([{ vehicle_ids: [5], override_reason: null, hospital_id: null }]);
+    expect(await screen.findByTestId("trip-state")).toHaveTextContent("Waiting for the driver to accept");
+    expect(screen.getByTestId("trip")).toHaveTextContent("SIM-AMB-03");
+    expect(screen.getByTestId("trip")).toHaveTextContent("by you");
     await waitFor(() => expect(screen.getByRole("heading", { name: "INC-000001" }).parentElement).toHaveTextContent("Dispatched"));
   });
 });
@@ -213,6 +217,22 @@ describe("what is preticked", () => {
   });
 });
 
+describe("hospital at dispatch", () => {
+  it("an optional hospital is shown in the summary and sent", async () => {
+    const b = backend();
+    const user = await openIncident(b);
+    await user.click(await screen.findByTestId("incident-card"));
+    await ready();
+    await waitFor(() => expect(screen.getByRole("option", { name: "SIMULATED General Hospital B" })).toBeInTheDocument());
+    await user.selectOptions(screen.getByLabelText("Hospital (optional)"), "2");
+    await user.click(screen.getByRole("button", { name: "Approve dispatch" }));
+    expect(screen.getByRole("dialog")).toHaveTextContent("Hospital: SIMULATED General Hospital B");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    await screen.findByText("✔ Dispatched: SIM-AMB-03.");
+    expect(b.posts[0]).toMatchObject({ vehicle_ids: [5], hospital_id: 2 });
+  });
+});
+
 describe("choosing differently from the AI", () => {
   it("a vehicle from 'Other vehicles' is marked as different and the optional reason is sent", async () => {
     const b = backend();
@@ -228,7 +248,7 @@ describe("choosing differently from the AI", () => {
     await user.type(within(dialog).getByLabelText("Reason (optional)"), "SIMULATED: road blocked, backup is closer");
     await user.click(within(dialog).getByRole("button", { name: "Confirm" }));
     await screen.findByText("✔ Dispatched: SIM-BKP-01.");
-    expect(b.posts).toEqual([{ vehicle_ids: [4], override_reason: "SIMULATED: road blocked, backup is closer" }]);
+    expect(b.posts).toEqual([{ vehicle_ids: [4], override_reason: "SIMULATED: road blocked, backup is closer", hospital_id: null }]);
   });
 });
 
@@ -284,7 +304,8 @@ describe("special cases", () => {
     await ready();
     expect(box("SIM-AMB-03").checked).toBe(true);
     expect(screen.queryByText(/You can send another vehicle \(backup\)/)).not.toBeInTheDocument();
-    expect(screen.getByTestId("assignments")).toHaveTextContent("SIM-AMB-01 — declined");
+    expect(screen.getByTestId("trip")).toHaveTextContent("SIM-AMB-01");
+    expect(screen.getByTestId("trip-state")).toHaveTextContent("Declined: too far");
     expect(screen.getByText(/A vehicle could not go — send another/)).toHaveClass("q-flag-urgent");
   });
 
@@ -327,7 +348,8 @@ describe("special cases", () => {
     await ready();
     expect(screen.getByText(/You can send another vehicle \(backup\)/)).toBeInTheDocument();
     for (const plate of ["SIM-AMB-03", "SIM-AMB-01", "SIM-AMB-02", "SIM-BKP-01"]) expect(box(plate).checked).toBe(false);
-    expect(screen.getByTestId("assignments")).toHaveTextContent("SIM-AMB-03 — approved");
-    expect(screen.getByTestId("assignments")).toHaveTextContent("by user #9");
+    expect(screen.getByTestId("trip")).toHaveTextContent("SIM-AMB-03");
+    expect(screen.getByTestId("trip-state")).toHaveTextContent("Waiting for the driver to accept");
+    expect(screen.getByTestId("trip")).toHaveTextContent("by user #9");
   });
 });

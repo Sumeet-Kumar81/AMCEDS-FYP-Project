@@ -10,6 +10,7 @@ import {
   ApproximateEtaTag,
   ErrorState,
   dispatchIncident,
+  listHospitals,
   listVehicles,
   useErrorText,
   useI18n,
@@ -17,7 +18,7 @@ import {
   type VehicleOut,
 } from "@amceds/shared";
 import { useAuth } from "../auth/AuthProvider";
-import { clockTime, vehicleText } from "../incidents/labels";
+import { vehicleText } from "../incidents/labels";
 import { blockReason, differsFromAi, openAssignments, preselect, reasonText, serverReasonText } from "./selection";
 
 export const VEHICLES_REFRESH_MS = 10_000;
@@ -44,9 +45,9 @@ function problemFrom(error: unknown, text: (e: unknown) => string): Problem {
 const FINAL = new Set(["fake", "closed"]);
 
 export function DispatchPanel({ incident }: { incident: IncidentDetailOut }) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const errorText = useErrorText();
-  const { client, user } = useAuth();
+  const { client } = useAuth();
   const queries = useQueryClient();
   const id = incident.incident_id;
 
@@ -60,6 +61,9 @@ export function DispatchPanel({ incident }: { incident: IncidentDetailOut }) {
   const plate = (vid: number) => byId.get(vid)?.plate_number
     ?? (incident.recommendations ?? []).find((r) => r.vehicle_id === vid)?.plate_number ?? `#${vid}`;
 
+  const hospitalsQ = useQuery({ queryKey: ["hospitals"], queryFn: ({ signal }) => listHospitals(client, signal),
+    enabled: !FINAL.has(incident.status), staleTime: 60_000 });
+  const [hospitalId, setHospitalId] = useState("");
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const initialised = useRef(false);
   useEffect(() => {
@@ -78,7 +82,8 @@ export function DispatchPanel({ incident }: { incident: IncidentDetailOut }) {
 
   const mutation = useMutation({
     mutationFn: (vehicleIds: number[]) =>
-      dispatchIncident(client, id, { vehicle_ids: vehicleIds, override_reason: reason.trim() || null }),
+      dispatchIncident(client, id, { vehicle_ids: vehicleIds, override_reason: reason.trim() || null,
+        hospital_id: hospitalId ? Number(hospitalId) : null }),
   });
 
   useEffect(() => {
@@ -93,7 +98,6 @@ export function DispatchPanel({ incident }: { incident: IncidentDetailOut }) {
   const recIds = new Set(recs.map((r) => r.vehicle_id));
   const others = (vehiclesQ.data ?? []).filter((v) => !recIds.has(v.vehicle_id));
   const manual = recs.length === 0;
-  const hasAssignments = (incident.assignments ?? []).length > 0;
   const vehicleOnTheWay = openAssignments(incident).length > 0;
   const chosen = [...selected];
   const differs = differsFromAi(incident, selected);
@@ -121,6 +125,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDetailOut }) {
       setOpen(false);
       setSelected(new Set());
       setReason("");
+      setHospitalId("");
       await Promise.all([
         queries.invalidateQueries({ queryKey: ["incident", id] }),
         queries.invalidateQueries({ queryKey: ["incidents"] }),
@@ -211,7 +216,13 @@ export function DispatchPanel({ incident }: { incident: IncidentDetailOut }) {
         )}
       </details>
 
-      <p className="q-muted">{t("dsp.hospital_later")}</p>
+      <div className="dsp-hospital">
+        <label htmlFor="dsp-hospital">{t("dsp.hospital_label")}</label>
+        <select id="dsp-hospital" value={hospitalId} onChange={(e) => setHospitalId(e.target.value)} disabled={sending}>
+          <option value="">{t("dsp.hospital_none")}</option>
+          {(hospitalsQ.data ?? []).map((h) => <option key={h.hospital_id} value={h.hospital_id}>{h.name}</option>)}
+        </select>
+      </div>
       <div className="inc-approve">
         <button ref={approveRef} type="button" className="dsp-approve" disabled={chosen.length === 0 || sending}
           onClick={() => { setProblem(null); setOpen(true); }}>
@@ -232,6 +243,9 @@ export function DispatchPanel({ incident }: { incident: IncidentDetailOut }) {
                 <li key={vid} dir="ltr">{plate(vid)}{byId.get(vid) ? ` — ${vehicleText(t, byId.get(vid)!.vehicle_type)}` : ""}</li>
               ))}
             </ul>
+            {hospitalId && (
+              <p>{t("dsp.summary_hospital", { name: hospitalsQ.data?.find((h) => String(h.hospital_id) === hospitalId)?.name ?? hospitalId })}</p>
+            )}
             {manual && <p className="inc-warn">{t("dsp.warn_manual")}</p>}
             {incident.trust_tier === "low" && <p className="inc-warn">{t("dsp.warn_low_trust")}</p>}
             {signalLost.length > 0 && <p className="inc-warn">{t("dsp.warn_signal", { plates: signalLost.join(", ") })}</p>}
@@ -278,23 +292,6 @@ export function DispatchPanel({ incident }: { incident: IncidentDetailOut }) {
         </div>
       )}
 
-      {hasAssignments && (
-        <section aria-labelledby="dsp-assigned">
-          <h4 id="dsp-assigned">{t("dsp.assigned_heading")}</h4>
-          <ul data-testid="assignments">
-            {(incident.assignments ?? []).map((a) => (
-              <li key={a.assignment_id}>
-                {t("dsp.assigned_row", {
-                  plate: plate(a.vehicle_id),
-                  status: t(`asg.${a.status}` as Parameters<typeof t>[0]),
-                  time: clockTime(a.approved_at, lang),
-                  who: a.approved_by === user?.user_id ? t("dsp.you") : t("dsp.user", { id: a.approved_by }),
-                })}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   );
 }

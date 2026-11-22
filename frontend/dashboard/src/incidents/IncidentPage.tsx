@@ -19,6 +19,7 @@ import {
 } from "@amceds/shared";
 import { useAuth } from "../auth/AuthProvider";
 import { DispatchPanel } from "../dispatch/DispatchPanel";
+import { TripList } from "../dispatch/TripList";
 import { URGENT_REASONS, channelText, dateTime, locationText, reasonText, statusText, typeText, vehicleText } from "./labels";
 
 export const DETAIL_REFRESH_MS = 5_000;
@@ -101,6 +102,7 @@ function VehiclesSection({ incident }: { incident: IncidentDetailOut }) {
       {alloc?.victims_unknown_check && <p className="inc-warn">{t("inc.victims_check")}</p>}
       {(incident.recommendations ?? []).length === 0 && <p className="q-muted">{t("inc.no_recs")}</p>}
       <DispatchPanel incident={incident} />
+      <TripList incident={incident} />
     </section>
   );
 }

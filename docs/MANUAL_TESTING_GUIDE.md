@@ -24,15 +24,16 @@ Ye guide aap ko batati hai ke **ab tak jo kuch bana hai** usay apne data ke saat
 | Login, token, logout, roles (admin/dispatcher/driver) | ✅ bana hai | Step 7 |
 | 5 ghalat password par account lock (TC-32) | ✅ bana hai | Step 7.4 |
 | Audit log ko koi badal/mita nahi sakta | ✅ bana hai | Step 8 |
-| Automatic tests (967 backend + 147 web) | ✅ bana hai | Step 9 |
+| Automatic tests (967 backend + 164 web) | ✅ bana hai | Step 9 |
 | Browser wala report page (English/Urdu, GPS, reference number) | ✅ bana hai | Step 12 |
 | Dashboard login, roles, idle logout | ✅ bana hai | Step 13 |
 | Dashboard par incident queue aur review (AI ke nateeje, gaariyon ke plates) | ✅ bana hai | Step 14 |
 | Dispatch approval (gaari bhejna, lock, do dispatcher ek gaari) — API se | ✅ bana hai | Step 15 |
 | Dashboard se gaari bhejna (3 click, next best, manual mode) | ✅ bana hai | Step 16 |
 | Driver ka safar (accept, decline, on scene … free) aur dispatcher ka cancel/hospital — API se | ✅ bana hai | Step 17 |
+| Dashboard par har gaari ka safar, Cancel, hospital badalna, dispatch ke waqt hospital | ✅ bana hai | Step 18 |
 | AI worker Docker service (`ai-worker`) | ✅ bana hai | Step 1, 6 |
-| Driver ko alert, hospital chunna, map/route, incident edit, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
+| Driver ko alert, map/route, incident edit, driver duty, admin pages, voice/SMS, duplicate detection, map/routes, mobile app | ❌ **abhi nahi bana** | Step 10 (ye `501` dete hain) |
 
 ---
 
@@ -511,7 +512,7 @@ Ye endpoints contract mein hain lekin abhi bane nahi. Inhe kholein to **501** au
 | POST /api/v1/reports/{ref}/confirmation | `501` … `B1-A1-24` |
 | POST /api/v1/reports/voice (audio file ke saath) | `501` … `B1-A1-17` |
 
-Abhi nahi bana: driver ko alert, hospital chunna, driver duty/GPS, admin panel, voice/SMS reports, duplicate detection (Coordination Agent), jagah ke naam se location (geocoding), asal road route (OSRM), live dashboard, mobile app.
+Abhi nahi bana: driver ko alert, driver duty/GPS, admin panel, voice/SMS reports, duplicate detection (Coordination Agent), jagah ke naam se location (geocoding), asal road route (OSRM), live dashboard, mobile app.
 
 ---
 
@@ -604,7 +605,7 @@ python3 scripts/run_project.py test-web
    typecheck : passed
    build     : passed
 ```
-(Upar kahin `Tests  147 passed (147)` bhi likha hoga.)
+(Upar kahin `Tests  164 passed (164)` bhi likha hoga.)
 
 ---
 
@@ -863,6 +864,35 @@ SELECT action, details->>'step' AS step, details->>'reason' AS reason, created_a
 
 ---
 
+## Step 18 — Dashboard par har gaari ka safar (aur Cancel, hospital)
+
+Backend, worker aur `web` chal rahe hon; drivers on-duty (Step 16 wali SQL). Nayi report bhejein.
+
+### 18.1 Hospital ke saath dispatch
+Review screen → "Hospital (optional)" mein **SIMULATED General Hospital A** chunein → Approve → dabbe mein **"Hospital: SIMULATED General Hospital A"** → Confirm.
+Neeche **"Dispatched vehicles"** mein card: `SIM-AMB-03  Ambulance  Waiting for the driver to accept`, "approved hh:mm by you · Hospital: SIMULATED General Hospital A", aur timeline "Approved hh:mm".
+
+### 18.2 Driver ka kaam screen par (5 second ke andar)
+`/docs` mein us gaari ke driver (Step 17 ki list) se: **accept**, phir `{"status": "on_scene"}`.
+Dashboard ko **reload kiye baghair** dekhein → card ka haal **"On the way"**, phir **"On scene"**; timeline mein "Accepted …", "On scene …". Upar incident status **On scene**.
+Asal run: `Waiting for the driver to accept` → `On scene`.
+
+### 18.3 Driver jawab na de (yaad-dihani)
+Nayi dispatch karein aur driver kuch na kare. 1 minute baad card par peeli line: **"⏱ No answer from the driver for 1 min — call the driver, or cancel and send another."** (Ye sirf screen ki yaad-dihani hai; asli timeout baad mein aayega.)
+
+### 18.4 Hospital badalna
+Card par **Change hospital** → list se **SIMULATED General Hospital B** → **Save** (jo hospital pehle se hai us par Save band rehta hai).
+**Sahi output:** "✔ Hospital changed to SIMULATED General Hospital B — inform the driver." Driver ka `GET /driver/assignments/current` → `hospital.name = "SIMULATED General Hospital B"`.
+
+### 18.5 Cancel
+Card par **Cancel vehicle** → dabba "Cancel SIM-AMB-01?" → **Keep it** (kuch nahi hota) → dobara Cancel vehicle → wajah likhein → **Cancel this vehicle**.
+**Sahi output:** "✔ SIM-AMB-01 cancelled — inform the driver.", card ka haal **Cancelled**, button gayab. Audit: `assignment.cancelled` aur aap ki wajah. Agar ye akeli gaari thi to report **Needs check** aur "⚠ Vehicle cancelled — send another"; panel dobara zaroori gaariyan tick kar deta hai.
+
+### 18.6 Safar khatam
+Driver `picked_up` → `at_hospital` → `available` (ya on scene ke baad seedha `available`) → card **"Trip completed — vehicle free"**. Aakhri gaari khatam → report **Closed**: review screen par sirf history, koi button nahi, aur "This report is closed: no vehicle can be sent."
+
+---
+
 ## Aakhri checklist — tick karte jayein
 
 | # | Check | Sahi nateeja | ✔ |
@@ -925,5 +955,11 @@ SELECT action, details->>'step' AS step, details->>'reason' AS reason, created_a
 | 56 | Decline | gaari free, incident Needs check + vehicle_declined | ☐ |
 | 57 | Cancel / hospital (dispatcher) | 200; band assignment par 409 | ☐ |
 | 58 | Doosre driver ki assignment | 403 | ☐ |
+| 59 | Hospital ke saath dispatch | dabbe aur card par hospital | ☐ |
+| 60 | Driver ka kaam screen par | reload ke baghair "On scene" | ☐ |
+| 61 | Jawab na mile | 1 min baad "No answer from the driver" | ☐ |
+| 62 | Hospital badalna | "Hospital changed … inform the driver", driver ko naya hospital | ☐ |
+| 63 | Cancel | tasdeeq ka dabba, "cancelled — inform the driver", haal Cancelled | ☐ |
+| 64 | Band report | sirf history, koi button nahi | ☐ |
 
 Agar koi check fail ho: us ka **command aur poora output** copy karke bhejein, hum wajah dhoond kar theek karenge.
