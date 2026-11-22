@@ -35,9 +35,17 @@ export function getHealth(client: ApiClient, signal?: AbortSignal): Promise<Heal
   return client.get<HealthOut>("/health", { auth: false, signal });
 }
 
-/** UC-01: 201 = saved (new), 200 = the same `client_request_id` was already saved (TC-04). */
-export function submitReport(client: ApiClient, report: ReportIn): Promise<ReportAcceptedOut> {
-  return client.post<ReportAcceptedOut>(`${API_PREFIX}/reports`, report, { auth: false });
+export interface SubmittedReport {
+  report: ReportAcceptedOut;
+  /** 200: a report with the same `client_request_id` was already saved; nothing new was stored (TC-04). */
+  alreadySaved: boolean;
+}
+
+/** UC-01: resolves only after the server saved the report (201) or had already saved it (200). */
+export async function submitReport(client: ApiClient, report: ReportIn): Promise<SubmittedReport> {
+  const { status, data } = await client.requestWithStatus<ReportAcceptedOut>("POST", `${API_PREFIX}/reports`,
+    { body: report, auth: false });
+  return { report: data, alreadySaved: status === 200 };
 }
 
 /** Signs in and keeps the tokens in the client's memory store. */

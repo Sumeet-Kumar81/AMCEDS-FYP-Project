@@ -1,8 +1,9 @@
-// Public report page shell (B1-A3-01). The form itself comes in F2 (B1-A3-03).
-// The 1122 notice is always visible, even while loading or when the server is down (TC-47).
+// Public report page (B1-A3-01 shell, B1-A3-03 form). The 1122 notice is always visible: while the
+// form is shown, while sending, on errors and after sending (TC-47, safety rule 10).
 import { ApiClient, CallNotice, I18nProvider, LanguageToggle, ServiceStatusBanner, useHealth, useI18n } from "@amceds/shared";
+import { ReportPage } from "./report/ReportPage";
 
-function Page({ client }: { client: ApiClient }) {
+function Page({ client, geolocation }: { client: ApiClient; geolocation?: Geolocation }) {
   const { t } = useI18n();
   const health = useHealth(client);
   return (
@@ -14,17 +15,17 @@ function Page({ client }: { client: ApiClient }) {
       </header>
       <main className="report-main">
         <CallNotice />
-        <p>{t("placeholder.report")}</p>
+        <ReportPage client={client} geolocation={geolocation} />
         <p className="report-simulated">{t("app.simulated")}</p>
       </main>
     </div>
   );
 }
 
-export function App({ client }: { client: ApiClient }) {
+export function App({ client, geolocation }: { client: ApiClient; geolocation?: Geolocation }) {
   return (
     <I18nProvider initialLang="en">
-      <Page client={client} />
+      <Page client={client} geolocation={geolocation} />
     </I18nProvider>
   );
 }

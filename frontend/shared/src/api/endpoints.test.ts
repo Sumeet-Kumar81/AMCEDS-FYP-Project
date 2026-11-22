@@ -32,10 +32,16 @@ describe("endpoints", () => {
   it("a report is always sent without a token, even when signed in", async () => {
     const { api, calls } = client(() => json(201, { reference_no: "INC-000001", status: "new", received_at: "2026-11-22T08:00:00Z" }));
     api.tokens.set({ accessToken: "SIM-a", refreshToken: "SIM-r" });
-    const out = await submitReport(api, { description: "SIMULATED: fire", client_request_id: "sim-1" });
-    expect(out.reference_no).toBe("INC-000001");
+    const out = await submitReport(api, { description: "SIMULATED: fire", channel: "web", client_request_id: "sim-1" });
+    expect(out).toEqual({ report: expect.objectContaining({ reference_no: "INC-000001" }), alreadySaved: false });
     expect(calls[0]!.url).toBe("http://api.test/api/v1/reports");
     expect(header(calls[0]!.init)).toBeUndefined();
+  });
+
+  it("a resend answered 200 is reported as already saved (TC-04)", async () => {
+    const { api } = client(() => json(200, { reference_no: "INC-000001", status: "new", received_at: "2026-11-22T08:00:00Z" }));
+    const out = await submitReport(api, { description: "SIMULATED: fire", channel: "web", client_request_id: "sim-1" });
+    expect(out.alreadySaved).toBe(true);
   });
 
   it("logout forgets the tokens even when the server call fails", async () => {

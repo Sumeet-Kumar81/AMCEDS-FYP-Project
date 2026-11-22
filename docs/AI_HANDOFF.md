@@ -23,7 +23,7 @@ Team roles (team slide, A-007): **Arjun Kumar** = AI & backend; **Khalid Hussain
 |---|---|---|---|
 | **Agent 1 Backend & DB** | B1-A1-02 is complete; start with Phase 1A: B1-A1-03 → (A2's B1-A2-01) → B1-A1-04 → B1-A1-05 | api, core, models, schemas (not `ai.py`), services, ws, main.py, migrations, db/seed, db/sql, backend API/integration tests | agents, llm, workers, integrations, frontend, mobile |
 | **Agent 2 AI** | Done or awaiting commit: B1-A2-01, 02, 03, 06, 07, 11, 13, 14. Next: B1-A2-05 (needs D-009), 10, 08/09 (D-007/D-033), 04 | agents, llm, workers, integrations, `schemas/ai.py`, agent tests, ai_eval, db/eval_data, infra/osrm, infra/gazetteer | models, migrations, routes, services, frontend |
-| **Agent 3 Frontend/Mobile** | Done or awaiting commit: B1-A3-01, 02 (F1: `frontend/` workspace, typed client, UI kit, EN/UR). Next: F2 = B1-A3-03 report page, F3 = B1-A3-04 login, F4 = B1-A1-20 + queue/review screens (read-only). Run `cd frontend && npm install && npm test` | frontend/**, mobile/**, docs/user-guides | anything under backend/ |
+| **Agent 3 Frontend/Mobile** | Done: B1-A3-01, 02 (F1, PR #17). Awaiting commit: B1-A3-03 text report page (F2). Next: F3 = B1-A3-04 login, F4 = B1-A1-20 + queue/review screens (read-only). Run `python3 scripts/run_project.py web` / `test-web` | frontend/**, mobile/**, docs/user-guides | anything under backend/ |
 
 Shared files (`requirements.txt`, `docker-compose.yml`, `.env.example`, `.github/`, `README.md`) change only through a Coordination Request in DECISIONS_LOG.md §4.
 
