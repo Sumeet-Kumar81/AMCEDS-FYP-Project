@@ -1,34 +1,35 @@
-// Dispatcher dashboard shell (B1-A3-01). Sign-in comes in F3 (B1-A3-04), the incident screens in F4.
-import { ApiClient, I18nProvider, LoadingState, ServiceStatusBanner, useHealth, useI18n } from "@amceds/shared";
+// Dispatcher and admin dashboard (B1-A3-01 shell, B1-A3-04 sign-in and role routing).
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { ApiClient, I18nProvider } from "@amceds/shared";
+import { AuthProvider } from "./auth/AuthProvider";
+import { HomeRedirect, RequireAuth, RequireRole } from "./auth/guards";
+import { AppLayout } from "./layout/AppLayout";
+import { LoginPage } from "./pages/LoginPage";
+import { AdminPage, QueuePage } from "./pages/placeholders";
 
-function Shell({ client }: { client: ApiClient }) {
-  const { t } = useI18n();
-  const health = useHealth(client);
+/** Providers and routes; the router itself is chosen by the caller (browser, or memory in tests). */
+export function Root({ client }: { client: ApiClient }) {
   return (
-    <div className="dash">
-      <ServiceStatusBanner services={health.down} unreachable={health.unreachable} />
-      <header className="dash-header">
-        <h1>{t("app.dashboard_title")}</h1>
-        <span className="dash-simulated">{t("app.simulated")}</span>
-      </header>
-      <main className="dash-main">
-        {!health.checked ? (
-          <LoadingState />
-        ) : (
-          <>
-            {health.health && health.down.length === 0 && <p className="dash-ok">✔ {t("status.connected")}</p>}
-            <p>{t("placeholder.dashboard")}</p>
-          </>
-        )}
-      </main>
-    </div>
+    <I18nProvider initialLang="en">
+      <AuthProvider client={client}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
+            <Route index element={<HomeRedirect />} />
+            <Route path="queue" element={<RequireRole roles={["dispatcher"]}><QueuePage /></RequireRole>} />
+            <Route path="admin" element={<RequireRole roles={["admin"]}><AdminPage /></RequireRole>} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </I18nProvider>
   );
 }
 
 export function App({ client }: { client: ApiClient }) {
   return (
-    <I18nProvider initialLang="en">
-      <Shell client={client} />
-    </I18nProvider>
+    <BrowserRouter>
+      <Root client={client} />
+    </BrowserRouter>
   );
 }
