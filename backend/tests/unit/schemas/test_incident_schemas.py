@@ -252,18 +252,23 @@ def test_assignment_status_uses_the_d005_vocabulary() -> None:
 
 
 # ---------------------------------------------------------------- report input (channel correction)
+#: D-036: place, name and phone are required, so every valid ReportIn carries them (SIMULATED values)
+REPORT_OK = {"description": "x", "address_text": "SIMULATED place", "reporter_name": "SIMULATED caller",
+             "reporter_phone": "03001234567"}
+
+
 def test_report_in_accepts_app_and_defaults_to_web() -> None:
-    assert ReportIn(description="x").channel is Channel.WEB
-    assert ReportIn(description="x", channel="app").channel is Channel.APP
+    assert ReportIn(**REPORT_OK).channel is Channel.WEB
+    assert ReportIn(**REPORT_OK, channel="app").channel is Channel.APP
 
 
 @pytest.mark.parametrize("channel", ["voice", "sms"])
 def test_public_report_form_refuses_voice_and_sms(channel: str) -> None:
     """Since B1-A1-16 the public text form takes web and app only; SMS and voice have their own endpoints."""
     with pytest.raises(ValidationError):
-        ReportIn(description="x", channel=channel)
+        ReportIn(**REPORT_OK, channel=channel)
 
 
 def test_report_in_rejects_the_old_mobile_channel() -> None:
     with pytest.raises(ValidationError):
-        ReportIn(description="x", channel="mobile")
+        ReportIn(**REPORT_OK, channel="mobile")

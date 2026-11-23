@@ -180,8 +180,8 @@ Browser: **http://localhost:5174**
 
 ### 4.2 Apni report bhejein
 1. "What happened?" → `SIMULATED: Clock Tower ke paas bus accident, 3 log zakhmi`
-2. **Use my location** → Allow → `📍 Your location is added (accurate to about … m).` (Inkaar par: `Location permission was refused. Please type the place or a landmark below.` — report phir bhi jati hai.)
-3. Optional: "Place or landmark" `near Clock Tower`, naam, phone `0300 1234567`.
+2. **Use my location** → Allow → `📍 Your location is added (accurate to about … m).` (Inkaar par: `Location permission was refused. Please type the place or a landmark below.` — GPS optional hai.)
+3. **Zaroori (D-036):** "Place or landmark" `near Clock Tower`, **Name** `SIMULATED Ali`, **Phone number** `0300 1234567` (11 hindse, `03` se shuru; space/dash khud hat jate hain). Teeno ke saath **"(required)"** likha hai.
 4. **Send report**.
 
 **Sahi output:** hari screen **"✔ Report saved"**, bara reference number (masalan **`INC-000012`**), "Your report is saved and is in the dispatcher's queue."
@@ -197,7 +197,10 @@ SELECT reference_no, channel, status, location_text, location_source, client_req
 | Kya karein | Sahi nateeja |
 |---|---|
 | Khaali "What happened?" + Send | `Please describe what happened.`, cursor us box par |
-| Phone `abc` | `Use digits only, for example 0300 1234567.`, box laal |
+| Jagah khaali | `Please type the place or a landmark.` |
+| Naam khaali | `Please write your name.` |
+| Phone khaali | `Please write your phone number.` |
+| Phone `abc`, `04001234567`, `0300123456` (10 hindse), `030012345678` (12), `+923001234567` | `Phone must be 11 digits starting with 03, for example 03001234567.`, box laal |
 | 2000 se zyada characters | ginti laal `2001 / 2000`, `Too long: at most 2000 characters.` |
 
 ### 4.4 Network band → dobara bhejna (TC-04)
@@ -219,18 +222,20 @@ Upar **اردو** → poora page right-to-left, labels Urdu ("کیا ہوا ہے
 ### 4.7 Wahi kaam API se (terminal)
 ```bash
 curl -s -w ' [HTTP %{http_code}]\n' -X POST localhost:8000/api/v1/reports -H 'Content-Type: application/json' \
-  -d '{"description":"SIMULATED: Clock Tower ke paas bus accident hua hai, 3 log zakhmi hain","lat":27.7052,"lon":68.8574,"client_request_id":"meri-report-001"}'
+  -d '{"address_text":"near Clock Tower","reporter_name":"SIMULATED Ali","reporter_phone":"03001234567","description":"SIMULATED: Clock Tower ke paas bus accident hua hai, 3 log zakhmi hain","lat":27.7052,"lon":68.8574,"client_request_id":"meri-report-001"}'
 ```
 - Pehli dafa: `{"reference_no":"INC-0000xx","status":"new",...} [HTTP 201]`
 - **Wahi** command dobara: **same** reference aur **`[HTTP 200]`** — dobara save nahi hui (TC-04).
 
-Ghalat body → `[HTTP 422]`, `"code":"validation_error"`:
+Ghalat body → `[HTTP 422]`, `"code":"validation_error"` (neeche ki table mein jagah/naam/phone sahi maan kar sirf badla hua hissa likha hai):
 | Body | `msg` |
 |---|---|
 | `{"description":"   "}` | `String should have at least 1 character` |
 | `{"description":"SIMULATED fire","lat":27.7}` | `lat and lon must both be given or both be left out` |
 | `{"description":"SIMULATED fire","channel":"sms"}` | `this endpoint takes web and app reports; …` |
 | `{"description":"SIMULATED fire","reporter_phone":"abc"}` | `String should match pattern …` |
+| bina `address_text` / `reporter_name` / `reporter_phone` | `Field required` (har ek ke liye) |
+| `"reporter_phone":"04001234567"` ya `"+923001234567"` | `String should match pattern '^03[0-9]{9}$'` |
 | `{"description":"SIMULATED fire","status":"dispatched"}` | `Extra inputs are not permitted` |
 
 ---
@@ -240,9 +245,9 @@ Ghalat body → `[HTTP 422]`, `"code":"validation_error"`:
 ### 5.1 Teen qisam ki reports
 ```bash
 curl -s -X POST localhost:8000/api/v1/reports -H 'Content-Type: application/json' \
-  -d '{"description":"SIMULATED: مینارہ روڈ پر ایک دکان میں آگ لگ گئی ہے، دھواں بہت ہے","lat":27.7000,"lon":68.8600}'; echo
+  -d '{"address_text":"Minara Road","reporter_name":"SIMULATED Sana","reporter_phone":"03111234567","description":"SIMULATED: مینارہ روڈ پر ایک دکان میں آگ لگ گئی ہے، دھواں بہت ہے","lat":27.7000,"lon":68.8600}'; echo
 curl -s -X POST localhost:8000/api/v1/reports -H 'Content-Type: application/json' \
-  -d '{"description":"SIMULATED: kuch ho gaya hai jaldi aao"}'; echo
+  -d '{"address_text":"pata nahi","reporter_name":"SIMULATED Bilal","reporter_phone":"03211234567","description":"SIMULATED: kuch ho gaya hai jaldi aao"}'; echo
 ```
 Terminal 1 ke log mein har report ke liye: `incident N: pipeline done; ran=['geocoding', 'triage', 'trust', 'allocation'] …`
 
@@ -261,7 +266,7 @@ Kaise padhein:
 - `pipeline_state = done` → AI ne kaam poora kiya; `pending` → abhi line mein.
 - `triaged` → AI ne samjha; `needs_check` → **dispatcher khud dekhe**.
 - Khaali value = AI ko pata nahi chala — **AI andaza nahi lagata**, jagah khud nahi banata.
-- `review_reasons`: `missing_info` (type/jagah nahi pata, TC-07), `location_unknown`, `low_confidence` (60% se kam, TC-08 — report **fake nahi** banti), `vehicle_shortage` (us waqt gaari nahi thi), `ai_failed` (manual mode), `low_trust_urgent` (trust kam **lekin roki nahi**, safety rule 3).
+- `review_reasons`: `missing_info` (type/jagah nahi pata, TC-07), `location_unknown` (GPS nahi — jagah ka likha hua naam abhi map par nahi dhoonda jata, geocoding B1-A2-05 baad mein; naam dispatcher ko dikhta hai), `low_confidence` (60% se kam, TC-08 — report **fake nahi** banti), `vehicle_shortage` (us waqt gaari nahi thi), `ai_failed` (manual mode), `low_trust_urgent` (trust kam **lekin roki nahi**, safety rule 3).
 
 ✅ Accident → `accident`, aag → `fire`, vague → `needs_check` + `missing_info`. (AI severity kabhi `high` ki jagah `critical` de sakta hai — theek hai.)
 
@@ -270,7 +275,7 @@ Kaise padhein:
 2. Usi minute:
    ```bash
    curl -s -X POST localhost:8000/api/v1/reports -H 'Content-Type: application/json' \
-     -d '{"description":"SIMULATED: Military Road par truck aur car ki takkar, 5 log zakhmi, 2 behosh","lat":27.7100,"lon":68.8500}'; echo
+     -d '{"address_text":"near Clock Tower","reporter_name":"SIMULATED Ali","reporter_phone":"03001234567","description":"SIMULATED: Military Road par truck aur car ki takkar, 5 log zakhmi, 2 behosh","lat":27.7100,"lon":68.8500}'; echo
    ```
 3. 10 s baad:
    ```sql
@@ -363,7 +368,7 @@ Pehle **Tayyari SQL** (1.5), phir usi minute 2–3 reports (accident GPS ke saat
 **Sahi output** (asal run):
 ```
 ▲▲ Critical  Accident  INC-000001  Triaged     1 min ago  📍 GPS 27.7100, 68.8500  Trust: Medium (60)  ⚠ Not enough vehicles
-?  Severity unknown  Type unknown  INC-000003  Needs check  📍 Location unknown  Trust: Low (35)
+?  Severity unknown  Type unknown  INC-000003  Needs check  📍 pata nahi  Trust: Low (35)
    ⚠ Location unknown  ⚠ Low trust — urgent, not held back  ⚠ More information needed
 ■  Medium  Fire  INC-000002  Triaged  📍 GPS 27.7000, 68.8600  Trust: Medium (60)
 ```
@@ -426,7 +431,7 @@ Tick hatayein → **Other vehicles** → koi aur tick → Approve → **"Differe
 Busy gaari list mein halki, checkbox band: "not available now: already on another job" (off-duty driver: "driver off duty").
 
 ### 8.5 Manual mode
-Vague report (jagah nahi, AI mashwara nahi) → **"🛠 Manual dispatch — no AI recommendation."**, "Other vehicles" khud khuli, kuch ticked nahi → ek gaari tick → Approve → "Manual dispatch (no AI recommendation)." → Confirm → audit `manual_mode = true`. ✅
+Vague report (jagah sirf "pata nahi", GPS nahi — is liye AI gaari ka mashwara nahi de sakta) → **"🛠 Manual dispatch — no AI recommendation."**, "Other vehicles" khud khuli, kuch ticked nahi → ek gaari tick → Approve → "Manual dispatch (no AI recommendation)." → Confirm → audit `manual_mode = true`. ✅
 
 ### 8.6 Fake report
 ```sql
@@ -527,7 +532,7 @@ python3 scripts/run_project.py test-web    # web: tests, typecheck, build
 ```
 **Sahi output:**
 ```
-967 passed, 3 skipped in 74.73s (0:01:14)
+982 passed, 3 skipped in 57.74s
    RESULT: all tests passed
 ```
 ```
@@ -535,12 +540,12 @@ python3 scripts/run_project.py test-web    # web: tests, typecheck, build
    typecheck : passed
    build     : passed
 ```
-(Web mein upar kahin `Tests  164 passed (164)`.)
+(Web mein upar kahin `Tests  176 passed (176)`.)
 - Backend ke 3 skip normal hain (wo docs folder dekhte hain jo container mein nahi). Poore repo ke saath:
   ```bash
   docker compose run --rm -v "$PWD":/repo -w /repo/backend api pytest -q -rs
   ```
-  → **970 passed, 0 skipped**.
+  → **985 passed, 0 skipped**.
 - Tests aap ka data **nahi** chhooti (alag `dispatch_test` database).
 
 ✅ Pass: `0 failed`.

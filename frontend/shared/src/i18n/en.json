@@ -49,11 +49,10 @@
   "report.location_unsupported": "This browser cannot share a location. Please type the place or a landmark below.",
   "report.address_label": "Place or landmark",
   "report.address_hint": "For example: near Clock Tower, Minara Road",
-  "report.location_none_note": "No location yet. You can still send the report, but please describe the place.",
   "report.details_heading": "Your details",
   "report.name_label": "Name",
   "report.phone_label": "Phone number",
-  "report.phone_hint": "So the dispatcher can call you back.",
+  "report.phone_hint": "11 digits starting with 03, for example 03001234567 — so the dispatcher can call you back.",
   "report.voice": "Record voice (coming soon)",
   "report.voice_note": "Voice reports are not available yet. Please type your report.",
   "report.privacy": "Only what you enter here, and your location if you allow it, is sent.",
@@ -61,7 +60,7 @@
   "report.sending": "Sending…",
   "report.err_description_required": "Please describe what happened.",
   "report.err_too_long": "Too long: at most {max} characters.",
-  "report.err_phone": "Use digits only, for example 0300 1234567.",
+  "report.err_phone": "Phone must be 11 digits starting with 03, for example 03001234567.",
   "report.err_fix": "Please correct the marked fields.",
   "report.err_not_saved": "Your report was NOT saved. If life is in danger, call 1122 now. You can also try again.",
   "report.err_not_sent": "Your report was not sent: no connection. Check your internet and press Send again; it will not be sent twice.",
@@ -258,5 +257,8 @@
   "decline.crew_unavailable": "crew not available",
   "decline.already_busy": "already busy",
   "decline.too_far": "too far",
-  "decline.other": "other reason"
+  "decline.other": "other reason",
+  "report.err_address_required": "Please type the place or a landmark.",
+  "report.err_name_required": "Please write your name.",
+  "report.err_phone_required": "Please write your phone number."
 }

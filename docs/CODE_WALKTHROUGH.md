@@ -173,7 +173,7 @@ CREATE TRIGGER incidents_keep_original BEFORE UPDATE OF original_text, audio_ref
 ### Files
 | File | Kaam |
 |---|---|
-| `app/schemas/report.py` | `ReportIn`: text 1–2000, phone pattern, lat/lon jora, sirf web/app |
+| `app/schemas/report.py` | `ReportIn`: text 1–2000; **jagah, naam aur phone zaroori** (D-036); phone `^03[0-9]{9}$` (11 hindse, `03` se shuru; space/dash pehle hata diye jate hain); lat/lon jora; sirf web/app |
 | `app/api/routes/reports.py` | `POST /api/v1/reports` — 201 / 200 (dobara) / 503 |
 | `app/services/intake.py` | Caller dhoondna, incident insert, audit, `NOTIFY` |
 
@@ -199,7 +199,7 @@ async def submit_report(body: ReportIn, response: Response, db: AsyncSession = D
     return _accepted(incident)
 ```
 **Matlab:**
-- `body: ReportIn` — FastAPI + Pydantic pehle body jaanchte hain; ghalat ho to **422** aur ye function chalta hi nahi.
+- `body: ReportIn` — FastAPI + Pydantic pehle body jaanchte hain; ghalat ho to **422** aur ye function chalta hi nahi. D-036 ke baad jagah (`address_text`), naam (`reporter_name`) aur phone (`reporter_phone`, 11 hindse `03` se shuru) ke baghair bhi 422.
 - `commit()` ke **baad** hi jawab. Database band ho to **503** aur koi reference number nahi.
 - Wahi `client_request_id` dobara aaye to **200** aur purana reference — report do dafa save nahi hoti (TC-04).
 
@@ -858,7 +858,7 @@ Chalana: `python3 scripts/run_project.py test` (backend) aur `python3 scripts/ru
 
 Ye hissa batata hai ke supervisor ke saamne **kya, kis tarteeb mein, aur kaise** dikhana hai. Har slide ke saath **bolne wale jumle** Roman Urdu mein diye hain. Technical alfaaz (LangGraph, PostgreSQL, API waghera) waise hi bolein — supervisor yahi alfaaz samajhte hain.
 
-> Sab numbers 2026-11-23 ke `main` (`901a374`) ke hain. Presentation se pehle **P12** wali tayyari zaroor karein, taake numbers aur demo taaza hon.
+> Sab numbers 2026-11-23 ke hain (`main` `901a374` + D-036 fix). Presentation se pehle **P12** wali tayyari zaroor karein, taake numbers aur demo taaza hon.
 
 ## P1 — Presentation ka dhaancha (15–20 minute)
 
@@ -888,8 +888,8 @@ Ye hissa batata hai ke supervisor ke saamne **kya, kis tarteeb mein, aur kaise**
 | Batch 1 tasks (implementation plan) | **70 mein se 34 poore + 2 adhe** (~50%); poora plan 91 tasks |
 | Merge hue pull requests | **22** (har group ek PR, sab tests ke saath) |
 | API endpoints | **49** contract mein; **17 bane hue**, 32 imaandari se `501` (abhi nahi bane) |
-| Backend automatic tests | **967 passed**, 3 skipped (docs folder ke baghair); poore repo ke saath **970 passed, 0 skipped** |
-| Frontend automatic tests | **164 passed** (typecheck aur build saaf) |
+| Backend automatic tests | **982 passed**, 3 skipped (docs folder ke baghair); poore repo ke saath **985 passed, 0 skipped** |
+| Frontend automatic tests | **176 passed** (typecheck aur build saaf) |
 | Database | 15 tables, 35 settings, triggers aur indexes jo safety rules khud lagu karte hain |
 | AI | Groq `openai/gpt-oss-120b` — live chal raha hai; English, Urdu, Roman Urdu, Sindhi |
 
@@ -934,7 +934,7 @@ START → geocoding → TRIAGE (LLM) → TRUST (rules) → coordination (baad me
 | Qadam | Aap kya karein | Kya bolein |
 |---|---|---|
 | 1 | Report page par 1122 notice dikhayein; **اردو** dabayein, phir English | "Page par hamesha 1122 ka notice hota hai, aur ye Urdu mein right-to-left bhi chalta hai." |
-| 2 | Report likhein: `SIMULATED: Military Road par truck aur car ki takkar, 5 log zakhmi`, **Use my location**, **Send** | "Reference number sirf tab aata hai jab database report save kar chuka ho." |
+| 2 | Report likhein: `SIMULATED: Military Road par truck aur car ki takkar, 5 log zakhmi`, **Use my location**, jagah `Military Road`, naam, phone `0300 1234567` (teeno zaroori), **Send** | "Jagah, naam aur 11 hindson ka phone zaroori hain taake dispatcher wapas call kar sake. Reference number sirf tab aata hai jab database report save kar chuka ho." |
 | 3 | Dashboard par jayein — 5–10 s mein card "AI is reading…" se nateeje mein badalta hai | "AI worker ne report khud utha li; queue har 5 second refresh hoti hai aur critical report sab se upar aati hai." |
 | 4 | Card kholein: AI values + confidence, trust ki wajah, gaariyan + "≈ Approximate" | "AI ki har value ke saath us ka yaqeen dikhta hai; 60% se kam ho to likha aata hai ke dispatcher khud check kare. Trust mein har rule dikhta hai jis ne points diye ya kaate." |
 | 5 | **Approve dispatch** → khulasa → **Confirm** | "Teen click. Confirm ke baghair kuch nahi jata. Gaari isi lamhe lock hoti hai, mashwara dene par kabhi nahi." |
@@ -963,7 +963,7 @@ Frontend dikhana ho: `frontend/dashboard/src/dispatch/DispatchPanel.tsx` (Approv
 
 ## P8 — Testing aur quality kaise batayein
 
-> "Har group tests ke saath bana aur tabhi merge hua jab tests pass hue: taqreeban 970 backend tests Docker mein asli PostGIS database par chalte hain, aur 164 frontend tests. Har group ke liye maine mutation check bhi kiya — jaan-boojh kar code tod kar dekha ke koi test fail hota hai — aur asli API aur Groq model ke saath live check bhi. Do dispatchers ka ek saath ek gaari chunna asli database par 50 dafa test hota hai."
+> "Har group tests ke saath bana aur tabhi merge hua jab tests pass hue: taqreeban 985 backend tests Docker mein asli PostGIS database par chalte hain, aur 176 frontend tests. Har group ke liye maine mutation check bhi kiya — jaan-boojh kar code tod kar dekha ke koi test fail hota hai — aur asli API aur Groq model ke saath live check bhi. Do dispatchers ka ek saath ek gaari chunna asli database par 50 dafa test hota hai."
 
 Saath mein imaandari se bata dein:
 - Tests **nakli (fake) model** se chalte hain taake tez aur bina internet ke hon; asli Groq har group ke **live check** mein chalaya gaya.
@@ -1263,7 +1263,7 @@ Sirf memory mein (`shared/src/api/tokens.ts`), kabhi `localStorage` mein nahi; r
 ## Q5 — Testing aur kaam ke tareeqe ke sawal
 
 **1. Kitne tests aur kis qisam ke?**
-Taqreeban 970 backend (unit, API, asli PostGIS par integration) aur 164 frontend (component aur behaviour tests, nakli backend ke saath).
+Taqreeban 985 backend (unit, API, asli PostGIS par integration) aur 176 frontend (component aur behaviour tests, nakli backend ke saath).
 
 **2. Mutation check kya hai?**
 Tests likhne ke baad main jaan-boojh kar code todta hoon (masalan fake report ko dispatch hone deta hoon) aur dekhta hoon ke koi test fail hota hai; phir code wapas theek. Har group ki tod-phod pakdi gayi (kuch ek missing test add karne ke baad).

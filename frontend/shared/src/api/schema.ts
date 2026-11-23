@@ -1238,12 +1238,21 @@ export interface components {
             lat?: number | null;
             /** Lon */
             lon?: number | null;
-            /** Address Text */
-            address_text?: string | null;
-            /** Reporter Name */
-            reporter_name?: string | null;
-            /** Reporter Phone */
-            reporter_phone?: string | null;
+            /**
+             * Address Text
+             * @description Place or landmark (required, D-036)
+             */
+            address_text: string;
+            /**
+             * Reporter Name
+             * @description Caller's name (required, D-036)
+             */
+            reporter_name: string;
+            /**
+             * Reporter Phone
+             * @description 11 digits starting with 03, e.g. 03001234567 (required, D-036)
+             */
+            reporter_phone: string;
             /** Device Id */
             device_id?: string | null;
             /**

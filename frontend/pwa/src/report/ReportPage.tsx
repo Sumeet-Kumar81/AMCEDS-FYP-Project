@@ -132,7 +132,7 @@ export function ReportPage({ client, geolocation }: { client: ApiClient; geoloca
 
       <fieldset className="rf-group">
         <legend>
-          {t("report.details_heading")} <span className="rf-tag">({t("report.optional")})</span>
+          {t("report.details_heading")} <span className="rf-tag rf-required">({t("report.required")})</span>
         </legend>
         <label htmlFor="rf-name">{t("report.name_label")}</label>
         <input id="rf-name" type="text" dir="auto" autoComplete="name" value={fields.name} disabled={sending}

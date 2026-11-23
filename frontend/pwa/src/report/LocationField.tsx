@@ -52,7 +52,7 @@ export function LocationField(props: Props) {
       </div>
 
       <label htmlFor="rf-address">
-        {t("report.address_label")} <span className="rf-tag">({t("report.optional")})</span>
+        {t("report.address_label")} <span className="rf-tag rf-required">({t("report.required")})</span>
       </label>
       <input id="rf-address" type="text" dir="auto" autoComplete="street-address"
         value={props.addressText} onChange={(e) => props.onAddressChange(e.target.value)} disabled={props.disabled}
@@ -60,7 +60,6 @@ export function LocationField(props: Props) {
         aria-describedby={props.addressError ? "rf-address-error" : undefined} />
       <FieldMessage error={props.addressError} id="rf-address-error" />
 
-      {!fix && !props.addressText.trim() && <p className="rf-note">{t("report.location_none_note")}</p>}
     </fieldset>
   );
 }

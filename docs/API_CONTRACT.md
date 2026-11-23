@@ -62,7 +62,7 @@ this file and OpenAPI together.
 | Method | Path | Role | Request | Response (success) | Built in |
 |---|---|---|---|---|---|
 | `GET` | `/health` | P | — | `{api, database}` (worker/OSRM/LLM/geocoder checks added in B1-A1-33) | exists |
-| `POST` | `/api/v1/reports` | P | `ReportIn` (channel `web` or `app`; optional `client_request_id`) | `201 ReportAcceptedOut {reference_no, status: "new", received_at}` only after the record is committed; `200` same body for a resend (TC-04); `503` and no reference if it could not be saved | **built** (B1-A1-16) |
+| `POST` | `/api/v1/reports` | P | `ReportIn` (channel `web` or `app`; **required** `address_text`, `reporter_name`, `reporter_phone` = 11 digits starting with `03`, spaces/dashes removed (D-036); optional `lat`/`lon`, `client_request_id`) | `201 ReportAcceptedOut {reference_no, status: "new", received_at}` only after the record is committed; `200` same body for a resend (TC-04); `503` and no reference if it could not be saved | **built** (B1-A1-16) |
 | `POST` | `/api/v1/reports/voice` | P | multipart: `audio` (WAV, MP3 or M4A, ≤ 2 min); other fields defined in task | `201`, same as above | B1-A1-17 |
 | `POST` | `/api/v1/reports/{reference_no}/confirmation` | P (code) | defined in task | defined in task | B1-A1-24 |
 | `POST` | `/api/v1/intake/sms` | S | defined in task (D-014) | defined in task | B4-01 |
@@ -164,3 +164,4 @@ sends the full event. The API wakes the worker with `NOTIFY report_pending`.
 | v1.4 | 2026-11-22 | `GET /api/v1/incidents` and `GET /api/v1/incidents/{incident_id}` built, read-only (B1-A1-20); C-1 v1.2 adds optional `RecommendationOut.plate_number` |
 | v1.5 | 2026-11-22 | `POST /api/v1/incidents/{incident_id}/dispatch` and `GET /api/v1/vehicles` built (B1-A1-25); new shapes `DispatchIn`, `VehicleOut` (`backend/app/schemas/dispatch.py`) |
 | v1.6 | 2026-11-22 | Assignment lifecycle built (B1-A1-26): driver current/accept/decline/status, dispatcher cancel and hospital change, `GET /hospitals`; shapes `DeclineIn`, `TripStatusIn`, `CancelIn`, `HospitalChangeIn`; C-7 v1.1 `DeclineReason` |
+| v1.7 | 2026-11-23 | `POST /api/v1/reports`: place, name and phone required; phone `^03[0-9]{9}$` after removing spaces/dashes (D-036) |
