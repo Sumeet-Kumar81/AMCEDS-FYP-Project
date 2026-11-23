@@ -11,12 +11,18 @@ import {
   type ReportDraft,
 } from "./validation";
 
-const draft = (d: Partial<ReportDraft> = {}): ReportDraft => ({ ...EMPTY_DRAFT, description: "SIMULATED: fire", ...d });
+/** A valid draft since D-036 (place, name and phone required); tests override what they check. */
+const draft = (d: Partial<ReportDraft> = {}): ReportDraft => ({
+  ...EMPTY_DRAFT, description: "SIMULATED: fire", addressText: "near Clock Tower", name: "SIMULATED Ali", phone: "03001234567", ...d,
+});
 
 describe("validate", () => {
-  it("a description is the only required field", () => {
+  it("D-036: description, place, name and phone are required", () => {
     expect(validate(draft())).toEqual({});
     expect(validate(draft({ description: "   " })).description?.key).toBe("report.err_description_required");
+    expect(validate(draft({ addressText: "  " })).addressText?.key).toBe("report.err_address_required");
+    expect(validate(draft({ name: "" })).name?.key).toBe("report.err_name_required");
+    expect(validate(draft({ phone: " " })).phone?.key).toBe("report.err_phone_required");
   });
 
   it("limits match the backend", () => {
@@ -26,11 +32,11 @@ describe("validate", () => {
     expect(validate(draft({ name: "x".repeat(101) })).name?.vars).toEqual({ max: 100 });
   });
 
-  it.each(["0300 1234567", "+92-300-1234567", "03001234567"])("accepts phone %s", (phone) => {
+  it.each(["0300 1234567", "0300-123-4567", "03001234567", "03339876543"])("accepts phone %s", (phone) => {
     expect(validate(draft({ phone }))).toEqual({});
   });
 
-  it.each(["abc", "12", "0300 12345x7", "+"])("refuses phone %s", (phone) => {
+  it.each(["abc", "12", "0300 12345x7", "+", "+923001234567", "04001234567", "0300123456", "030012345678"])("refuses phone %s", (phone) => {
     expect(validate(draft({ phone })).phone?.key).toBe("report.err_phone");
   });
 
@@ -41,9 +47,11 @@ describe("validate", () => {
 });
 
 describe("toReportIn", () => {
-  it("trims, leaves out empty optional fields and sends no coordinates without GPS", () => {
-    expect(toReportIn(draft({ description: "  SIMULATED: fire  ", name: "  ", phone: "" }), "id-1")).toEqual({
-      description: "SIMULATED: fire", channel: "web", client_request_id: "id-1" });
+  it("trims, sends place, name and the phone as 11 digits, and no coordinates without GPS", () => {
+    expect(toReportIn(draft({ description: "  SIMULATED: fire  ", addressText: " near Clock Tower ", name: " SIMULATED Ali ",
+      phone: "0300 123-4567" }), "id-1")).toEqual({
+      description: "SIMULATED: fire", channel: "web", client_request_id: "id-1",
+      address_text: "near Clock Tower", reporter_name: "SIMULATED Ali", reporter_phone: "03001234567" });
   });
 
   it("sends GPS coordinates and the typed place together", () => {
@@ -51,7 +59,7 @@ describe("toReportIn", () => {
       name: "SIMULATED Ali", phone: "0300 1234567" }), "id-2");
     expect(body).toEqual({ description: "SIMULATED: fire", channel: "web", client_request_id: "id-2",
       address_text: "near Clock Tower", lat: 27.7, lon: 68.85, reporter_name: "SIMULATED Ali",
-      reporter_phone: "0300 1234567" });
+      reporter_phone: "03001234567" });
     expect(body).not.toHaveProperty("accuracy");
   });
 });

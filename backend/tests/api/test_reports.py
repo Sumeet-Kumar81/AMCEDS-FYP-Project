@@ -1,4 +1,5 @@
-"""POST /api/v1/reports (B1-A1-16): save before processing. TC-01, TC-03, TC-04, TC-50, database down."""
+"""POST /api/v1/reports (B1-A1-16): save before processing. TC-01, TC-04, TC-50, database down;
+D-036: place, name and an 11-digit phone starting with 03 are required (replaces the old TC-03 behaviour)."""
 from __future__ import annotations
 
 import re
@@ -22,8 +23,12 @@ pytestmark = pytest.mark.db
 URL = "/api/v1/reports"
 
 
+#: what every valid report must carry since D-036 (all SIMULATED)
+REQUIRED = {"address_text": "near the market", "reporter_name": "SIMULATED Ali", "reporter_phone": "03001234567"}
+
+
 async def post(api: httpx.AsyncClient, **body) -> httpx.Response:
-    return await api.post(URL, json={"description": "SIMULATED bus accident near the market", **body})
+    return await api.post(URL, json={"description": "SIMULATED bus accident near the market", **REQUIRED, **body})
 
 
 async def saved(db: AsyncSession, reference_no: str) -> Incident:
@@ -57,11 +62,31 @@ async def test_address_words_only(api, db_session) -> None:
     assert (incident.location_source, incident.location_text, incident.location) == ("text", "near the Sukkur barrage", None)
 
 
-async def test_tc03_unknown_location_is_saved_with_a_reason(api, db_session) -> None:
+async def test_without_gps_the_typed_place_is_the_location(api, db_session) -> None:
     r = await post(api)
     assert r.status_code == 201
     incident = await saved(db_session, r.json()["reference_no"])
-    assert incident.location_source == "unknown" and incident.review_reasons == ["location_unknown"]
+    assert (incident.location_source, incident.location_text) == ("text", "near the market")
+    assert incident.review_reasons == []
+
+
+@pytest.mark.parametrize("missing", ["address_text", "reporter_name", "reporter_phone"])
+async def test_d036_place_name_and_phone_are_required(api, db_session, missing: str) -> None:
+    before = await db_session.scalar(select(func.count()).select_from(Incident))
+    body = {"description": "SIMULATED fire", **REQUIRED}
+    del body[missing]
+    r = await api.post(URL, json=body)
+    assert r.status_code == 422 and r.json()["details"][0]["loc"] == ["body", missing]
+    assert await db_session.scalar(select(func.count()).select_from(Incident)) == before
+
+
+@pytest.mark.parametrize("typed", ["03001234567", "0300 1234567", "0300-123-4567", " 0333 9876543 "])
+async def test_d036_phone_accepts_11_digits_from_03_and_stores_digits_only(api, db_session, typed: str) -> None:
+    r = await post(api, reporter_phone=typed)
+    assert r.status_code == 201, r.text
+    incident = await saved(db_session, r.json()["reference_no"])
+    caller = await db_session.get(Caller, incident.caller_id)
+    assert caller.phone_number == typed.replace(" ", "").replace("-", "")
 
 
 # ---------------------------------------------------------------- TC-04 resend
@@ -93,24 +118,24 @@ async def test_urdu_sindhi_and_mixed_text_stored_as_written(api, db_session, tex
 
 # ---------------------------------------------------------------- callers
 async def test_same_phone_is_the_same_caller(api, db_session) -> None:
-    a = await post(api, reporter_phone="+92 300-111 2222")
-    b = await post(api, reporter_phone="+923001112222")
+    a = await post(api, reporter_phone="0300-111 2222")
+    b = await post(api, reporter_phone="03001112222")
     ia, ib = await saved(db_session, a.json()["reference_no"]), await saved(db_session, b.json()["reference_no"])
     assert ia.caller_id is not None and ia.caller_id == ib.caller_id
-    assert (await db_session.get(Caller, ia.caller_id)).phone_number == "+923001112222"
+    assert (await db_session.get(Caller, ia.caller_id)).phone_number == "03001112222"
 
 
-async def test_device_then_phone_fills_in_the_same_caller(api, db_session) -> None:
-    a = await post(api, device_id="SIMULATED-device-9")
-    b = await post(api, device_id="SIMULATED-device-9", reporter_phone="03001234567")
+async def test_a_device_seen_again_is_the_same_caller(api, db_session) -> None:
+    a = await post(api, device_id="SIMULATED-device-9", reporter_phone="03005550001")
+    b = await post(api, device_id="SIMULATED-device-9", reporter_phone="03005550001")
     ia, ib = await saved(db_session, a.json()["reference_no"]), await saved(db_session, b.json()["reference_no"])
     assert ia.caller_id == ib.caller_id
-    assert (await db_session.get(Caller, ia.caller_id)).phone_number == "03001234567"
+    assert (await db_session.get(Caller, ia.caller_id)).device_id == "SIMULATED-device-9"
 
 
-async def test_anonymous_report_has_no_caller(api, db_session) -> None:
+async def test_every_report_now_has_a_caller(api, db_session) -> None:
     r = await post(api)
-    assert (await saved(db_session, r.json()["reference_no"])).caller_id is None
+    assert (await saved(db_session, r.json()["reference_no"])).caller_id is not None  # phone is required (D-036)
 
 
 # ---------------------------------------------------------------- validation
@@ -119,11 +144,14 @@ async def test_anonymous_report_has_no_caller(api, db_session) -> None:
     {"channel": "sms"}, {"channel": "voice"}, {"channel": "mobile"},
     {"lat": 27.7}, {"lon": 68.8}, {"lat": 91, "lon": 0},
     {"reporter_phone": "call me"}, {"reporter_phone": "12"}, {"reporter_name": "n" * 101},
+    {"reporter_phone": "+923001234567"}, {"reporter_phone": "04001234567"}, {"reporter_phone": "0300123456"},
+    {"reporter_phone": "030012345678"}, {"reporter_phone": ""}, {"reporter_name": "  "}, {"address_text": ""},
+    {"address_text": "a" * 501},
     {"client_request_id": "c" * 101}, {"made_up_field": 1},
 ])
 async def test_invalid_reports_are_422_and_nothing_is_saved(api, db_session, body: dict) -> None:
     before = await db_session.scalar(select(func.count()).select_from(Incident))
-    r = await api.post(URL, json={"description": "SIMULATED report", **body})
+    r = await api.post(URL, json={"description": "SIMULATED report", **REQUIRED, **body})
     assert r.status_code == 422 and r.json()["code"] == "validation_error"
     assert "reference_no" not in r.text
     assert await db_session.scalar(select(func.count()).select_from(Incident)) == before
@@ -140,7 +168,7 @@ async def test_database_down_gives_503_and_no_reference_number() -> None:
     app.dependency_overrides[get_db] = broken
     try:
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c:
-            r = await c.post(URL, json={"description": "SIMULATED report"})
+            r = await c.post(URL, json={"description": "SIMULATED report", **REQUIRED})
     finally:
         app.dependency_overrides.pop(get_db, None)
         await dead.dispose()

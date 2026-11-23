@@ -3,8 +3,13 @@
 import type { ReportIn, MessageKey, ValidationIssue } from "@amceds/shared";
 
 export const LIMITS = { description: 2000, address: 500, name: 100 } as const;
-/** Same pattern as the backend's PHONE_PATTERN. */
-export const PHONE_PATTERN = /^\+?[0-9][0-9 \-]{6,19}$/;
+/** Same rule as the backend's PHONE_PATTERN (D-036): 11 digits starting with 03, after removing spaces and dashes. */
+export const PHONE_PATTERN = /^03[0-9]{9}$/;
+
+/** The phone as it is checked and sent: spaces and dashes removed ("0300 123-4567" -> "03001234567"). */
+export function phoneDigits(phone: string): string {
+  return phone.replace(/[\s-]/g, "");
+}
 
 export interface GpsFix {
   lat: number;
@@ -40,24 +45,25 @@ export function validate(draft: ReportDraft): FieldErrors {
   else if (description.length > LIMITS.description) {
     errors.description = { key: "report.err_too_long", vars: { max: LIMITS.description } };
   }
-  if (draft.addressText.trim().length > LIMITS.address) {
-    errors.addressText = { key: "report.err_too_long", vars: { max: LIMITS.address } };
-  }
-  if (draft.name.trim().length > LIMITS.name) errors.name = { key: "report.err_too_long", vars: { max: LIMITS.name } };
-  const phone = draft.phone.trim();
-  if (phone && !PHONE_PATTERN.test(phone)) errors.phone = { key: "report.err_phone" };
+  // D-036: place, name and phone are required.
+  const address = draft.addressText.trim();
+  if (!address) errors.addressText = { key: "report.err_address_required" };
+  else if (address.length > LIMITS.address) errors.addressText = { key: "report.err_too_long", vars: { max: LIMITS.address } };
+  const name = draft.name.trim();
+  if (!name) errors.name = { key: "report.err_name_required" };
+  else if (name.length > LIMITS.name) errors.name = { key: "report.err_too_long", vars: { max: LIMITS.name } };
+  const phone = phoneDigits(draft.phone);
+  if (!phone) errors.phone = { key: "report.err_phone_required" };
+  else if (!PHONE_PATTERN.test(phone)) errors.phone = { key: "report.err_phone" };
   return errors;
 }
 
-/** The request body: trimmed text, empty optional fields left out, coordinates only from GPS. */
+/** The request body: trimmed text, the phone as 11 digits, coordinates only from GPS. */
 export function toReportIn(draft: ReportDraft, clientRequestId: string): ReportIn {
-  const body: ReportIn = { description: draft.description.trim(), channel: "web", client_request_id: clientRequestId };
-  const address = draft.addressText.trim();
-  const name = draft.name.trim();
-  const phone = draft.phone.trim();
-  if (address) body.address_text = address;
-  if (name) body.reporter_name = name;
-  if (phone) body.reporter_phone = phone;
+  const body: ReportIn = {
+    description: draft.description.trim(), channel: "web", client_request_id: clientRequestId,
+    address_text: draft.addressText.trim(), reporter_name: draft.name.trim(), reporter_phone: phoneDigits(draft.phone),
+  };
   if (draft.gps) {
     body.lat = draft.gps.lat;
     body.lon = draft.gps.lon;
@@ -91,7 +97,7 @@ export function sameDraft(a: ReportDraft, b: ReportDraft): boolean {
     a.description.trim() === b.description.trim() &&
     a.addressText.trim() === b.addressText.trim() &&
     a.name.trim() === b.name.trim() &&
-    a.phone.trim() === b.phone.trim() &&
+    phoneDigits(a.phone) === phoneDigits(b.phone) &&
     a.gps?.lat === b.gps?.lat &&
     a.gps?.lon === b.gps?.lon
   );

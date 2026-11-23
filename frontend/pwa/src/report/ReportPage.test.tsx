@@ -1,4 +1,4 @@
-// Report page behaviour (B1-A3-03): TC-01 (reference after save), TC-03 (no location), TC-04 (safe resend),
+// Report page behaviour (B1-A3-03): TC-01 (reference after save), D-036 (place, name, 03-phone required), TC-04 (safe resend),
 // TC-47 (1122 notice), GPS paths, error states, Urdu. Fake fetch and fake geolocation; no network.
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -40,7 +40,17 @@ function fakeGeo(result: { lat: number; lon: number; accuracy: number } | { code
   } as unknown as Geolocation;
 }
 
+const box = (id: string) => document.getElementById(id) as HTMLInputElement; // by id: works in English and Urdu
+
+/** D-036: place, name and phone are required — fill the ones still empty with SIMULATED values. */
+async function fillRequired(user: ReturnType<typeof userEvent.setup>) {
+  if (!box("rf-address").value) await user.type(box("rf-address"), "near Clock Tower");
+  if (!box("rf-name").value) await user.type(box("rf-name"), "SIMULATED Ali");
+  if (!box("rf-phone").value) await user.type(box("rf-phone"), "03001234567");
+}
+
 async function fillAndSend(user: ReturnType<typeof userEvent.setup>, text = "SIMULATED: bus accident, 3 people hurt") {
+  await fillRequired(user);
   await user.type(screen.getByLabelText(/What happened\?/), text);
   await user.click(screen.getByRole("button", { name: "Send report" }));
 }
@@ -60,15 +70,34 @@ describe("sending a report", () => {
     expect(posts[0]!.client_request_id).toMatch(/^[0-9a-f-]{36}$/);
   });
 
-  it("without GPS or a place the report is still sent, location unknown (TC-03)", async () => {
+  it("D-036: without place, name or phone nothing is sent and each field says why", async () => {
+    const { client, posts } = fakeApi([]);
+    const user = userEvent.setup();
+    render(<App client={client} />);
+    await user.type(screen.getByLabelText(/What happened\?/), "SIMULATED: fire");
+    await user.click(screen.getByRole("button", { name: "Send report" }));
+    expect(screen.getByText("Please type the place or a landmark.")).toBeInTheDocument();
+    expect(screen.getByText("Please write your name.")).toBeInTheDocument();
+    expect(screen.getByText("Please write your phone number.")).toBeInTheDocument();
+    expect(box("rf-address")).toHaveFocus();
+    expect(posts).toHaveLength(0);
+  });
+
+  it("without GPS the typed place is sent and no coordinates", async () => {
     const { client, posts } = fakeApi([json(201, SAVED)]);
     const user = userEvent.setup();
     render(<App client={client} geolocation={fakeGeo({ code: 1 })} />);
-    expect(screen.getByText(/No location yet/)).toBeInTheDocument();
     await fillAndSend(user);
     await screen.findByTestId("reference-no");
     expect(posts[0]).not.toHaveProperty("lat");
-    expect(posts[0]).not.toHaveProperty("address_text");
+    expect(posts[0]).toMatchObject({ address_text: "near Clock Tower", reporter_name: "SIMULATED Ali", reporter_phone: "03001234567" });
+  });
+
+  it("D-036: the place, name and phone are marked as required", () => {
+    render(<App client={fakeApi([]).client} />);
+    expect(screen.getByText(/Place or landmark/).textContent).toContain("(required)");
+    expect(screen.getByText("Your details").textContent).toContain("(required)");
+    expect(screen.queryByText("(optional)")).not.toBeInTheDocument();
   });
 
   it("an empty report is not sent", async () => {
@@ -87,9 +116,29 @@ describe("sending a report", () => {
     render(<App client={client} />);
     await user.type(screen.getByLabelText("Phone number"), "abc");
     await fillAndSend(user);
-    expect(screen.getByText(/Use digits only/)).toBeInTheDocument();
+    expect(screen.getByText(/Phone must be 11 digits starting with 03/)).toBeInTheDocument();
     expect(screen.getByLabelText("Phone number")).toHaveAttribute("aria-invalid", "true");
     expect(posts).toHaveLength(0);
+  });
+
+  it.each(["04001234567", "0300123456", "030012345678", "+923001234567"])("D-036: phone %s is refused", async (phone) => {
+    const { client, posts } = fakeApi([]);
+    const user = userEvent.setup();
+    render(<App client={client} />);
+    await user.type(screen.getByLabelText("Phone number"), phone);
+    await fillAndSend(user);
+    expect(screen.getByText(/Phone must be 11 digits starting with 03/)).toBeInTheDocument();
+    expect(posts).toHaveLength(0);
+  });
+
+  it("D-036: a phone typed with spaces or dashes is sent as 11 digits", async () => {
+    const { client, posts } = fakeApi([json(201, SAVED)]);
+    const user = userEvent.setup();
+    render(<App client={client} />);
+    await user.type(screen.getByLabelText("Phone number"), "0300 123-4567");
+    await fillAndSend(user);
+    await screen.findByTestId("reference-no");
+    expect(posts[0]).toMatchObject({ reporter_phone: "03001234567" });
   });
 
   it("a double press sends one request", async () => {
@@ -98,6 +147,7 @@ describe("sending a report", () => {
     const { client, posts } = fakeApi([slow]);
     const user = userEvent.setup();
     render(<App client={client} />);
+    await fillRequired(user);
     await user.type(screen.getByLabelText(/What happened\?/), "SIMULATED: fire");
     const send = screen.getByRole("button", { name: "Send report" });
     await user.click(send);
@@ -112,6 +162,9 @@ describe("sending a report", () => {
     const { client, posts } = fakeApi([() => new Promise<Response>((resolve) => { release = resolve; })]);
     render(<App client={client} />);
     fireEvent.change(screen.getByLabelText(/What happened\?/), { target: { value: "SIMULATED: fire" } });
+    fireEvent.change(box("rf-address"), { target: { value: "near Clock Tower" } });
+    fireEvent.change(box("rf-name"), { target: { value: "SIMULATED Ali" } });
+    fireEvent.change(box("rf-phone"), { target: { value: "03001234567" } });
     const form = screen.getByRole("button", { name: "Send report" }).closest("form")!;
     act(() => {
       fireEvent.submit(form);
@@ -248,7 +301,6 @@ describe("location", () => {
     const user = userEvent.setup();
     render(<App client={client} />);
     await user.type(screen.getByLabelText(/Place or landmark/), "near Clock Tower");
-    expect(screen.queryByText(/No location yet/)).not.toBeInTheDocument();
     await fillAndSend(user);
     await screen.findByTestId("reference-no");
     expect(posts[0]).toMatchObject({ address_text: "near Clock Tower" });
@@ -279,6 +331,7 @@ describe("page rules", () => {
     render(<App client={client} />);
     await user.click(screen.getByRole("button", { name: "اردو" }));
     expect(document.documentElement).toHaveAttribute("dir", "rtl");
+    await fillRequired(user);
     await user.type(screen.getByLabelText(/کیا ہوا ہے؟/), "SIMULATED: مینارہ روڈ پر آگ لگ گئی ہے");
     await user.click(screen.getByRole("button", { name: "رپورٹ بھیجیں" }));
     expect(await screen.findByRole("heading", { name: /رپورٹ محفوظ ہو گئی/ })).toBeInTheDocument();

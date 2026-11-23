@@ -354,7 +354,8 @@ async def test_notifications_are_sent_on_commit(fresh) -> None:
         from app.services import intake
 
         async with sessions() as db:
-            created, _ = await intake.create_report(db, ReportIn(description="SIMULATED report"))
+            created, _ = await intake.create_report(db, ReportIn(description="SIMULATED report", address_text="SIMULATED place",
+                                                                    reporter_name="SIMULATED caller", reporter_phone="03001234567"))
             await db.commit()
         store = PostgresPipelineStore(sessions)
         await store.save_triage(created.incident_id, triage(overall_confidence=0.2))
